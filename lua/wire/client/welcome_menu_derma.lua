@@ -15,7 +15,7 @@ local PANEL = {}
 function PANEL:Init()
 	self:SetSize( 104, 44 )
 	self:SetBGColor( Color( 150,150,150,210) )
-
+	
 	Menu:AddColoring( self.SetBGColor, "LabelBGColor", self )
 
 	self.Label = vgui.Create("DLabel",self)
@@ -23,19 +23,19 @@ function PANEL:Init()
 	self.Label:SetText( "hello world" )
 	self.Label:SetColor( Menu.Colors.TextColor )
 	self.Label:SizeToContents()
-
+	
 	Menu:AddColoring( self.Label.SetColor, "TextColor", self.Label )
-
+	
 	self.Open = vgui.Create("Wire_WMenu_Button",self)
 	self.Open:SetPos( 4, 20 )
 	self.Open:SetText( "Open" )
 	self.Open:SetSize( 46, 20 )
-
+	
 	self.Copy = vgui.Create("Wire_WMenu_Button",self)
 	self.Copy:SetPos( 54, 20 )
 	self.Copy:SetSize( 46, 20 )
 	self.Copy:SetText( "Copy" )
-
+	
 	self.URL = ""
 end
 
@@ -54,7 +54,7 @@ end
 function PANEL:Paint()
 	draw.RoundedBox( 4, 0, 0, self:GetWide(), self:GetTall(), self:GetBGColor() )
 end
-
+	
 
 function PANEL:SetURL( NiceName, Description, URL )
 	self.Label:SetText( NiceName )
@@ -93,7 +93,8 @@ function PANEL:OnMouseReleased(...)
 	self.Holding = nil
 end
 function PANEL:Paint()
-	local clr = Menu.Colors.ButtonColor
+	-- local clr = Menu.Colors.ButtonColor
+	local clr = Color(255,255,255, 255)
 	if (self.Hovering) then
 		if (self.Holding) then
 			clr = Menu.Colors.ButtonClickColor
@@ -115,13 +116,13 @@ local PANEL = {}
 
 function PANEL:Init()
 	self.BaseClass.Init(self)
-
+	
 	Menu:AddColoring( self.SetBGColor, "LabelBGColor", self )
-
+	
 	self.Label = vgui.Create("DLabel",self)
 	self:SetBGColor( Menu.Colors.LabelBGColor )
 	self:SetColor( Menu.Colors.TextColor )
-
+	
 	Menu:AddColoring( self.Label.SetColor, "TextColor", self.Label )
 end
 
@@ -167,7 +168,7 @@ local PANEL = {}
 
 function PANEL:Init()
     self:SetSize( 16, 16 )
-    self:SetType("none")
+    -- self:SetType("none") It's gone.
     self.Partners = {}
 end
 
@@ -176,11 +177,11 @@ function PANEL:Toggle()
         for k,v in pairs( self.Partners ) do
             if (v == true) then
                 k:SetValue(false)
-                k:SetType("none")
+                -- k:SetType("none") It's gone
             end
         end
         self:SetValue(true)
-        self:SetType("none")
+        -- self:SetType("none")
     end
 end
 
@@ -227,7 +228,7 @@ function PANEL:SetPartners( ... )
         end
     end
 end
-
+        
 derma.DefineControl( "DRadioButton", "Radio Button", PANEL, "DCheckBox" )
 
 ------------------------------------------------------------------------------------------------
@@ -241,7 +242,7 @@ function PANEL:Init()
     self:SetTall( 18 )
     self.Button = vgui.Create("DRadioButton",self)
     function self:DoClick() self.Button:Toggle() end
-	function self.Button.OnChange( _, val ) self:OnChange( val ) end
+	-- function self.Button.OnChange( _, val ) self:OnChange( val ) end It's gone.
 end
 
 function PANEL:DoClick()
@@ -282,17 +283,17 @@ function PANEL:SetText( Text )
         self.Label:SetMouseInputEnabled(true)
         self.Label.OnMouseReleased = function() self.Button:Toggle() end
     end
-
+    
     self.Label:SetText( Text )
     self:InvalidateLayout()
 end
 
-function PANEL:SetValue( val )
+function PANEL:SetValue( val ) 
 	if (self.Button:GetChecked() != val) then
 		self.Button:Toggle()
 	end
 end
-function PANEL:SetChecked( val )
+function PANEL:SetChecked( val ) 	
 	if (self.Button:GetChecked() != val) then
 		self.Button:Toggle()
 	end

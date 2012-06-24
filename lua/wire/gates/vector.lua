@@ -415,9 +415,9 @@ GateActions["vector_compeq"] = {
 	end
 }
 
--- Not Equal
+-- Inequal
 GateActions["vector_compineq"] = {
-	name = "Not Equal",
+	name = "Inequal",
 	inputs = { "A", "B" },
 	inputtypes = { "VECTOR", "VECTOR" },
 	outputtypes = { "NORMAL" },
@@ -487,7 +487,7 @@ GateActions["vector_compgteq"] = {
 	output = function(gate, A, B)
 		if !IsVector (A) then A = Vector (0, 0, 0) end
 		if !IsVector (B) then B = Vector (0, 0, 0) end
-		if (A:Length () >= B:Length ()) then return 1 end
+		if (A:Length () < B:Length ()) then return 1 end
 		return 0
 	end,
 	label = function(Out, A, B)
@@ -624,7 +624,7 @@ GateActions["vector_select"] = {
 	inputtypes = { "NORMAL", "VECTOR", "VECTOR", "VECTOR", "VECTOR", "VECTOR", "VECTOR", "VECTOR", "VECTOR" },
 	outputtypes = { "VECTOR" },
 	output = function(gate, Choice, ...)
-		Choice = math.Clamp(Choice,1,8)
+		math.Clamp(Choice,1,8)
 		return ({...})[Choice]
 	end,
 	label = function(Out, Choice)

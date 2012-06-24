@@ -19,7 +19,7 @@ function HCOMP:Expression_LevelLeaf(level)
     then levelLeaf = levelExpr  -- Expression that has to be recalculated later
     else levelLeaf = levelValue -- Numeric value
     end
-
+  
     return { Constant = levelLeaf, CurrentPosition = self:CurrentSourcePosition() }
   else
     return self["Expression_Level"..level](self)
@@ -52,7 +52,7 @@ function HCOMP:Expression_ExplictIncDec(opcode,label,returnAfter)
   -- Mark this leaf as an explict assign operation
   operationLeaf.ExplictAssign = true
   operationLeaf.ReturnAfterAssign = returnAfter
-
+  
   return operationLeaf
 end
 
@@ -204,13 +204,13 @@ function HCOMP:Expression_ArrayAccess(label) local TOKEN = self.TOKEN
       operationLeaf = { MemoryPointer = addressLeaf }
     end
   end
-
+  
   if self:MatchToken(TOKEN.INC) then -- reg++
     operationLeaf = self:Expression_ExplictIncDec("inc",operationLeaf)
   elseif self:MatchToken(TOKEN.DEC) then -- reg--
     operationLeaf = self:Expression_ExplictIncDec("dec",operationLeaf)
   end
-
+  
   return operationLeaf,addressLeaf
 end
 
@@ -219,8 +219,8 @@ end
 -- level3: (<level0>) or <variable>
 function HCOMP:Expression_Level3() local TOKEN = self.TOKEN
   local negateLeaf,operationLeaf
-
-
+  
+  
   -- Negate value if required
   if self:MatchToken(TOKEN.MINUS) then -- "-"
     negateLeaf = self:NewLeaf()
@@ -231,12 +231,12 @@ function HCOMP:Expression_Level3() local TOKEN = self.TOKEN
     negateLeaf = self:NewLeaf()
     negateLeaf.Opcode = "lneg"
   end
-
-
+  
+  
   if self:MatchToken(TOKEN.AND) then -- Parse retrieve pointer operation (&var)
     if self:MatchToken(TOKEN.IDENT) then
       local label = self:GetLabel(self.TokenData)
-
+      
       if self:MatchToken(TOKEN.LSUBSCR) then -- Parse array access
         local _,addressLeaf = self:Expression_ArrayAccess(label)
         if label.Type == "Stack" then
@@ -252,7 +252,7 @@ function HCOMP:Expression_Level3() local TOKEN = self.TOKEN
           if self:MatchToken(TOKEN.LSUBSCR) then -- Pointer to element of an array on stack
             local arrayOffsetLeaf = self:Expression()
             self:ExpectToken(TOKEN.RSUBSCR)
-
+            
             -- Create leaf for calculating address
             local addressLeaf
             if arrayOffsetLeaf.Constant then
@@ -263,7 +263,7 @@ function HCOMP:Expression_Level3() local TOKEN = self.TOKEN
               addressLeaf.Operands[1] = { Constant = label.StackOffset }
               addressLeaf.Operands[2] = arrayOffsetLeaf
             end
-
+        
             -- Create leaf that returns pointer to stack
             operationLeaf = self:NewLeaf()
             operationLeaf.Opcode = "add"
@@ -271,7 +271,7 @@ function HCOMP:Expression_Level3() local TOKEN = self.TOKEN
             operationLeaf.Operands[2] = addressLeaf
           else -- Pointer to a stack variable
             -- FIXME: check if var is an array
-
+  
             -- Create leaf that returns pointer to stack
             operationLeaf = self:NewLeaf()
             operationLeaf.Opcode = "add"
@@ -300,7 +300,7 @@ function HCOMP:Expression_Level3() local TOKEN = self.TOKEN
   elseif self:MatchToken(TOKEN.REGISTER) or self:MatchToken(TOKEN.SEGMENT) then
     local register = self.TokenData
     if self.TokenType == TOKEN.SEGMENT then register = register + 15 end
-
+    
     if self:MatchToken(TOKEN.INC) then -- reg++
       operationLeaf = self:Expression_ExplictIncDec("inc",register)
     elseif self:MatchToken(TOKEN.DEC) then -- reg--
@@ -317,7 +317,7 @@ function HCOMP:Expression_Level3() local TOKEN = self.TOKEN
       local structLabel = self:GetLabel(structName)
       if structLabel.Struct then -- Fetch structure member
         local structData = self.Structs[structLabel.Struct]
-
+        
         -- Some error checks
         if not structData[memberName] then
           self:Error("Undefined structure member: "..memberName)
@@ -357,11 +357,11 @@ function HCOMP:Expression_Level3() local TOKEN = self.TOKEN
         return operationLeaf
       end
     end
-
+  
     -- Try to fetch it normal way
     local label = self:GetLabel(self.TokenData)
     local forceType = label.ForceType
-
+    
     if self:MatchToken(TOKEN.INC) then -- Parse var++
       operationLeaf = self:Expression_ExplictIncDec("inc",label)
     elseif self:MatchToken(TOKEN.DEC) then -- Parse var--
@@ -411,7 +411,7 @@ function HCOMP:Expression_Level3() local TOKEN = self.TOKEN
     if not operationLeaf.CurrentPosition then
       operationLeaf.CurrentPosition = self:CurrentSourcePosition()
     end
-
+    
     -- Negate the result if required
     if negateLeaf then
       negateLeaf.Operands[1] = operationLeaf
@@ -426,7 +426,7 @@ end
 -- level2: <level3> * <level2>
 function HCOMP:Expression_Level2()
   local leftLeaf = self:Expression_LevelLeaf(3)
-
+  
   local token = self:PeekToken()
   if (token == self.TOKEN.TIMES) or
      (token == self.TOKEN.SLASH) or
@@ -454,14 +454,14 @@ function HCOMP:Expression_Level1()
      (token == self.TOKEN.MINUS) then -- +-
     -- Treat "-" as negate instead of subtraction FIXME
     if token == self.TOKEN.PLUS then self:NextToken() end
-
+    
     local rightLeaf = self:Expression_LevelLeaf(0)
     return self:NewOpcode("add",leftLeaf,rightLeaf)
   elseif (token == self.TOKEN.LAND) or
          (token == self.TOKEN.LOR) then -- &&, ||
     self:NextToken()
     local rightLeaf = self:Expression_LevelLeaf(0)
-
+    
     if token == self.TOKEN.LAND then return self:NewOpcode("and",leftLeaf,rightLeaf) end
     if token == self.TOKEN.LOR  then return self:NewOpcode("or",leftLeaf,rightLeaf) end
   elseif (token == self.TOKEN.AND) or
@@ -485,7 +485,7 @@ function HCOMP:Expression_Level0()
 
   if self:MatchToken(self.TOKEN.EQUAL) then -- =
     local rightLeaf = self:Expression_LevelLeaf(0)
-
+    
     -- Mark this leaf as an explict assign operation
     local operationLeaf = self:NewOpcode("mov",leftLeaf,rightLeaf)
     operationLeaf.ExplictAssign = true
@@ -611,14 +611,14 @@ function HCOMP:ConstantExpression_Level3()
   local constSign = 1
   if self:MatchToken(self.TOKEN.MINUS) then constSign = -1 end
   if self:MatchToken(self.TOKEN.PLUS) then constSign = 1 end
-
+  
   if self:MatchToken(self.TOKEN.AND) then -- &pointer
     if self:MatchToken(self.TOKEN.IDENT) then
       local label = self:GetLabel(self.TokenData)
-
+      
       -- Check if it's a pointer of array member (always dynamic)
       if label.Array and self:MatchToken(self.TOKEN.LSUBSCR) then return false end
-
+      
       -- Check if it's any of the known types
       if label.Type == "Pointer" then
         self:Error("Ident "..self.TokenData.." is not a variable")
@@ -650,7 +650,7 @@ function HCOMP:ConstantExpression_Level3()
     while self:MatchToken(self.TOKEN.STRING) do
       stringData = stringData .. self.TokenData
     end
-
+  
     if self.GlobalStringTable[stringData] then
       if self.GlobalStringTable[stringData].Label.Value then
         return true,true,self.GlobalStringTable[stringData].Label.Value*constSign
@@ -669,7 +669,7 @@ function HCOMP:ConstantExpression_Level3()
           self.StringsTable[stringData] = self:NewLeaf()
           self.StringsTable[stringData].Opcode = "DATA"
           self.StringsTable[stringData].Data = { stringData, 0 }
-
+          
           local stringLabel = self:GetTempLabel()
           stringLabel.Leaf = self.StringsTable[stringData]
           self.StringsTable[stringData].Label = stringLabel
@@ -722,7 +722,7 @@ function HCOMP:ConstantExpression_Level3()
         -- It's probably not a constant expression
         return false
       end
-
+      
       -- If this variable wasn't really constant, the error will be caught
       -- on the final output stage when all constant expressions are
       -- recalculated
@@ -819,13 +819,13 @@ end
 function HCOMP:ConstantExpression_Level0()
   local leftConst,leftPrecise,leftValue = self:ConstantExpression_Level1()
   if not leftConst then return false end
-
+  
   if self:MatchToken(self.TOKEN.EQUAL) then -- =
     return false
   elseif self:MatchToken(self.TOKEN.LSS) then -- <
     local rightConst,rightPrecise,rightValue = self:ConstantExpression_Level0()
     if not rightConst then return false end
-
+    
     if leftValue < rightValue
     then return true,(leftPrecise and rightPrecise),1
     else return true,(leftPrecise and rightPrecise),0
@@ -895,7 +895,7 @@ function HCOMP:ConstantExpression_Level0()
     if not rightConst then return false end
     return true,(leftPrecise and rightPrecise),self:BinarySHL(leftValue,rightValue)
   end
-
+  
   return true,leftPrecise,leftValue
 end
 
@@ -910,7 +910,7 @@ function HCOMP:ConstantExpression(needResultNow,startLevel)
   elseif startLevel == 1 then isConst,isPrecise,value = self:ConstantExpression_Level1()
   else                        isConst,isPrecise,value = self:ConstantExpression_Level0()
   end
-
+  
   if isPrecise then
     return true,value
   else
@@ -918,7 +918,7 @@ function HCOMP:ConstantExpression(needResultNow,startLevel)
       self:RestoreParserState()
       return false
     end
-
+    
     if isConst then
       -- Return list of tokens that correspond to parsed expression
       -- This is used to recalculate expression later

@@ -11,20 +11,20 @@ function WireGPU_AddMonitor(name,model,tof,tou,tor,trs,x1,x2,y1,y2,rot)
 		rot = Angle(0,90,0)
 	end
 	local RatioX = (y2-y1)/(x2-x1)
-
+	
 	local monitor = {
 		Name = name,
 		offset = Vector(tof, -tor, tou),
 		RS = trs,
 		RatioX = RatioX,
-
+		
 		x1 = x1,
 		x2 = x2,
 		y1 = y1,
 		y2 = y2,
-
+		
 		z = tof,
-
+		
 		rot = rot,
 	}
 	WireGPU_Monitors[model] = monitor
@@ -81,23 +81,23 @@ end
 function WireGPU_FromBox(name, model, boxmin, boxmax)
 	local dim = boxmax-boxmin
 	local mindim, maxdim = mindimension(dim), maxdimension(dim)
-
+	
 	-- get an angle with up=mindim
 	local rot = mindim:Angle()+Angle(90,0,0)
-
+	
 	-- make sure forward=maxdim
 	if math.abs(maxdim:Dot(rot:Forward())) < 0.01 then
 		rot:RotateAroundAxis(mindim, 90)
 	end
-
+	
 	-- unrotate boxmin/max
 	local box1 = WorldToLocal(boxmin, Angle(0,0,0), Vector(0,0,0), rot)
 	local box2 = WorldToLocal(boxmax, Angle(0,0,0), Vector(0,0,0), rot)
-
+	
 	-- sort boxmin/max
 	local boxmin = Vector(math.min(box1.x,box2.x), math.min(box1.y,box2.y), math.min(box1.z,box2.z))
 	local boxmax = Vector(math.max(box1.x,box2.x), math.max(box1.y,box2.y), math.max(box1.z,box2.z))
-
+	
 	-- make a new gpu screen
 	return WireGPU_FromBox_Helper(name, model, boxmin, boxmax, rot)
 end
@@ -106,31 +106,31 @@ end
 function WireGPU_FromBox_Helper(name, model, boxmin, boxmax, rot)
 	local boxcenter = (boxmin+boxmax)*0.5
 	local offset = Vector(boxcenter.x,boxcenter.y,boxmax.z+0.2)
-
+	
 	boxmin = boxmin - offset
 	boxmax = boxmax - offset
-
+	
 	local x1, y1 = boxmin.x, boxmin.y
 	local x2, y2 = boxmax.x, boxmax.y
-
+	
 	offset:Rotate(rot)
-
+	
 	local monitor = {
 		Name = name,
 		offset = offset,
 		RS = (y2-y1)/512,
 		RatioX = (y2-y1)/(x2-x1),
-
+		
 		x1 = x1,
 		x2 = x2,
 		y1 = y1,
 		y2 = y2,
-
+		
 		z = offset.z,
-
+		
 		rot = rot,
 	}
-
+	
 	WireGPU_Monitors[model] = monitor
 	return monitor
 end
@@ -139,14 +139,14 @@ function WireGPU_FromRotatedBox(name, model, box1, box2, box3, box4, rot)
 	if type(rot) == "Vector" then
 		rot = Vector:Angle()
 	end
-
+	
 	--local boxvectors = { box1, box2, box3, box4 }
-
+	
 	local box1 = WorldToLocal(box1, Angle(0,0,0), Vector(0,0,0), rot)
 	local box2 = WorldToLocal(box2, Angle(0,0,0), Vector(0,0,0), rot)
 	local box3 = WorldToLocal(box3, Angle(0,0,0), Vector(0,0,0), rot)
 	local box4 = WorldToLocal(box4, Angle(0,0,0), Vector(0,0,0), rot)
-
+	
 	local boxmin = Vector(
 		math.min(box1.x,box2.x,box3.x,box4.x),
 		math.min(box1.y,box2.y,box3.y,box4.y),
@@ -212,11 +212,11 @@ local function fallback(self, model)
 		end
 	end
 	if not ent then return nil end
-
+	
 	local gap = Vector(0.25,0.25,0.25)
 	local boxmin = ent:OBBMins()+gap
 	local boxmax = ent:OBBMaxs()-gap
-
+	
 	return WireGPU_FromBox("Auto: "..model:match("([^/]*)$"), model, boxmin, boxmax, true)
 end
 

@@ -8,7 +8,7 @@ ENT.OverlayDelay 	= 0;
 
 -- init.
 function ENT:Initialize( )
-
+	
 	-- setup physics
 	self:PhysicsInit( SOLID_VPHYSICS );
 	self:SetMoveType( MOVETYPE_VPHYSICS );
@@ -58,17 +58,17 @@ end
 function MakeWireHologrid( pl, Pos, Ang, model, usegps, frozen )
 	-- check the players limit
 	if( !pl:CheckLimit( "wire_hologrids" ) ) then return end
-
+	
 	-- create the grid
 	local grid = ents.Create( "gmod_wire_hologrid" )
-
+	
 	grid:SetPos( Pos )
 	grid:SetAngles( Ang )
 	grid:SetModel( model )
-
+	
 	grid:Spawn()
 	grid:Activate()
-
+	
 	if grid:GetPhysicsObject():IsValid() then
 		local Phys = grid:GetPhysicsObject()
 		Phys:EnableMotion(!frozen)
@@ -78,10 +78,10 @@ function MakeWireHologrid( pl, Pos, Ang, model, usegps, frozen )
 	grid:UpdateGPS(usegps)
 	grid.pl = pl
 	grid:SetPlayer(pl)
-
+	
 	-- add to the players count
 	pl:AddCount( "wire_hologrids", grid )
-
+	
 	return grid;
 end
 
@@ -92,7 +92,7 @@ function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
 
 	info.hologrid_usegps = self.usesgps and 1 or 0
-
+	
 	if ValidEntity(self.reference) then
 		info.reference = self.reference:EntIndex()
 	else
@@ -104,7 +104,7 @@ end
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
-
+	
 	local reference
 	if info.reference then
 		reference = GetEntByID(info.reference)
@@ -117,6 +117,6 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	else
 		self.reference = self
 	end
-
+	
 	self:UpdateGPS(info.hologrid_usegps ~= 0)
 end

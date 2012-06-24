@@ -24,7 +24,7 @@ local getOwner     = E2Lib.getOwner
 local isOwner      = E2Lib.isOwner
 
 registerCallback("e2lib_replace_function", function(funcname, func, oldfunc)
-	if funcname == "isOwner" then
+	if funcname == "isOwner" then 
 		isOwner = func
 	elseif funcname == "getOwner" then
 		getOwner = func
@@ -219,18 +219,18 @@ __e2setcost(15)
 
 e2function number entity:bearing(vector pos)
 	if not validEntity(this) then return 0 end
-
+	
 	pos = this:WorldToLocal(Vector(pos[1],pos[2],pos[3]))
-
+	
 	return rad2deg*-atan2(pos.y, pos.x)
 end
 
 --- Returns the elevation (pitch) from <this> to <pos>
 e2function number entity:elevation(vector pos)
 	if not validEntity(this) then return 0 end
-
+	
 	pos = this:WorldToLocal(Vector(pos[1],pos[2],pos[3]))
-
+	
 	local len = pos:Length()
 	if len < delta then return 0 end
 	return rad2deg*asin(pos.z / len)
@@ -239,17 +239,17 @@ end
 --- Returns the elevation (pitch) and bearing (yaw) from <this> to <pos>
 e2function angle entity:heading(vector pos)
 	if not validEntity(this) then return { 0, 0, 0 } end
-
+	
 	pos = this:WorldToLocal(Vector(pos[1],pos[2],pos[3]))
-
+	
 	-- bearing
 	local bearing = rad2deg*-atan2(pos.y, pos.x)
-
+	
 	-- elevation
 	local len = pos:Length()--sqrt(x*x + y*y + z*z)
 	if len < delta then return { 0, bearing, 0 } end
 	local elevation = rad2deg*asin(pos.z / len)
-
+	
 	return { elevation, bearing, 0 }
 end
 
@@ -414,30 +414,30 @@ end
 e2function void entity:applyAngForce(angle angForce)
 	if not validPhysics(this) then return nil end
 	if not isOwner(self, this) then return nil end
-
+	
 	if angForce[1] == 0 and angForce[2] == 0 and angForce[3] == 0 then return end
-
+	
 	local phys = this:GetPhysicsObject()
-
+	
 	-- assign vectors
 	local up = this:GetUp()
 	local left = this:GetRight() * -1
 	local forward = this:GetForward()
-
+	
 	-- apply pitch force
 	if angForce[1] ~= 0 then
 		local pitch = up      * (angForce[1] * 0.5)
 		phys:ApplyForceOffset( forward, pitch )
 		phys:ApplyForceOffset( forward * -1, pitch * -1 )
 	end
-
+	
 	-- apply yaw force
 	if angForce[2] ~= 0 then
 		local yaw   = forward * (angForce[2] * 0.5)
 		phys:ApplyForceOffset( left, yaw )
 		phys:ApplyForceOffset( left * -1, yaw * -1 )
 	end
-
+	
 	-- apply roll force
 	if angForce[3] ~= 0 then
 		local roll  = left    * (angForce[3] * 0.5)
@@ -450,17 +450,17 @@ end
 e2function void entity:applyTorque(vector torque)
 	if not validEntity(this) then return end
 	if not isOwner(self, this) then return end
-
+	
 	if torque[1] == 0 and torque[2] == 0 and torque[3] == 0 then return end
-
+	
 	local phys = this:GetPhysicsObject()
-
+	
 	local tq = Vector(torque[1], torque[2], torque[3])
 	local torqueamount = tq:Length()
-
+	
 	-- Convert torque from local to world axis
 	tq = phys:LocalToWorld( tq ) - phys:GetPos()
-
+	
 	-- Find two vectors perpendicular to the torque axis
 	local off
 	if abs(tq.x) > torqueamount * 0.1 or abs(tq.z) > torqueamount * 0.1 then
@@ -469,9 +469,9 @@ e2function void entity:applyTorque(vector torque)
 		off = Vector(-tq.y, tq.x, 0)
 	end
 	off = off:GetNormal() * torqueamount * 0.5
-
+	
 	local dir = ( tq:Cross(off) ):GetNormal()
-
+	
 	phys:ApplyForceOffset( dir, off )
 	phys:ApplyForceOffset( dir * -1, off * -1 )
 end
@@ -598,7 +598,7 @@ local function SetTrails(Player, Entity, Data)
 		duplicator.ClearEntityModifier(Entity, "trail")
 		return
 	end
-
+	
 	// Only set max value - negative values have their uses!
 	Data.StartSize = math.Min( Data.StartSize, 500 )
 	Data.EndSize = math.Min( Data.EndSize, 500 )
@@ -632,14 +632,14 @@ e2function void entity:removeTrails()
 	if (not checkOwner(self)) then return; end
 	if not validEntity(this) then return end
 	if not isOwner(self, this) then return end
-
+	
 	SetTrails(self.player, this, nil)
 end
 
 local function composedata(startSize, endSize, length, material, color, alpha)
 	if string.find(material, '"', 1, true) then return nil end
-	if not file.Exists("../materials/"..material..".vmt") then return nil end -- check for non-existant materials.
-
+	if not file.Exists("materials/"..material..".vmt", "GAME") then return nil end -- check for non-existant materials.
+	
 	return {
 		Color = Color( color[1], color[2], color[3], alpha ),
 		Length = length,
@@ -655,10 +655,10 @@ e2function void entity:setTrails(startSize, endSize, length, string material, ve
 	if (not checkOwner(self)) then return; end
 	if not validEntity(this) then return end
 	if not isOwner(self, this) then return end
-
+	
 	local Data = composedata(startSize, endSize, length, material, color, alpha)
 	if not Data then return end
-
+	
 	SetTrails(self.player, this, Data)
 end
 
@@ -670,13 +670,13 @@ e2function void entity:setTrails(startSize, endSize, length, string material, ve
 	if (not checkOwner(self)) then return; end
 	if not validEntity(this) then return end
 	if not isOwner(self, this) then return end
-
+	
 	local Data = composedata(startSize, endSize, length, material, color, alpha)
 	if not Data then return end
-
+	
 	Data.AttachmentID = attachmentID
 	Data.Additive = additive ~= 0
-
+	
 	SetTrails(self.player, this, Data)
 end
 
@@ -743,7 +743,7 @@ local function fixdef( def )
 	if (type(def) == "table") then return table.Copy(def) else return def end
 end
 
-local non_allowed_types = {
+local non_allowed_types = { 
 	xgt = true,
 	t = true,
 	r = true,
@@ -754,9 +754,9 @@ registerCallback("postinit",function()
 		if (!non_allowed_types[v[1]]) then
 			if (k == "NORMAL") then k = "NUMBER" end
 			k = upperfirst(k)
-
+		
 			__e2setcost(5)
-
+			
 			local function getf( self, args )
 				local op1, op2 = args[2], args[3]
 				local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
@@ -765,7 +765,7 @@ registerCallback("postinit",function()
 				if (!rv1["EVar_"..id]) then return fixdef( v[2] ) end
 				return rv1["EVar_"..id][rv2] or fixdef( v[2] )
 			end
-
+				
 			local function setf( self, args )
 				local op1, op2, op3 = args[2], args[3], args[4]
 				local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
@@ -777,9 +777,9 @@ registerCallback("postinit",function()
 				rv1["EVar_"..id][rv2] = rv3
 				return rv3
 			end
-
-			registerOperator("idx", v[1].."=es", v[1], getf)
-			registerOperator("idx", v[1].."=es"..v[1], v[1], setf)
+			
+			registerOperator("idx", v[1].."=es", v[1], getf) 
+			registerOperator("idx", v[1].."=es"..v[1], v[1], setf) 
 		end -- allowed check
 	end -- loop
 end) -- postinit

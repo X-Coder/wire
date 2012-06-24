@@ -12,7 +12,7 @@ function ENT:Initialize()
 
 	self.storedpositions = {};
 	self.arrayindex = 0;
-
+	
 	self.Inputs = Wire_CreateInputs(self, { "Store/Save Pos", "Next", "Remove Save Position"})
 	self.Outputs = WireLib.CreateSpecialOutputs( self, { "X", "Y", "Z", "Vector", "Recall X", "Recall Y", "Recall Z", "Recall Vector", "Current Memory"}, { "NORMAL", "NORMAL", "NORMAL", "VECTOR", "NORMAL", "NORMAL", "NORMAL", "VECTOR", "NORMAL"})
 end
@@ -55,7 +55,7 @@ function ENT:Think()
 		Wire_TriggerOutput(self, "Recall Z", 0)
 		Wire_TriggerOutput(self, "Recall Vector", Vector(0,0,0))
 	end
-
+	
 	self:NextThink(CurTime()+0.04)
 	return true
 end

@@ -31,7 +31,7 @@ end
 e2function array entity:getConstraints()
 	if not validEntity(this) then return {} end
 	if not constraint.HasConstraints(this) then return {} end
-
+	
 	local keytable = constraint.GetAllConstrainedEntities(this)
 	local array = {}
 	local count = 0
@@ -46,14 +46,14 @@ end
 --- Returns the number of constraints on <this>.
 e2function number entity:hasConstraints()
 	if not validEntity(this) then return 0 end
-
+	
 	return #constraint.GetTable(this)
 end
 
 --- Returns the number of constraints of type <constraintType> on <this>.
 e2function number entity:hasConstraints(string constraintType)
 	if not validEntity(this) then return 0 end
-
+	
 	local constype = caps(constraintType)
 	local ConTable = constraint.GetTable(this)
 	local count = 0
@@ -77,7 +77,7 @@ end
 e2function entity entity:isWeldedTo()
 	if not validEntity(this) then return nil end
 	if not constraint.HasConstraints(this) then return nil end
-
+	
 	return ent1or2(this,constraint.FindConstraint(this, "Weld"))
 end
 
@@ -85,7 +85,7 @@ end
 e2function entity entity:isWeldedTo(index)
 	if not validEntity(this) then return nil end
 	if not constraint.HasConstraints(this) then return nil end
-
+	
 	return ent1or2(this,constraint.FindConstraints(this, "Weld"), math.floor(index))
 end
 
@@ -93,7 +93,7 @@ end
 e2function entity entity:isConstrainedTo()
 	if not validEntity(this) then return nil end
 	if not constraint.HasConstraints(this) then return nil end
-
+	
 	return ent1or2(this,constraint.GetTable(this),1)
 end
 
@@ -101,7 +101,7 @@ end
 e2function entity entity:isConstrainedTo(index)
 	if not validEntity(this) then return nil end
 	if not constraint.HasConstraints(this) then return nil end
-
+	
 	return ent1or2(this,constraint.GetTable(this), math.floor(index))
 end
 
@@ -109,7 +109,7 @@ end
 e2function entity entity:isConstrainedTo(string constraintType)
 	if not validEntity(this) then return nil end
 	if not constraint.HasConstraints(this) then return nil end
-
+	
 	return ent1or2(this,constraint.FindConstraint(this, caps(constraintType)))
 end
 
@@ -117,7 +117,7 @@ end
 e2function entity entity:isConstrainedTo(string constraintType, index)
 	if not validEntity(this) then return nil end
 	if not constraint.HasConstraints(this) then return nil end
-
+	
 	return ent1or2(this,constraint.FindConstraints(this, caps(constraintType)), math.floor(index))
 end
 
@@ -130,7 +130,7 @@ end
 --- Returns the '''bone''' <this> is parented to.
 e2function bone entity:parentBone()
 	if not validEntity(this) then return nil end
-
+	
 	local ent = this:GetParent()
 	if not validEntity(ent) then return nil end
 	local bonenum = this:GetParentPhysNum()

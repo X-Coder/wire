@@ -7,24 +7,24 @@ ENT.WireDebugName = "DigitalScreen"
 local max_umsgs_per_tick = 8
 
 function ENT:Initialize()
-
+	
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
-
+	
 	self.Inputs = Wire_CreateInputs(self, { "PixelX", "PixelY", "PixelG", "Clk", "FillColor", "ClearRow", "ClearCol" })
 	self.Outputs = Wire_CreateOutputs(self, { "Memory" })
-
+	
 	self.Memory = {}
-
+	
 	self.PixelX = 0
 	self.PixelY = 0
 	self.PixelG = 0
 	self.Memory[1048575] = 1
-
+	
 	self.ScreenWidth = 32
 	self.ScreenHeight = 32
-
+	
 	self.ChangedCellRanges = {}
 end
 
@@ -39,7 +39,7 @@ function ENT:SendPixel()
 	if self.PixelY < 0 then return end
 	if self.PixelX >= self.ScreenWidth then return end
 	if self.PixelY >= self.ScreenHeight then return end
-
+	
 	local address = self.PixelY*self.ScreenWidth + self.PixelX
 	self:WriteCell(address, self.PixelG)
 end
@@ -47,7 +47,7 @@ end
 function ENT:ReadCell(Address)
 	if Address < 0 then return nil end
 	if Address >= 1048576 then return nil end
-
+	
 	return self.Memory[Address] or 0
 end
 
@@ -82,9 +82,9 @@ end
 
 function ENT:FlushCache()
 	while per_tick > 0 and
-		  #self.ChangedCellRanges > 0 do
+		  #self.ChangedCellRanges > 0 do	
 		per_tick = per_tick - 1
-
+		
 		local bytesleft = 249
 		umsg.Start("hispeed_digiscreen")
 			umsg.Short(self:EntIndex())
@@ -119,7 +119,7 @@ function ENT:ClearPixel(i)
 		self.Memory[i*3+2] = 0
 		return
 	end
-
+	
 	-- other modes
 	self.Memory[i] = 0
 end
@@ -134,7 +134,7 @@ function ENT:WriteCell(Address, value)
 	Address = math.floor (Address)
 	if Address < 0 then return false end
 	if Address >= 1048576 then return false end
-
+	
 	if Address < 1048500 then -- RGB data
 		if self.Memory[Address] == value or
 		   (value == 0 and self.Memory[Address] == nil) then
@@ -174,11 +174,11 @@ function ENT:WriteCell(Address, value)
 			-- not needed atm
 		end
 	end
-
+	
 	self.Memory[Address] = value
-
+	
 	self:MarkCellChanged(Address)
-
+	
 	return true
 end
 
@@ -212,25 +212,25 @@ end
 
 
 function MakeWireDigitalScreen( pl, Pos, Ang, model, ScreenWidth, ScreenHeight )
-
+	
 	if ( !pl:CheckLimit( "wire_digitalscreens" ) ) then return false end
-
+	
 	local wire_digitalscreen = ents.Create( "gmod_wire_digitalscreen" )
 	if (!wire_digitalscreen:IsValid()) then return false end
 	wire_digitalscreen:SetModel(model)
-
+	
 	if (not ScreenWidth) then ScreenWidth = 32 end
 	if (not ScreenHeight) then ScreenHeight = 32 end
-
+	
 	wire_digitalscreen:SetAngles( Ang )
 	wire_digitalscreen:SetPos( Pos )
 	wire_digitalscreen:Spawn()
 	wire_digitalscreen:SetDigitalSize(ScreenWidth,ScreenHeight)
-
+	
 	wire_digitalscreen:SetPlayer(pl)
-
+	
 	pl:AddCount( "wire_digitalscreens", wire_digitalscreen )
-
+	
 	return wire_digitalscreen
 end
 

@@ -24,12 +24,12 @@ end
 for _,instruction in ipairs(CPULib.InstructionTable) do
 	if (instruction.Mnemonic ~= "RESERVED") and
 	(not instruction.Obsolete) then
-
+	
 	local instructionArgs = instruction.Operand1
 	if instruction.Operand2 ~= "" then
           instructionArgs = instructionArgs..", "..instruction.Operand2
         end
-
+        
 	AddCPUDesc(instruction.Mnemonic,
 		instructionArgs,
 		instruction.Reference,
@@ -66,24 +66,24 @@ local function cookie_update()
 		E2Helper.Update()
 		return -- return, since E2Helper.Update() already called cookie_update again.
 	end
-
+	
 	if current_maxresults ~= cookie_maxresults then
 		cookie.Set("e2helper_maxresults", current_maxresults)
 		cookie_maxresults = current_maxresults
 	end
-
+	
 	local current_tooltip = E2Helper.Tooltip:GetChecked(true) and 1 or 0
 	if current_tooltip ~= cookie_tooltip then
 		cookie.Set("e2helper_tooltip", current_tooltip)
 		cookie_tooltip = current_tooltip
 	end
-
+	
 	local current_w, current_h = E2Helper.Frame:GetSize()
 	if current_w ~= cookie_w then
 		cookie.Set("e2helper_w", current_w)
 		cookie_w = current_w
 	end
-
+	
 	if current_h ~= cookie_h then
 		cookie.Set("e2helper_h", current_h)
 		cookie_h = current_h
@@ -104,7 +104,7 @@ end
 
 function E2Helper.Create(reset)
 	local x, y, w, h
-
+	
 	E2Helper.Frame = vgui.Create("DFrame")
 	E2Helper.Frame:SetSize(280, 425)
 	E2Helper.Frame:Center()
@@ -119,17 +119,17 @@ function E2Helper.Create(reset)
 		if w < 240 then w = 240 end
 		if h < 300 then h = 300 end
 		E2Helper.Frame:SetSize(w,h)
-
+		
 		self:_PerformLayout(...)
 		E2Helper.Resize()
 	end
-
+	
 	E2Helper.DescriptionEntry = vgui.Create("DTextEntry", E2Helper.Frame)
 	E2Helper.DescriptionEntry:SetPos(5,330)
 	E2Helper.DescriptionEntry:SetSize(270,45)
 	E2Helper.DescriptionEntry:SetEditable(false)
 	E2Helper.DescriptionEntry:SetMultiline(true)
-
+	
 	E2Helper.ResultFrame = vgui.Create("DListView", E2Helper.Frame)
 	E2Helper.ResultFrame:SetPos(5, 60)
 	E2Helper.ResultFrame:SetSize(270, 240)
@@ -140,7 +140,7 @@ function E2Helper.Create(reset)
 	E2Helper.ReturnsColumn:SetWidth(60)
 	E2Helper.CostColumn = E2Helper.ResultFrame:AddColumn("Cost")
 	E2Helper.CostColumn:SetWidth(30)
-
+	
 	function E2Helper.ResultFrame:OnClickLine(line)
 		self:ClearSelection()
 		self:SelectItem(line)
@@ -154,47 +154,47 @@ function E2Helper.Create(reset)
 			E2Helper.DescriptionEntry:SetTextColor(Color(128, 128, 128))
 		end
 	end
-
+	
 	E2Helper.Image = vgui.Create("DImage", E2Helper.Frame)
 	E2Helper.Image:SetPos(5, 75)
 	E2Helper.Image:SetImage("expression 2/cog.vtf")
 	E2Helper.Image:SetImageColor(Color(255,0,0,8))
 	E2Helper.Image:SetSize(225,225)
-
+	
 	E2Helper.ResultLabel = vgui.Create("DLabel", E2Helper.Frame)
 	E2Helper.ResultLabel:SetPos(5, 405)
 	E2Helper.ResultLabel:SetText("")
 	E2Helper.ResultLabel:SizeToContents()
-
+	
 	E2Helper.CredLabel = vgui.Create("DLabel", E2Helper.Frame)
 	E2Helper.CredLabel:SetPos(238, 405)
 	E2Helper.CredLabel:SetText("By -HP-")
 	E2Helper.CredLabel:SizeToContents()
 	E2Helper.CredLabel.Resize = { true, true, false, false }
-
+	
 	E2Helper.NameEntry = vgui.Create("DTextEntry", E2Helper.Frame)
 	E2Helper.NameEntry:SetPos(5, 32)
 	E2Helper.NameEntry:SetWide(129)
-
+	
 	E2Helper.ParamEntry = vgui.Create("DTextEntry", E2Helper.Frame)
 	E2Helper.ParamEntry:SetPos(136, 32)
 	E2Helper.ParamEntry:SetWide(68)
-
+	
 	E2Helper.ReturnEntry = vgui.Create("DTextEntry", E2Helper.Frame)
 	E2Helper.ReturnEntry:SetPos(206, 32)
 	E2Helper.ReturnEntry:SetWide(68)
-
+	
 	E2Helper.Tooltip = vgui.Create("DCheckBoxLabel", E2Helper.Frame)
 	E2Helper.Tooltip:SetPos(5, 384)
 	E2Helper.Tooltip:SetText("Tooltip")
 	E2Helper.Tooltip:SetValue(reset and 0 or cookie.GetNumber("e2helper_tooltip", 0))
 	E2Helper.Tooltip:SizeToContents()
-
+	
 	E2Helper.FuncEntry = vgui.Create("DTextEntry", E2Helper.Frame)
 	E2Helper.FuncEntry:SetText("")
 	E2Helper.FuncEntry:SetWidth(270)
 	E2Helper.FuncEntry:SetPos(5, 305)
-
+	
 	E2Helper.MaxEntry = vgui.Create("DNumberWang", E2Helper.Frame)
 	E2Helper.MaxEntry:SetPos(235, 380)
 	E2Helper.MaxEntry:SetWide(40)
@@ -208,12 +208,12 @@ function E2Helper.Create(reset)
 	end)
 	E2Helper.MaxEntry:SetValue(reset and 50 or cookie.GetNumber("e2helper_maxresults", 50))
 	E2Helper.MaxEntry:SetDecimals(0)
-
+	
 	E2Helper.MaxLabel = vgui.Create("DLabel", E2Helper.Frame)
 	E2Helper.MaxLabel:SetPos(170, 384)
 	E2Helper.MaxLabel:SetText("Max results:")
 	E2Helper.MaxLabel:SizeToContents()
-
+	
 	E2Helper.E2Mode = vgui.Create("DCheckBoxLabel", E2Helper.Frame)
 	E2Helper.E2Mode:SetPos(90, 384)
 	E2Helper.E2Mode:SetText("E2")
@@ -227,7 +227,7 @@ function E2Helper.Create(reset)
 		E2Helper.ReturnsColumn:SetName("Returns")
 		E2Helper.Update()
 	end
-
+	
 	E2Helper.CPUMode = vgui.Create("DCheckBoxLabel", E2Helper.Frame)
 	E2Helper.CPUMode:SetPos(90, 404)
 	E2Helper.CPUMode:SetText("CPU/GPU")
@@ -241,13 +241,13 @@ function E2Helper.Create(reset)
 		E2Helper.ReturnsColumn:SetName("Platform")
 		E2Helper.Update()
 	end
-
+	
 	E2Helper.NameEntry.OnTextChanged = delayed(0.1, E2Helper.Update)
 	E2Helper.ParamEntry.OnTextChanged = delayed(0.1, E2Helper.Update)
 	E2Helper.ReturnEntry.OnTextChanged = delayed(0.1, E2Helper.Update)
 	E2Helper.Tooltip.OnChange = E2Helper.Update
 	E2Helper.MaxEntry.OnValueChanged = delayed(1, cookie_update)
-
+	
 	local x, y, w, h
 	E2Helper.Originals = {}
 	for k, v in pairs(E2Helper) do
@@ -257,7 +257,7 @@ function E2Helper.Create(reset)
 			E2Helper.Originals[k] = { x, y, w, h }
 		end
 	end
-
+	
 	if not reset then
 		E2Helper.Frame:SetSize(cookie.GetNumber("e2helper_w", 280), cookie.GetNumber("e2helper_h", 425))
 	else
@@ -283,17 +283,17 @@ function E2Helper.Update()
 	cookie_update()
 
 	E2Helper.ResultFrame:Clear()
-
+	
 	local search_name, search_args, search_rets = E2Helper.NameEntry:GetValue():lower(), E2Helper.ParamEntry:GetValue():lower(), E2Helper.ReturnEntry:GetValue():lower()
 	local count = 0
 	local maxcount = E2Helper.MaxEntry:GetValue()
 	local tooltip = E2Helper.Tooltip:GetChecked(true)
-
+	
 	for _,v in pairs(CurrentTable()) do
 		if (E2Helper.CurrentMode == true) then
 			local argnames, signature,rets,func,cost = v.argnames, unpack(v)
 			local name, args = string.match(signature, "^([^(]+)%(([^)]*)%)$")
-
+			
 			if signature:sub(1, 3) ~= "op:" and
 			name:lower():find(search_name,1,true) and
 			args:lower():find(search_args,1,true) and
@@ -315,7 +315,7 @@ function E2Helper.Update()
 			end
 		end
 	end
-
+	
 	E2Helper.ResultFrame:SortByColumn(1)
 	E2Helper.ResultLabel:SetText(count.." results")
 	E2Helper.ResultLabel:SizeToContents()
@@ -358,10 +358,10 @@ local lastw, lasth
 function E2Helper.Resize()
 	local w, h = E2Helper.Frame:GetSize()
 	if w == lastw and h == lasth then return end
-
+	
 	local orig = E2Helper.Originals
 	local changew, changeh = w-orig.Frame[3], h-orig.Frame[4]
-
+	
 	-- Epically messy code:
 	E2Helper.CredLabel:SetPos(orig.CredLabel[1]+changew, orig.CredLabel[2]+changeh)
 	E2Helper.MaxLabel:SetPos(orig.MaxLabel[1]+changew, orig.MaxLabel[2]+changeh)
@@ -375,23 +375,23 @@ function E2Helper.Resize()
 	E2Helper.ResultFrame:SetSize(orig.ResultFrame[3]+changew, orig.ResultFrame[4]+changeh)
 	E2Helper.E2Mode:SetPos( orig.E2Mode[1], orig.E2Mode[2] + changeh )
 	E2Helper.CPUMode:SetPos( orig.CPUMode[1], orig.CPUMode[2] + changeh )
-
+	
 	E2Helper.NameEntry:SetSize(orig.NameEntry[3]+changew*0.5, orig.NameEntry[4])
 	E2Helper.ParamEntry:SetPos(orig.ParamEntry[1]+changew*0.5, orig.ParamEntry[2])
 	E2Helper.ParamEntry:SetSize(orig.ParamEntry[3]+changew*0.25, orig.ParamEntry[4])
 	E2Helper.ReturnEntry:SetPos(orig.ReturnEntry[1]+changew*0.75, orig.ReturnEntry[2])
 	E2Helper.ReturnEntry:SetSize(orig.ReturnEntry[3]+changew*0.25, orig.ReturnEntry[4])
-
+	
 	-- Keep the (funky) image overlay centered on  the listview
 	local w1, h1 = E2Helper.ResultFrame:GetSize()
 	local x1, y1 = E2Helper.ResultFrame:GetPos()
-
+	
 	-- add borders of mysterious dimensions
 	x1 = x1+15
 	w1 = w1-30
 	y1 = y1+30
 	h1 = h1-45
-
+	
 	-- fix aspect ratio
 	if w1 > h1 then
 		x1 = x1+(w1-h1)/2
@@ -400,13 +400,13 @@ function E2Helper.Resize()
 		y1 = y1+(h1-w1)/2
 		h1 = w1
 	end
-
+	
 	-- apply position and size
 	E2Helper.Image:SetPos(x1, y1)
 	E2Helper.Image:SetSize(w1, h1)
-
+	
 	delayed_cookie_update()
-
+		
 	lastw, lasth = w, h
 end
 

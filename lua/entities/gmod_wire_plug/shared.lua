@@ -12,10 +12,10 @@ ENT.AdminSpawnable  = false
 
 function ENT:GetClosestSocket()
 	local sockets = ents.FindInSphere( self:GetPos(), 100 )
-
+	
 	local ClosestDist
 	local Closest
-
+	
 	for k,v in pairs( sockets ) do
 		if (v:GetClass() == "gmod_wire_socket" and !v:GetNWBool( "Linked", false )) then
 			local pos, _ = v:GetLinkPos()
@@ -26,6 +26,6 @@ function ENT:GetClosestSocket()
 			end
 		end
 	end
-
+	
 	return Closest
 end

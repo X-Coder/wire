@@ -61,10 +61,10 @@ function MakeWireWeight( pl, Pos, Ang, model, frozen )
 
 	wire_weight:SetPlayer( pl )
 	wire_weight.pl = pl
-
+	
 	pl:AddCount( "wire_weights", wire_weight )
 	pl:AddCleanup( "gmod_wire_weight", wire_weight )
-
+	
 	return wire_weight
 end
 duplicator.RegisterEntityClass("gmod_wire_weight", MakeWireWeight, "Pos", "Ang", "Model", "frozen")

@@ -29,15 +29,15 @@ __e2setcost(0)
 registerOperator("seq", "", "", function(self, args)
 	self.prf = self.prf + args[2]
 	if self.prf > e2_tickquota then error("perf", 0) end
-
+	
 	local n = #args
 	if n == 2 then return end
-
+	
 	for i=3,n-1 do
 		local op = args[i]
 		op[1](self, op)
 	end
-
+	
 	local op = args[n]
 	return op[1](self, op)
 end)
@@ -48,7 +48,7 @@ __e2setcost(0) -- approximation
 
 registerOperator("whl", "", "", function(self, args)
 	local op1, op2 = args[2], args[3]
-
+	
 	self.prf = self.prf + args[4] + 3
 	while op1[1](self, op1) != 0 do
 		self:PushScope()
@@ -57,7 +57,7 @@ registerOperator("whl", "", "", function(self, args)
 			if msg == "break" then self:PopScope() break
 			elseif msg ~= "continue" then self:PopScope() error(msg, 0) end
 		end
-
+		
 		self.prf = self.prf + args[4] + 3
 		self:PopScope()
 	end
@@ -65,16 +65,16 @@ end)
 
 registerOperator("for", "", "", function(self, args)
 	local var, op1, op2, op3, op4 = args[2], args[3], args[4], args[5], args[6]
-
+	
 	local rstart, rend, rstep
 	rstart = op1[1](self, op1)
 	rend = op2[1](self, op2)
 	local rdiff = rend - rstart
 	local rdelta = delta
-
+	
 	if op3 then
 		rstep = op3[1](self, op3)
-
+		
 		if rdiff > -delta then
 			if rstep < delta and rstep > -delta then return end
 		elseif rdiff < delta then
@@ -82,7 +82,7 @@ registerOperator("for", "", "", function(self, args)
 		else
 			return
 		end
-
+		
 		if rstep < 0 then
 			rdelta = -delta
 		end
@@ -93,23 +93,23 @@ registerOperator("for", "", "", function(self, args)
 			return
 		end
 	end
-
+	
 	self.prf = self.prf + 3
 	for I=rstart,rend+rdelta,rstep do
 		self:PushScope()
 		self.Scope[var] = I
 		self.Scope.vclk[var] = true
-
+		
 		local ok, msg = pcall(op4[1], self, op4)
 		if not ok then
 			if msg == "break" then self:PopScope() break
 			elseif msg ~= "continue" then self:PopScope() error(msg, 0) end
 		end
-
+		
 		self.prf = self.prf + 3
 		self:PopScope()
 	end
-
+	
 end)
 
 registerOperator("fea","r","n",function(self,args)
@@ -117,9 +117,9 @@ registerOperator("fea","r","n",function(self,args)
 	local tbl = args[5]
 	tbl = tbl[1](self,tbl)
 	local statement = args[6]
-
+	
 	local typechecker = wire_expression_types2[valtypeid][6]
-
+	
 	local keys = {}
 	local count = 0
 	for key,value in pairs(tbl) do
@@ -128,18 +128,18 @@ registerOperator("fea","r","n",function(self,args)
 			keys[count] = key
 		end
 	end
-
+	
 	for i=1,count do
 		self:PushScope()
 		local key = keys[i]
 		if tbl[key] ~= nil then
 			self.prf = self.prf + 3
-
+			
 			self.Scope[keyname] = key
 			self.Scope[valname] = tbl[key]
 			self.Scope.vclk[keyname] = true
 			self.Scope.vclk[valname] = true
-
+			
 			local ok, msg = pcall(statement[1], self, statement)
 			if not ok then
 				if msg == "break" then self:PopScope() break
@@ -167,9 +167,9 @@ __e2setcost(3) -- approximation
 registerOperator("if", "n", "", function(self, args)
 	local op1 = args[3]
 	self.prf = self.prf + args[2]
-
+	
 	local IlikeTrains, result //Yes you do :D
-
+	
 	if op1[1](self, op1) != 0 then
 		self:PushScope()
 		local op2 = args[4]
@@ -179,7 +179,7 @@ registerOperator("if", "n", "", function(self, args)
 		local op3 = args[5]
 		IlikeTrains, result = pcall(op3[1],self, op3)
 	end
-
+	
 	self:PopScope()
 	if !IlikeTrains then
 		error(result,0)
@@ -190,11 +190,11 @@ registerOperator("def", "n", "", function(self, args)
 	local op1 = args[2]
 	local op2 = args[3]
 	local rv2 = op2[1](self, op2)
-
+	
 	-- sets the argument for the DAT-operator
 	op1[2][2] = rv2
 	local rv1 = op1[1](self, op1)
-
+	
 	if rv1 != 0 then
 		return rv2
 	else
@@ -263,7 +263,7 @@ registerOperator("and", "nn", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	if rv1 == 0 then return 0 end
-
+	
 	local op2 = args[3]
 	local rv2 = op2[1](self, op2)
 	return rv2 ~= 0 and 1 or 0
@@ -273,7 +273,7 @@ registerOperator("or", "nn", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	if rv1 ~= 0 then return 1 end
-
+	
 	local op2 = args[3]
 	local rv2 = op2[1](self, op2)
 	return rv2 ~= 0 and 1 or 0
@@ -301,10 +301,10 @@ registerCallback("destruct", function(self)
 	if entity.error then return end
 	if not entity.script then return end
 	if not self.data.runOnLast then return end
-
+	
 	self.resetting = false
 	self.data.runOnLast = false
-
+	
 	self.data.last = true
 	entity:Execute()
 	self.data.last = false
@@ -360,7 +360,7 @@ __e2setcost(100) -- approximation
 
 e2function void reset()
 	if self.data.last or self.entity.first then error("exit", 0) end
-
+	
 	self.data.reset = true
 	error("exit", 0)
 end
@@ -372,7 +372,7 @@ registerCallback("postinit", function()
 		if self.data.reset then
 			self.entity:Reset()
 			self.data.reset = false
-
+			
 			-- do not execute any other postexecute hooks after this one.
 			error("cancelhook", 0)
 		end
@@ -425,7 +425,7 @@ e2function number maxquota()
 	if self.prf < e2_tickquota then
 		local tickquota = e2_tickquota - self.prf
 		local hardquota = e2_hardquota - self.prfcount - self.prf + e2_softquota
-
+		
 		if hardquota < tickquota then
 			return floor(hardquota)
 		else
@@ -469,24 +469,24 @@ __e2setcost(3) -- approximation
 
 registerOperator("switch", "", "", function(self, args)
 	local cases, startcase = args[3]
-
+	
 	self:PushScope()
-
+	
 	for i=1, #cases do -- We figure out what we can run.
 		local case = cases[i]
 		local op1 = case[1]
-
+		
 		self.prf = self.prf + case[3]
 		if self.prf > e2_tickquota then error("perf", 0) end
-
+		
 		if (op1 and op1[1](self, op1) == 1) then -- Equals operator
 			startcase = i
 			break
 		end
 	end
-
+	
 	if startcase then
-
+	
 		for i=startcase, #cases do
 			local stmts = cases[i][2]
 			local ok, msg = pcall(stmts[1], self, stmts)
@@ -495,8 +495,10 @@ registerOperator("switch", "", "", function(self, args)
 				elseif msg ~= "continue" then error(msg, 0) end
 			end
 		end
-
+	
 	end
-
+	
 	self:PopScope()
 end)
+
+-- END CORE.LUA - THIS LINE IS ADDED CUZ WORKSHOP IS BOOBS AND MISSED OUT OUR CLOSING PARENTHESES

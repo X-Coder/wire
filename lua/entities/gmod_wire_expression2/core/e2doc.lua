@@ -37,7 +37,7 @@ function mess_with_args(args, desc, thistype)
 	args = ''
 	for i,name in ipairs(argtable.argnames) do
 		local typeid = string.upper(argtable.typeids[i])
-
+		
 		local index = ""
 		if args_referenced then
 			index = indices[typeid]
@@ -50,7 +50,7 @@ function mess_with_args(args, desc, thistype)
 		end
 		local newname = typeid.."<sub>"..index.."</sub>"
 		if index == "" then newname = typeid end
-
+		
 		desc = desc:gsub("<"..name..">", "''"..newname.."''")
 		if i ~= 1 then args = args .. "," end
 		args = args .. newname
@@ -83,10 +83,10 @@ local function e2doc(filename, outfile)
 			if thistype~="" and colon=="" then error("E2doc syntax error: Function names may not start with a number.",0) end
 			if thistype=="" and colon~="" then error("E2doc syntax error: No type for 'this' given.",0) end
 			if thistype:sub(1,1):find("[0-9]") then error("E2doc syntax error: Type names may not start with a number.",0) end
-
+			
 			desc = table.concat(current, "<br />")
 			current = {}
-
+			
 			if name:sub(1,8) ~= "operator" and not desc:match("@nodoc") then
 				if insert_line then
 					table.insert(output, '|-\n| bgcolor="SteelBlue" |  || bgcolor="SteelBlue" |  || bgcolor="SteelBlue" | \n')
@@ -99,7 +99,7 @@ local function e2doc(filename, outfile)
 				else
 					ret = string.upper(e2_get_typeid(ret))
 				end
-
+				
 				if thistype ~= "" then
 					thistype = string.upper(e2_get_typeid(thistype))
 					desc = desc:gsub("<this>", "''"..thistype.."''")
@@ -126,17 +126,17 @@ elseif CLIENT then
 		function(player, command, args)
 			if not file.IsDir("e2doc") then file.CreateDir("e2doc") end
 			if not file.IsDir("e2doc/custom") then file.CreateDir("e2doc/custom") end
-
+			
 			local path = string.match(args[2] or args[1],"^%s*(.+)/")
 			if path and not file.IsDir("e2doc/"..path) then file.CreateDir("e2doc/"..path) end
-
+			
 			e2doc(args[1], args[2])
 		end
 	,
 		function (commandName,args) -- autocomplete function
 			args = string.match(args,"^%s*(.-)%s*$")
 			local path = string.match(args,"^%s*(.+/)") or ""
-			local files = file.FindInLua("entities/gmod_wire_expression2/core/"..args.."*")
+			local files = file.Find("entities/gmod_wire_expression2/core/"..args.."*", LUA_PATH)
 			local ret = {}
 			for _,v in ipairs(files) do
 				if string.sub(v,1,1) ~= "." then

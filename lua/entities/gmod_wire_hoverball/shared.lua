@@ -31,9 +31,9 @@ function ENT:GetSpeed()
 end
 
 function ENT:SetSpeed( s )
-
+	
 	self:SetNetworkedFloat( 1, s )
-
+	
 end
 
 

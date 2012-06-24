@@ -33,16 +33,16 @@ end
 function ENT:SetTrails( Player, Entity, Data )
 
 	if ( Entity.SToolTrail ) then
-
+	
 		Entity.SToolTrail:Remove()
 		Entity.SToolTrail = nil
-
+	
 	end
-
+	
 	if ( Data.StartSize == 0 ) then
-
+	
 		Data.StartSize = 0.0001;
-
+		
 	end
 
 	local trail_entity = util.SpriteTrail( Entity,  //Entity
@@ -54,7 +54,7 @@ function ENT:SetTrails( Player, Entity, Data )
 											Data.Length, //fLifetime
 											1 / ((Data.StartSize+Data.EndSize) * 0.5), //fTextureRes
 											Data.Material .. ".vmt" ) //strTexture
-
+	
 	Entity.SToolTrail = trail_entity
 end
 
@@ -98,7 +98,7 @@ end
 
 function MakeWireTrail( pl, Pos, Ang, model, mat)
 	if not pl:CheckLimit( "wire_trails" ) then return false end
-
+	
 	local wire_trail = ents.Create( "gmod_wire_trail" )
 	if not wire_trail:IsValid() then return false end
 

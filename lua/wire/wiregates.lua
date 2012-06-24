@@ -1,6 +1,6 @@
 --[[
 	Gate Loader
-
+	
 	Define gate behavior in gates/*.lua.
 ]]
 
@@ -28,18 +28,18 @@ gamt = {
 function LoadWireGates()
 	GateActions = {}
 	setmetatable(GateActions,gamt)
-	local entries = file.FindInLua( "wire/gates/*.lua" )
+	local entries = file.Find( "wire/gates/*.lua", LUA_PATH )
 	for _,v in pairs(entries) do
 		include("gates/"..v)
 		if (SERVER) then AddCSLuaFile("gates/"..v) end
 	end
 	GateActions = gates
-
+	
 	WireGatesSorted = {}
 	for name,gate in pairs(GateActions) do
-		if not WireGatesSorted[gate.group] then
+		if not WireGatesSorted[gate.group] then 
 			WireGatesSorted[gate.group] = {}
-
+			
 			-- Create limit specific to each gate group (and language.add it)
 			local gr = string.lower(gate.group)
 			CreateConVar("sbox_maxwire_gate_" .. gr .. "s", 30 )
@@ -47,9 +47,9 @@ function LoadWireGates()
 		end
 		WireGatesSorted[gate.group][name] = gate
 	end
-
+	
 	-- Create gate limit
 	CreateConVar("sbox_maxwire_gates",30)
-
+	
 end
 LoadWireGates()

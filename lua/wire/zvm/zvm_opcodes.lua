@@ -223,7 +223,7 @@ ZVM.OpcodeTable[28] = function(self)  --SPG
   self:Dyn_Emit("$L IDX = math.floor($1 / 128)")
   self:Dyn_Emit("$L PAGE = VM:GetPageByIndex(IDX)")
   self:Dyn_EmitInterruptCheck()
-
+  
   self:Dyn_Emit("if VM.CurrentPage.RunLevel <= PAGE.RunLevel then")
     self:Dyn_Emit("PAGE.Read = 1")
     self:Dyn_Emit("PAGE.Write = 0")
@@ -261,7 +261,7 @@ ZVM.OpcodeTable[31] = function(self)  --CALL
     self:Dyn_EmitBreak()
   self:Dyn_Emit("end")
   self:Dyn_EmitInterruptCheck()
-
+  
   self.PrecompileBreak = true
 end
 ZVM.OpcodeTable[32] = function(self)  --BNOT
@@ -301,7 +301,7 @@ ZVM.OpcodeTable[40] = function(self)  --RET
   self:Dyn_Emit("VM:Jump(IP)")
   self:Dyn_EmitState()
   self:Dyn_EmitBreak()
-
+  
   self.PrecompileBreak = true
 end
 ZVM.OpcodeTable[41] = function(self)  --IRET
@@ -321,7 +321,7 @@ ZVM.OpcodeTable[41] = function(self)  --IRET
     self:Dyn_EmitState()
     self:Dyn_EmitBreak()
   self:Dyn_Emit("end")
-
+  
   self.PrecompileBreak = true
 end
 ZVM.OpcodeTable[42] = function(self)  --STI
@@ -348,7 +348,7 @@ ZVM.OpcodeTable[47] = function(self)  --RETF
   self:Dyn_Emit("VM:Jump(IP,CS)")
   self:Dyn_EmitState()
   self:Dyn_EmitBreak()
-
+  
   self.PrecompileBreak = true
 end
 ZVM.OpcodeTable[48] = function(self)  --STEF
@@ -612,7 +612,7 @@ ZVM.OpcodeTable[89] = function(self)  --CALLF
     self:Dyn_EmitBreak()
   self:Dyn_Emit("end")
   self:Dyn_EmitInterruptCheck()
-
+  
   self.PrecompileBreak = true
 end
 --------------------------------------------------------------------------------
@@ -722,7 +722,7 @@ ZVM.OpcodeTable[102] = function(self)  --JMPR
   self:Dyn_Emit("VM:Jump("..self.PrecompileIP.." + $1)")
   self:Dyn_EmitState()
   self:Dyn_EmitBreak()
-
+    
   self.PrecompileBreak = true
 end
 ZVM.OpcodeTable[103] = function(self)  --JGR
@@ -765,7 +765,7 @@ ZVM.OpcodeTable[108] = function(self)  --LNEG
 end
 ZVM.OpcodeTable[109] = function(self)   --STATERESTORE
   self:Dyn_Emit("          VM:ReadCell($1 + 00)")
-
+  
   self:Dyn_Emit("EAX =     VM:ReadCell($1 + 01) or 0")
   self:Dyn_Emit("EBX =     VM:ReadCell($1 + 02) or 0")
   self:Dyn_Emit("ECX =     VM:ReadCell($1 + 03) or 0")
@@ -783,9 +783,9 @@ ZVM.OpcodeTable[109] = function(self)   --STATERESTORE
   self:Dyn_Emit("FS  =     VM:ReadCell($1 + 14) or 0")
 
   self:Dyn_Emit("VM.CMPR = VM:ReadCell($1 + 15) or 0")
-
+  
   self:Dyn_EmitInterruptCheck()
-
+  
   self:Dyn_EmitRegisterValueChanged("EAX")
   self:Dyn_EmitRegisterValueChanged("EBX")
   self:Dyn_EmitRegisterValueChanged("ECX")
@@ -806,15 +806,15 @@ end
 ZVM.OpcodeTable[110] = function(self)  --EXTRET
   self:Dyn_EmitForceRegisterGlobal("ESP")
   self:Dyn_Emit("$L V = 0")
-
+  
   self:Dyn_Emit("V = VM:Pop()") -- IRET CS
   self:Dyn_EmitInterruptCheck()
   self:Dyn_Emit("V = VM:Pop()") -- IRET EIP
   self:Dyn_EmitInterruptCheck()
-
+  
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  self:Dyn_Emit("$L IP = V")
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  self:Dyn_Emit("VM.CMPR = V")
-
+  
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  self:Dyn_Emit("VM.EAX = V")
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  self:Dyn_Emit("VM.EBX = V")
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  self:Dyn_Emit("VM.ECX = V")
@@ -823,7 +823,7 @@ ZVM.OpcodeTable[110] = function(self)  --EXTRET
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  -- Do not set ESP right now
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  self:Dyn_Emit("VM.ESI = V")
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  self:Dyn_Emit("VM.EDI = V")
-
+  
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  self:Dyn_Emit("$L CS = V")
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  -- Do not set SS right now
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  self:Dyn_Emit("VM.DS = V")
@@ -832,11 +832,11 @@ ZVM.OpcodeTable[110] = function(self)  --EXTRET
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  self:Dyn_Emit("VM.ES = V")
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  self:Dyn_Emit("VM.KS = V")
   self:Dyn_Emit("V = VM:Pop()")  self:Dyn_EmitInterruptCheck()  self:Dyn_Emit("VM.LS = V")
-
+  
   self:Dyn_Emit("VM:Jump(IP,CS)")
   self:Dyn_EmitState()
   self:Dyn_EmitBreak()
-
+  
   self.PrecompileBreak = true
 end
 ZVM.OpcodeTable[111] = function(self)  --IDLE
@@ -857,7 +857,7 @@ ZVM.OpcodeTable[114] = function(self)  --PUSHA
   self:Dyn_EmitForceRegisterLocal("EDI")
   self:Dyn_EmitForceRegisterGlobal("ESP")
   self:Dyn_EmitForceRegisterLocal("EBP")
-
+  
   self:Dyn_Emit("VM:Push(EDI)")    self:Dyn_EmitInterruptCheck()
   self:Dyn_Emit("VM:Push(ESI)")    self:Dyn_EmitInterruptCheck()
   self:Dyn_Emit("VM:Push(EBP)")    self:Dyn_EmitInterruptCheck()
@@ -869,7 +869,7 @@ ZVM.OpcodeTable[114] = function(self)  --PUSHA
 end
 ZVM.OpcodeTable[115] = function(self)  --POPA
   self:Dyn_EmitForceRegisterGlobal("ESP")
-
+  
   self:Dyn_Emit("EAX = VM:Pop()") self:Dyn_EmitInterruptCheck()
   self:Dyn_Emit("EBX = VM:Pop()") self:Dyn_EmitInterruptCheck()
   self:Dyn_Emit("ECX = VM:Pop()") self:Dyn_EmitInterruptCheck()
@@ -895,7 +895,7 @@ ZVM.OpcodeTable[117] = function(self)  --LEAVE
   self:Dyn_EmitForceRegisterGlobal("ESP")
   self:Dyn_EmitForceRegisterGlobal("EBP")
   self:Dyn_Emit("VM.ESP = VM.EBP-1")
-
+  
   self:Dyn_Emit("EBP = VM:Pop()")
   self:Dyn_EmitInterruptCheck()
   self:Dyn_EmitRegisterValueChanged("EBP")
@@ -936,7 +936,7 @@ ZVM.OpcodeTable[121] = function(self)  --CPUSET
       self:Dyn_Emit("if REG == 8 then EBP = OP end")
     self:Dyn_Emit("end")
   self:Dyn_Emit("end")
-
+  
   -- FIXME: registers must be properly synced
 end
 ZVM.OpcodeTable[122] = function(self)  --SPP
@@ -957,7 +957,7 @@ ZVM.OpcodeTable[122] = function(self)  --SPP
     self:Dyn_Emit("$L IDX = math.floor(ADDR / 128)")
     self:Dyn_Emit("$L PAGE = VM:GetPageByIndex(IDX)")
     self:Dyn_EmitInterruptCheck()
-
+  
     self:Dyn_Emit("if VM.CurrentPage.RunLevel <= PAGE.RunLevel then")
       self:Dyn_Emit("    if FLAG == 0 then PAGE.Read     = 1")
       self:Dyn_Emit("elseif FLAG == 1 then PAGE.Write    = 1")
@@ -1064,7 +1064,7 @@ ZVM.OpcodeTable[130] = function(self)  --MSHIFT  FIXME: Inoperative
   self:Dyn_Emit("if Count ~= 0 then")
     self:Dyn_Emit("$L Offset = $2")
     self:Dyn_Emit("$L Buffer = {}")
-
+    
     self:Dyn_Emit("if Offset > 0 then")
       self:Dyn_Emit("for i = 0,math.Clamp(Count-1-Offset,0,8191) do") --Shifted part
         self:Dyn_Emit("Buffer[i] = VM:ReadCell(ESI+i+Offset)")
@@ -1084,12 +1084,12 @@ ZVM.OpcodeTable[130] = function(self)  --MSHIFT  FIXME: Inoperative
       self:Dyn_Emit("end")
       self:Dyn_EmitInterruptCheck()
     self:Dyn_Emit("end")
-
+    
     self:Dyn_Emit("for i = 0,Count-1 do")
       self:Dyn_Emit("VM:WriteCell(ESI+i,Buffer[i] or 32)")
     self:Dyn_Emit("end")
     self:Dyn_EmitInterruptCheck()
-
+    
     self:Dyn_Emit("ESI = ESI + Count")
   self:Dyn_Emit("end")
 end
@@ -1104,7 +1104,7 @@ ZVM.OpcodeTable[131] = function(self)  --SMAP
     self:Dyn_Emit("FirstAddr = $1 * 128")
     self:Dyn_Emit("LastAddr = $1 * 128 + 127")
   self:Dyn_Emit("end")
-
+  
   self:Dyn_Emit("$L ADDR = FirstAddr")
   self:Dyn_Emit("while ADDR < LastAddr do")
     self:Dyn_Emit("$L IDX = math.floor(ADDR / 128)")
@@ -1116,7 +1116,7 @@ ZVM.OpcodeTable[131] = function(self)  --SMAP
       self:Dyn_Emit("PAGE.Remapped = 1")
       self:Dyn_Emit("VM:SetPageByIndex(IDX)")
       self:Dyn_EmitInterruptCheck()
-
+      
       self:Dyn_Emit("for address=IDX*128,IDX*128+127 do")
         self:Dyn_Emit("if VM.IsAddressPrecompiled[address] then")
           self:Dyn_Emit("for k,v in ipairs(VM.IsAddressPrecompiled[address]) do")
@@ -1300,10 +1300,10 @@ ZVM.OpcodeTable[260] = function(self)  --MADD
   self:Dyn_Emit("$L M1 = VM:ReadMatrix($1 + VM."..(self.EmitOperandSegment[1] or "DS")..")")
   self:Dyn_Emit("$L M2 = VM:ReadMatrix($2 + VM."..(self.EmitOperandSegment[2] or "DS")..")")
   self:Dyn_EmitInterruptCheck()
-
+  
   self:Dyn_Emit("$L RM = {}")
   self:Dyn_Emit("for i=0,15 do RM[i] = M1[i]+M2[i] end")
-
+  
   self:Dyn_Emit("VM:WriteMatrix($1 + VM."..(self.EmitOperandSegment[1] or "DS")..",RM)")
   self:Dyn_EmitInterruptCheck()
 end
@@ -1344,7 +1344,7 @@ ZVM.OpcodeTable[263] = function(self)   --MROTATE
   self:Dyn_Emit("VEC.x = VEC.x / MAG")
   self:Dyn_Emit("VEC.y = VEC.y / MAG")
   self:Dyn_Emit("VEC.z = VEC.z / MAG")
-
+  
   self:Dyn_Emit("$L SIN = math.sin(VEC.w)")
   self:Dyn_Emit("$L COS = math.cos(VEC.w)")
 
@@ -1385,17 +1385,17 @@ ZVM.OpcodeTable[264] = function(self)   --MSCALE
   self:Dyn_Emit("RM[1]  = 0")
   self:Dyn_Emit("RM[2]  = 0")
   self:Dyn_Emit("RM[3]  = 0")
-
+  
   self:Dyn_Emit("RM[4]  = 0")
   self:Dyn_Emit("RM[5]  = VEC.y")
   self:Dyn_Emit("RM[6]  = 0")
   self:Dyn_Emit("RM[7]  = 0")
-
+  
   self:Dyn_Emit("RM[8]  = 0")
   self:Dyn_Emit("RM[9]  = 0")
   self:Dyn_Emit("RM[10] = VEC.z")
   self:Dyn_Emit("RM[11] = 0")
-
+  
   self:Dyn_Emit("RM[12] = 0")
   self:Dyn_Emit("RM[13] = 0")
   self:Dyn_Emit("RM[14] = 0")
@@ -1412,7 +1412,7 @@ ZVM.OpcodeTable[265] = function(self)   --MPERSPECTIVE
   self:Dyn_Emit("$L RADS = (VEC.x / 2.0) * math.pi / 180")
   self:Dyn_Emit("$L SIN = math.sin(RADS)")
   self:Dyn_Emit("$L CTG = math.cos(RADS)/SIN")
-
+  
   self:Dyn_Emit("$L RM = {}")
   self:Dyn_Emit("RM[0]  = CTG / VEC.y")
   self:Dyn_Emit("RM[4]  = 0")
@@ -1474,16 +1474,16 @@ ZVM.OpcodeTable[267] = function(self)   --MLOOKAT
   self:Dyn_Emit("$L X = { 0, 0, 0 }")
   self:Dyn_Emit("$L Y = { UP.x, UP.y, UP.z }")
   self:Dyn_Emit("$L Z = { EYE.x - CENTER.x, EYE.y - CENTER.y, EYE.z - CENTER.z }")
-
+  
   self:Dyn_Emit("$L ZMAG = math.sqrt(Z[1]^2+Z[2]^2+Z[3]^2)+1e-7")
   self:Dyn_Emit("Z[1] = Z[1] / ZMAG")
   self:Dyn_Emit("Z[2] = Z[2] / ZMAG")
   self:Dyn_Emit("Z[3] = Z[3] / ZMAG")
-
+  
   self:Dyn_Emit("X[1] =  Y[2]*Z[3] - Y[3]*Z[2]")
   self:Dyn_Emit("X[2] = -Y[1]*Z[3] + Y[3]*Z[1]")
   self:Dyn_Emit("X[3] =  Y[1]*Z[2] - Y[2]*Z[1]")
-
+  
   self:Dyn_Emit("Y[1] =  Z[2]*X[3] - Z[3]*X[2]")
   self:Dyn_Emit("Y[2] = -Z[1]*X[3] + Z[3]*X[1]")
   self:Dyn_Emit("Y[3] =  Z[1]*X[2] - Z[2]*X[1]")
@@ -1492,7 +1492,7 @@ ZVM.OpcodeTable[267] = function(self)   --MLOOKAT
   self:Dyn_Emit("X[1] = X[1] / XMAG")
   self:Dyn_Emit("X[2] = X[2] / XMAG")
   self:Dyn_Emit("X[3] = X[3] / XMAG")
-
+  
   self:Dyn_Emit("$L YMAG = math.sqrt(Y[1]^2+Y[2]^2+Y[3]^2)+1e-7")
   self:Dyn_Emit("Y[1] = Y[1] / YMAG")
   self:Dyn_Emit("Y[2] = Y[2] / YMAG")

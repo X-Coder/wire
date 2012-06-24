@@ -25,7 +25,7 @@ function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
-
+	
 	self.Xinputs =  {}
 	self.Xoutputs = {}
 	self.Xlocals =  {}
@@ -34,7 +34,7 @@ function ENT:Initialize()
 	self.inputvars = {}
 	self.triggvars = {}
 	self.variables = {}
-
+	
 	self.Inputs = Wire_CreateInputs(self, {})
 	self.Outputs = Wire_CreateOutputs(self, {})
 end
@@ -70,8 +70,8 @@ function ENT:Update()
 		self.variables[key] = self.inputvars[key]
 	end
 
-	self.schedule = nil
-
+	self.schedule = nil	
+	
 	local tbl = self.instructions
 	self["_"..tbl[1]](self,tbl)
 	self.triggvars = {}
@@ -85,7 +85,7 @@ function ENT:Update()
 	elseif self.scheduled and self.schedule and math.abs(self.schedule) < self.Delta then
 		self.scheduled = nil
 	end
-
+	
 	for _,key in ipairs(self.Xoutputs) do
 		Wire_TriggerOutput(self, key, self.variables[key]) --major overhead, add lazy updates?
 	end
@@ -109,12 +109,12 @@ function ENT:Setup(name, parser)
 	local inputs =  parser:GetInputs()
 	local outputs = parser:GetOutputs()
 	local locals =  parser:GetLocals()
-
+	
 	local inputvars = {}
 	local deltavars = {}
 	local triggvars = {}
 	local variables = {}
-
+	
 	for _,key in ipairs(inputs) do
 		if !self.inputvars[key] then
 			inputvars[key] = 0
@@ -124,7 +124,7 @@ function ENT:Setup(name, parser)
 			deltavars[key] = self.deltavars[key]
 		end
 	end
-
+	
 	for _,key in ipairs(outputs) do
 		if !self.variables[key] then
 			variables[key] = 0
@@ -134,7 +134,7 @@ function ENT:Setup(name, parser)
 			deltavars[key] = self.deltavars[key]
 		end
 	end
-
+	
 	for _,key in ipairs(locals) do
 		if !self.variables[key] then
 			variables[key] = 0
@@ -144,18 +144,18 @@ function ENT:Setup(name, parser)
 			deltavars[key] = self.deltavars[key]
 		end
 	end
-
+	
 	self.inputvars = inputvars
 	self.deltavars = deltavars
 	self.triggvars = triggvars
 	self.variables = variables
-
+	
 	self.Xinputs =  inputs
 	self.Xoutputs = outputs
 	self.Xlocals =  locals
-
+	
 	self.instructions = parser:GetInstructions()
-
+	
 	Wire_AdjustInputs(self, inputs)
 	Wire_AdjustOutputs(self, outputs)
 
@@ -166,7 +166,7 @@ function ENT:Setup(name, parser)
 	self.schedule = nil
 	self.curtime = nil
 	self.initialized = false
-
+	
 	self:Update()
 
 	self.initialized = true
@@ -198,13 +198,13 @@ function ENT:_con(tbl)
 	/*if self:GetPlayer() then
 		local instr = tbl[2]
 		local outstr = ""
-
+		
 		while true do
 			local pos = string.find(instr, "$", 1, true)
 			if pos then
 				outstr = outstr .. string.sub(instr, 0, pos - 1)
 				instr  = string.sub(instr, pos + 1)
-
+				
 				local pos = string.find(instr, "$", 1, true)
 				if pos then
 					local var = string.sub(instr, 0, pos - 1)
@@ -213,7 +213,7 @@ function ENT:_con(tbl)
 					else
 						outstr = outstr .. "0"
 					end
-
+					
 					instr  = string.sub(instr, pos + 1)
 				end
 			else
@@ -221,7 +221,7 @@ function ENT:_con(tbl)
 				break
 			end
 		end
-
+		
 		self:GetPlayer():ConCommand(outstr)
 	end*/
 end
@@ -401,13 +401,13 @@ ENT._vecrotate_4 =    function (self, v, p, y, r) if self:IsVector(v) then local
 
 -- EXTERNAL INPUT EXTENSION
 
-ENT._extcolor_3 =   function (self, r, g, b)    self:SetColor(math.Clamp(r, 0, 255), math.Clamp(g, 0, 255), math.Clamp(b, 0, 255), 255)                   return 0 end
-ENT._extcolor_4 =   function (self, r, g, b, a) self:SetColor(math.Clamp(r, 0, 255), math.Clamp(g, 0, 255), math.Clamp(b, 0, 255), math.Clamp(a, 0, 255)) return 0 end
+ENT._extcolor_3 =   function (self, r, g, b)    self:SetColor(Color(math.Clamp(r, 0, 255), math.Clamp(g, 0, 255), math.Clamp(b, 0, 255), 255))                   return 0 end
+ENT._extcolor_4 =   function (self, r, g, b, a) self:SetColor(Color(math.Clamp(r, 0, 255), math.Clamp(g, 0, 255), math.Clamp(b, 0, 255), math.Clamp(a, 0, 255))) return 0 end
 
-ENT._extcolorr_0 =  function (self) local tbl = { self:GetColor() } return tbl[0] end
-ENT._extcolorg_0 =  function (self) local tbl = { self:GetColor() } return tbl[1] end
-ENT._extcolorb_0 =  function (self) local tbl = { self:GetColor() } return tbl[2] end
-ENT._extcolora_0 =  function (self) local tbl = { self:GetColor() } return tbl[3] end
+ENT._extcolorr_0 =  function (self) local c = self:GetColor() return c.r end
+ENT._extcolorg_0 =  function (self) local c = self:GetColor() return c.g end
+ENT._extcolorb_0 =  function (self) local c = self:GetColor() return c.b end
+ENT._extcolora_0 =  function (self) local c = self:GetColor() return c.a end
 
 ENT._extdirfwx_0 =   function (self) return self:GetForward().x end
 ENT._extdirfwy_0 =   function (self) return self:GetForward().y end
@@ -468,7 +468,7 @@ local function SetupWireGateExpression(entity, parser, name, lines, inputs, outp
 	entity.GateLines =   lines
 	entity.GateInputs =  inputs
 	entity.GateOutputs = outputs
-
+	
 	entity:Setup(name, parser)
 end
 
@@ -486,13 +486,13 @@ end
 
 local function MakeWireGateExpression(player, Pos, Ang, model, name, lines, inputs, outputs)
 	if !player:CheckLimit("wire_expressions") then return false end
-
+	
 	local parser = VerifyWireGateExpression(player, lines, inputs, outputs)
 	if !parser then return false end
-
+	
 	local entity = ents.Create("gmod_wire_expression")
 	if !entity:IsValid() then return false end
-
+	
 	entity:SetModel(model)
 	entity:SetAngles(Ang)
 	entity:SetPos(Pos)
@@ -500,7 +500,7 @@ local function MakeWireGateExpression(player, Pos, Ang, model, name, lines, inpu
 	entity:SetPlayer(player)
 
 	SetupWireGateExpression(entity, parser, name, lines, inputs, outputs)
-
+	
 	table.Merge(entity:GetTable(), { player = player })
 	player:AddCount("wire_expressions", entity)
 	return entity

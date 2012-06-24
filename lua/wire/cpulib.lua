@@ -9,37 +9,37 @@ if CLIENT then
   CPULib.Source = ""
   -- Compiled binary
   CPULib.Buffer = {}
-
+  
   -- Sourcecode currently being compiled
   CPULib.CurrentSource = ""
   -- Buffer currently being written
   CPULib.CurrentBuffer = {}
-
+  
   -- State variables
   CPULib.Compiling = false
   CPULib.Uploading = false
   CPULib.ServerUploading = false
-
+  
   -- Debugger
   CPULib.DebuggerAttached = false
   CPULib.Debugger = {}
   CPULib.Debugger.Variables = {}
   CPULib.Debugger.SourceTab = nil
-
+  
   -- Reset on recompile
   CPULib.Debugger.MemoryVariableByIndex = {}
   CPULib.Debugger.MemoryVariableByName = {}
   CPULib.Debugger.Labels = {}
   CPULib.Debugger.PositionByPointer = {}
   CPULib.Debugger.PointersByLine = {}
-
+  
   CPULib.Debugger.Breakpoint = {}
-
+  
   -- Convars to control CPULib
   local wire_cpu_upload_speed = CreateClientConVar("wire_cpu_upload_speed",8,false,false)
   local wire_cpu_compile_speed = CreateClientConVar("wire_cpu_compile_speed",128,false,false)
   local wire_cpu_show_all_registers = CreateClientConVar("wire_cpu_show_all_registers",0,false,false)
-
+  
   ------------------------------------------------------------------------------
   -- Request compiling specific sourcecode
   function CPULib.Compile(source,fileName,successCallback,errorCallback,targetPlatform)
@@ -47,17 +47,17 @@ if CLIENT then
     timer.Destroy("cpulib_compile")
     timer.Destroy("cpulib_upload")
     CPULib.Uploading = false
-
+    
     -- See if compiled source is available
     --if CPULib.Source == source then
     --  successCallback()
     --  return
     --end
-
+    
     -- Remember the sourcecode being compiled
     CPULib.CurrentSource = source
     CPULib.CurrentBuffer = {}
-
+    
     -- Clear debugging info
     CPULib.Debugger.MemoryVariableByIndex = {}
     CPULib.Debugger.MemoryVariableByName = {}
@@ -74,7 +74,7 @@ if CLIENT then
     -- Initialize callbacks
     CPULib.SuccessCallback = successCallback
     CPULib.ErrorCallback = errorCallback
-
+    
     -- Run the timer
     timer.Create("cpulib_compile",1/60,0,CPULib.OnCompileTimer)
     CPULib.Compiling = true
@@ -88,14 +88,14 @@ if CLIENT then
     if string.sub(fileName,1,7) == editor.EditorType.."Chip" then
       fullFileName = fileName
     end
-
+    
     local sourceTab
     for tab=1,editor:GetNumTabs() do
       if editor:GetEditor(tab).chosenfile == fullFileName then
         sourceTab = tab
       end
     end
-
+    
     if not sourceTab then
       editor:LoadFile(fullFileName,true)
       sourceTab = editor:GetActiveTabIndex()
@@ -105,7 +105,7 @@ if CLIENT then
 
     return editor:GetEditor(sourceTab),sourceTab
   end
-
+  
   ------------------------------------------------------------------------------
   -- Request validating the code
   function CPULib.Validate(editor,source,fileName)
@@ -119,27 +119,27 @@ if CLIENT then
         editor.C["Val"].panel:SetBGColor(128, 20, 50, 180)
         editor.C["Val"].panel:SetFGColor(255, 255, 255, 128)
         editor.C["Val"].panel:SetText("   "..(error or "unknown error"))
-
+        
         if not errorPos then return end
-
+        
         local textEditor = CPULib.SelectTab(editor,errorPos.File)
         if not textEditor then return end
         textEditor:SetCaret({errorPos.Line,errorPos.Col})
       end,editor.EditorType)
   end
-
+  
   ------------------------------------------------------------------------------
   -- Compiler callback
   function CPULib.OnWriteByte(caller,address,byte)
     CPULib.CurrentBuffer[address] = byte
   end
-
+  
   ------------------------------------------------------------------------------
   -- Compiler timer
   function CPULib.OnCompileTimer()
     local compile_speed = wire_cpu_compile_speed:GetFloat()
     if SinglePlayer() then compile_speed = 256 end
-
+    
     for iteration=1,compile_speed do
       local status,result = pcall(HCOMP.Compile,HCOMP)
       if not status then
@@ -147,18 +147,18 @@ if CLIENT then
         if CPULib.ErrorCallback then CPULib.ErrorCallback(HCOMP.ErrorMessage or ("Internal error: "..result),HCOMP.ErrorPosition) end
         timer.Destroy("cpulib_compile")
         CPULib.Compiling = false
-
+        
         return
       elseif not result then
         print("==================================================")
         CPULib.Source = CPULib.CurrentSource
         CPULib.Buffer = CPULib.CurrentBuffer
-
+      
         if CPULib.SuccessCallback then
           CPULib.Debugger.Labels = HCOMP.DebugInfo.Labels
           CPULib.Debugger.PositionByPointer = HCOMP.DebugInfo.PositionByPointer
           CPULib.Debugger.PointersByLine = HCOMP.DebugInfo.PointersByLine
-
+          
           CPULib.SuccessCallback()
         end
         timer.Destroy("cpulib_compile")
@@ -177,7 +177,7 @@ if CLIENT then
 
     local upload_speed = wire_cpu_upload_speed:GetFloat()
     if SinglePlayer() then upload_speed = 128 end
-
+    
     for iteration=1,upload_speed do
       local index,value = next(CPULib.RemainingData)
       if not index then
@@ -198,11 +198,11 @@ if CLIENT then
   function CPULib.Upload(customBuffer)
     -- Stop any upload in the progress
     timer.Destroy("cpulib_upload")
-
+  
     -- Send the buffer over to server
     RunConsoleCommand("wire_cpulib_bufferstart")
     RunConsoleCommand("wire_cpulib_buffername",CPULib.CPUName)
-
+    
     CPULib.TotalUploadData = 0
     CPULib.RemainingData = {}
     if customBuffer then
@@ -216,7 +216,7 @@ if CLIENT then
         CPULib.TotalUploadData = CPULib.TotalUploadData + 1
       end
     end
-
+    
     CPULib.RemainingUploadData = CPULib.TotalUploadData
     timer.Create("cpulib_upload",1/60,0,CPULib.OnUploadTimer)
     CPULib.Uploading = true
@@ -227,7 +227,7 @@ if CLIENT then
   function CPULib.GetDebugPopupText(var)
     if not var then return "" end
     local csvar = string.upper(var)
-
+    
     if CPULib.Debugger.Variables[csvar] then
       return var.." = "..CPULib.Debugger.Variables[csvar]
     else
@@ -247,7 +247,7 @@ if CLIENT then
       end
     end
   end
-
+  
   ------------------------------------------------------------------------------
   -- Get debug text for specific variable/function name
   CPULib.InterruptText = nil
@@ -262,23 +262,23 @@ if CLIENT then
       "EBP = "..(CPULib.Debugger.Variables.EBP or "#####"),
       "ESP = "..(CPULib.Debugger.Variables.ESP or "#####"),
     }
-
+    
     table.insert(result,"")
     local maxReg = 7
     if wire_cpu_show_all_registers:GetFloat() == 1 then maxReg = 31 end
-
+    
     for reg=0,maxReg do
       table.insert(result,"R"..reg.." = "..(CPULib.Debugger.Variables["R"..reg] or "#####"))
     end
 
-
+    
     table.insert(result,"")
     if CPULib.Debugger.Variables.IP == INVALID_BREAKPOINT_IP then
       table.insert(result,"IP = #####")
     else
       table.insert(result,"IP = "..(CPULib.Debugger.Variables.IP or "#####"))
     end
-
+    
     if CPULib.InterruptText then
       table.insert(result,"")
       table.insert(result,CPULib.InterruptText)
@@ -298,12 +298,12 @@ if CLIENT then
     CPULib.Debugger.FirstFile = nil
     CPULib.DebugUpdateHighlights()
   end
-
+  
   -- Get breakpoint at line
   function CPULib.GetDebugBreakpoint(fileName,caretPos)
     return CPULib.Debugger.Breakpoint[caretPos[1]..":"..fileName]
   end
-
+  
   -- Set breakpoint at line
   -- FIXME: bug: can only set breakpoints in one file
   function CPULib.SetDebugBreakpoint(fileName,caretPos,condition)
@@ -321,7 +321,7 @@ if CLIENT then
 
     CPULib.DebugUpdateHighlights(true)
   end
-
+  
   -- Update highlighted lines
   function CPULib.DebugUpdateHighlights(dontForcePosition)
     if ZCPU_Editor then
@@ -329,13 +329,13 @@ if CLIENT then
       local currentPosition = CPULib.Debugger.PositionByPointer[CPULib.Debugger.Variables.IP]
       local sourceTab
       local clearEditors = {}
-
+      
       if currentPosition then
         -- Clear all highlighted lines
         for tab=1,ZCPU_Editor:GetNumTabs() do
           ZCPU_Editor:GetEditor(tab):ClearHighlightedLines()
         end
-
+        
         local textEditor = CPULib.SelectTab(ZCPU_Editor,currentPosition.File)
         if textEditor then
           textEditor:HighlightLine(currentPosition.Line,130,0,0,255)
@@ -344,7 +344,7 @@ if CLIENT then
           end
         end
       end
-
+    
       -- Highlight breakpoints
       for key,breakpoint in pairs(CPULib.Debugger.Breakpoint) do
         local line = tonumber(string.sub(key,1,(string.find(key,":") or 0) - 1)) or 0
@@ -369,7 +369,7 @@ if CLIENT then
       end
     end
   end
-
+  
   ------------------------------------------------------------------------------
   -- Debug data arrived from server
   local previousLine = nil
@@ -383,7 +383,7 @@ if CLIENT then
     CPULib.Debugger.Variables.EDI  = um:ReadFloat()
     CPULib.Debugger.Variables.EBP  = um:ReadFloat()
     CPULib.Debugger.Variables.ESP  = um:ReadFloat()
-
+    
     for reg=0,31 do
       CPULib.Debugger.Variables["R"..reg]  = um:ReadFloat()
     end
@@ -391,7 +391,7 @@ if CLIENT then
     CPULib.DebugUpdateHighlights()
   end
   usermessage.Hook("cpulib_debugdata_registers", CPULib.OnDebugData_Registers)
-
+  
   function CPULib.OnDebugData_Variables(um)
     local startIndex = um:ReadShort()
     for varIdx = startIndex,startIndex+59 do
@@ -401,24 +401,24 @@ if CLIENT then
     end
   end
   usermessage.Hook("cpulib_debugdata_variables", CPULib.OnDebugData_Variables)
-
+  
   function CPULib.OnDebugData_Interrupt(um)
     local interruptNo,interruptParameter = um:ReadFloat(),um:ReadFloat()
     CPULib.InterruptText = "Error #"..interruptNo.. " ["..interruptParameter.."]"
   end
   usermessage.Hook("cpulib_debugdata_interrupt", CPULib.OnDebugData_Interrupt)
-
+  
   ------------------------------------------------------------------------------
   -- Show ZCPU/ZGPU documentation
   CPULib.HandbookWindow = nil
-
+  
   function CPULib.ShowDocumentation(platform)
     gui.OpenURL("http://brain.wireos.com/wiremod/zcpudoc.html")
   end
 end
 
 
-
+  
 
 
 
@@ -427,7 +427,7 @@ if SERVER then
   ------------------------------------------------------------------------------
   -- Data received from server
   CPULib.DataBuffer = {}
-
+  
   ------------------------------------------------------------------------------
   -- Set this entity as a receiver for networked upload
   function CPULib.SetUploadTarget(entity,player)
@@ -447,18 +447,18 @@ if SERVER then
 
     player:SendLua("CPULib.ServerUploading = true")
   end)
-
+  
   -- Concommand to send a single stream of bytes
   concommand.Add("wire_cpulib_buffer", function(player, command, args)
     local Buffer = CPULib.DataBuffer[player:UserID()]
     if (not Buffer) or (Buffer.Player ~= player) then return end
     if not Buffer.Entity then return end
-
+  
     if tonumber(args[1]) then
       Buffer.Data[tonumber(args[1])] = tonumber(args[2])
     end
   end)
-
+  
   -- Concommand to send CPU name
   concommand.Add("wire_cpulib_buffername", function(player, command, args)
     local Buffer = CPULib.DataBuffer[player:UserID()]
@@ -477,10 +477,10 @@ if SERVER then
     if (not Buffer) or (Buffer.Player ~= player) then return end
     if not ValidEntity(Buffer.Entity) then return end
     if not Buffer.Entity then return end
-
+    
     CPULib.DataBuffer[player:UserID()] = nil
     player:SendLua("CPULib.ServerUploading = false")
-
+  
     if Buffer.Entity:GetClass() == "gmod_wire_cpu" then
       Buffer.Entity:FlashData(Buffer.Data)
     elseif Buffer.Entity:GetClass() == "gmod_wire_dhdd" then
@@ -560,7 +560,7 @@ if SERVER then
         end
       end
     end
-
+  
     CPULib.DebuggerData[player:UserID()] = {
       Entity = entity,
       Player = player,
@@ -568,7 +568,7 @@ if SERVER then
       PreviousUpdateTime = CurTime(),
     }
   end
-
+  
   -- Log debug interrupt
   function CPULib.DebugLogInterrupt(player,interruptNo,interruptParameter,isExternal,cascadeInterrupt)
     local umsgrp = RecipientFilter()
@@ -584,12 +584,12 @@ if SERVER then
   function CPULib.SendDebugLogEntry(player,text)
 --
   end
-
+  
   -- Send debugging data to client
   function CPULib.SendDebugData(VM,MemPointers,Player,onlyMemPointers)
     local umsgrp = RecipientFilter()
     umsgrp:AddPlayer(Player)
-
+    
     if not onlyMemPointers then
       umsg.Start("cpulib_debugdata_registers", umsgrp)
         umsg.Float(VM.IP)
@@ -601,13 +601,13 @@ if SERVER then
         umsg.Float(VM.EDI)
         umsg.Float(VM.EBP)
         umsg.Float(VM.ESP)
-
+        
         for reg = 0,31 do
           umsg.Float(VM["R"..reg])
         end
       umsg.End()
     end
-
+    
     if MemPointers then
       for msgIdx=0,math.floor(#MemPointers/60) do
         umsg.Start("cpulib_debugdata_variables", umsgrp)
@@ -621,7 +621,7 @@ if SERVER then
       end
     end
   end
-
+  
   -- Concommand to step forward
   concommand.Add("wire_cpulib_debugstep", function(player, command, args)
     local Data = CPULib.DebuggerData[player:UserID()]
@@ -644,7 +644,7 @@ if SERVER then
     end
     CPULib.SendDebugData(Data.Entity.VM,Data.MemPointers,Data.Player)
   end)
-
+  
   -- Concommand to run till breakpoint
   concommand.Add("wire_cpulib_debugrun", function(player, command, args)
     local Data = CPULib.DebuggerData[player:UserID()]
@@ -656,11 +656,11 @@ if SERVER then
     Data.Entity.VM.IP = INVALID_BREAKPOINT_IP
     CPULib.SendDebugData(Data.Entity.VM,nil,Data.Player)
     Data.Entity.VM.IP = tempIP
-
+    
     Data.Entity.Clk = 1
     Data.Entity:NextThink(CurTime())
   end)
-
+  
   -- Concommand to reset
   concommand.Add("wire_cpulib_debugreset", function(player, command, args)
     local Data = CPULib.DebuggerData[player:UserID()]
@@ -670,13 +670,13 @@ if SERVER then
     Data.Entity.VM:Reset()
     CPULib.SendDebugData(Data.Entity.VM,Data.MemPointers,Data.Player)
   end)
-
+  
   -- Concommand to add a variable
   concommand.Add("wire_cpulib_debugvar", function(player, command, args)
     local Data = CPULib.DebuggerData[player:UserID()]
     if (not Data) or (Data.Player ~= player) then return end
     if not ValidEntity(Data.Entity) then return end
-
+    
     Data.MemPointers[tonumber(args[1]) or 0] = tonumber(args[2])
     CPULib.SendDebugData(Data.Entity.VM,Data.MemPointers,Data.Player,true)
   end)
@@ -716,7 +716,7 @@ end
 local sessionBase
 function CPULib.GenerateSN(entityType)
   local currentDate = os.date("*t")
-
+  
   local SNDate = (currentDate.year-2007)*500+(currentDate.yday)
   if SNDate ~= sessionDate then
     sessionBase = math.floor(math.random()*99999)
@@ -818,7 +818,7 @@ local function Entry(Set,Opc,Mnemonic,Ops,Version,Flags,Op1,Op2,Reference)
       Operand1 = Op1,
       Operand2 = Op2,
       Reference = Reference,
-
+        
       WritesFirstOperand = Bit(Flags,W1),
       Privileged = Bit(Flags,R0),
       Obsolete = Bit(Flags,OB),

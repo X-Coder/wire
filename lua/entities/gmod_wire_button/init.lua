@@ -50,7 +50,7 @@ function ENT:Use(ply)
 	end
 	if (self:IsOn()) then
 		if (self.toggle) then self:Switch(false) end
-
+		
 		return
 	end
 
@@ -69,7 +69,7 @@ function ENT:Think()
 		    if (not self.toggle) then
 				self:Switch(false)
 			end
-
+			
 			self.PrevUser = nil
 			self.podpress = nil
 		end
@@ -99,7 +99,7 @@ function ENT:Setup(toggle, value_off, value_on, entityout)
 		Wire_AdjustOutputs(self.Entity, { "Out" })
 		self.OutputEntID=false
 	end
-
+	
 	if toggle then
 		Wire_AdjustInputs(self.Entity, { "Set" })
 	else
@@ -115,16 +115,16 @@ function ENT:Switch(on)
 	if (on) then
 		self:ShowOutput(self.value_on)
 		self.Value = self.value_on
-
+		
 		local anim = anims[self:GetModel()]
 		if anim then self:SetSequence(anim[1]) end
 	else
 		self:ShowOutput(self.value_off)
 		self.Value = self.value_off
-
+		
 		local anim = anims[self:GetModel()]
 		if anim then self:SetSequence(anim[2]) end
-
+		
 		if self.OutputEntID then self.EntToOutput = NULL end
 	end
 
@@ -160,7 +160,7 @@ function MakeWireButton( pl, Pos, Ang, model, toggle, value_off, value_on, descr
 	wire_button:Setup(toggle, value_off, value_on, entityout )
 	wire_button:SetPlayer(pl)
 	wire_button.pl = pl
-
+	
 	pl:AddCount( "wire_buttons", wire_button )
 
 	return wire_button

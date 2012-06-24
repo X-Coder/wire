@@ -35,9 +35,9 @@ function TOOL:LeftClick( trace )
 	if (trace.Entity:IsPlayer()) then return false end
 	if ( CLIENT ) then return true end
 	if not util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) then return false end
-
+	
 	local ply = self:GetOwner()
-
+	
 	local _channel	= self:GetClientInfo( "channel" )
 	local values		= self:GetClientNumber("values")
 	local secure		= (self:GetClientNumber("secure") ~= 0)
@@ -54,20 +54,20 @@ function TOOL:LeftClick( trace )
 	Ang.pitch = Ang.pitch + 90
 
 	local wire_radio = MakeWireRadio( ply, trace.HitPos, Ang, self:GetModel(), _channel,values,secure)
-
+	
 	local min = wire_radio:OBBMins()
 	wire_radio:SetPos( trace.HitPos - trace.HitNormal * min.z )
-
+	
 	local const = WireLib.Weld(wire_radio, trace.Entity, trace.PhysicsBone, true)
-
+	
 	undo.Create("WireRadio")
 		undo.AddEntity( wire_radio )
 		undo.SetPlayer( ply )
 		undo.AddEntity(const)
 	undo.Finish()
-
+	
 	ply:AddCleanup( "wire_radioes", wire_radio )
-
+	
 	return true
 end
 
@@ -82,7 +82,7 @@ if SERVER then
 		wire_radio:SetModel(model)
 		wire_radio:Spawn()
 		wire_radio:Activate()
-
+		
 		local ttable = {
 			channel   = channel,
 			values    = values,
@@ -91,12 +91,12 @@ if SERVER then
 			nocollide = nocollide,
 		}
 		table.Merge( wire_radio:GetTable(), ttable )
-
+		
 		wire_radio:Setup( channel ,values ,secure )
 		wire_radio:SetPlayer( pl )
 
 		pl:AddCount( "wire_radioes", wire_radio )
-
+		
 		return wire_radio
 	end
 
@@ -109,19 +109,19 @@ function TOOL:UpdateGhostWireRadio( ent, player )
 	if ( !ent || !ent:IsValid() ) then return end
 
 	local trace = player:GetEyeTrace()
-
+	
 	if (!trace.Hit || trace.Entity:IsPlayer() || trace.Entity:GetClass() == "gmod_wire_radio" ) then
 		ent:SetNoDraw( true )
 		return
 	end
-
+	
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
-	ent:SetAngles( Ang )
+	ent:SetAngles( Ang )	
 
 	local min = ent:OBBMins()
 	ent:SetPos( trace.HitPos - trace.HitNormal * min.z )
-
+	
 	ent:SetNoDraw( false )
 
 end
@@ -143,7 +143,7 @@ function TOOL:GetModel()
 	if (util.IsValidModel(modelcheck) and util.IsValidProp(modelcheck)) then
 		model = modelcheck
 	end
-
+	
 	return model
 end
 
@@ -181,7 +181,7 @@ function TOOL.BuildCPanel(panel)
 	})
 
 	ModelPlug_AddToCPanel(panel, "radio", "wire_radio", "#WireRadioTool_model", nil, "#WireRadioTool_model")
-
+	
 	panel:AddControl("Slider", {
 		Label = "#WireRadioTool_values",
 		Type = "Integer",
@@ -189,10 +189,10 @@ function TOOL.BuildCPanel(panel)
 		Max = "20",
 		Command = "wire_radio_values"
 	})
-
+	
 	panel:AddControl("CheckBox", {
 		Label = "#WireRadioTool_secure",
 		Command = "wire_radio_secure"
 	})
-
+	
 end

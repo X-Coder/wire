@@ -7,7 +7,7 @@ local rad, cos, sin = math.rad, math.cos, math.sin
 Obj.Draw = function( self )
 	if (self.a>0 and self.w > 0 and self.h > 0 and self.size != 360) then
 		local vertices = {}
-
+		
 		vertices[1] = { x = self.x, y = self.y }
 		local ang = -rad(self.angle)
 		local c = cos(ang)
@@ -20,10 +20,10 @@ Obj.Draw = function( self )
 			local tempx = x * self.w * c - y * self.h * s + self.x
 			y = x * self.w * s + y * self.h * c + self.y
 			x = tempx
-
+			
 			vertices[ii+2] = { x = x, y = y }
 		end
-
+		
 		surface.SetDrawColor( self.r, self.g, self.b, self.a )
 		local n = #vertices
 		for i=1,n do

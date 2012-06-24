@@ -9,11 +9,13 @@ GateActions["quadratic"] = {
 	inputs = { "A", "B", "C" },
 	outputs = { "Pos", "Neg" },
 	output = function(gate, A, B, C)
-		local temp = math.sqrt(B^2 - 4*A*C)
-		return (-B + temp) / (2*A), (-B - temp) / (2*A)
+		return ( -B + ( math.sqrt( math.abs( math.exp( B, 2 ) - ( 4*A )*C ) ) ) / 2*A )
 	end,
-	label = function(Out,A,B,C)
-		return ("AX^2 + BX + C\n(-%s +/- sqrt(%s^2 - 4*%s*%s)) / (2*%s) = %s,%s"):format( B, B, A, C, A, Out.Pos, Out.Neg )
+	output = function(gate, A, B, C)
+		return ( -B - ( math.sqrt( math.abs( math.exp( B, 2 ) - ( 4*A )*C ) ) ) / 2*A )
+	end,
+	label = function(Out, A, B, C)
+		return "-" .. A .. " +/- sqrt( " ..  B .. "^2 - ( 4*" .. A .. " )*" .. C .. " )  / 2*" .. A
 	end
 }
 

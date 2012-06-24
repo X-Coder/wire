@@ -10,28 +10,28 @@ ENT.OnState = 0
    Name: Initialize
 ---------------------------------------------------------*/
 function ENT:Initialize()
-
+	
 	self:SetModel( "models/dav0r/hoverball.mdl" )
-
+	
 	// Don't use the model's physics object, create a perfect sphere
-
+	
 	self:PhysicsInitSphere( 8, "metal_bouncy" )
-
+	
 	// Wake up our physics object so we don't start asleep
-
+	
 	local phys = self:GetPhysicsObject()
-
+	
 	if ( phys:IsValid() ) then
 		phys:SetMass( 100 )
 		phys:EnableGravity( false )
 		phys:Wake()
 	end
-
+	
 	// Start the motion controller (so PhysicsSimulate gets called)
 	self:StartMotionController()
-
+	
 	self.Fraction = 0
-
+	
 	self.ZVelocity = 0
 	self:SetTargetZ( self:GetPos().z )
 	self:SetSpeed( 1 )
@@ -39,7 +39,7 @@ function ENT:Initialize()
 
 	self.Inputs = Wire_CreateInputs(self, { "A: ZVelocity", "B: HoverMode", "C: SetZTarget" })
 	self.Outputs = Wire_CreateOutputs(self, { "A: Zpos", "B: Xpos", "C: Ypos" })
-
+	
 end
 
 
@@ -83,7 +83,7 @@ end
 
 function ENT:OnRestore()
 	self.ZVelocity = 0
-
+	
 	self.BaseClass.OnRestore(self)
 end
 
@@ -104,76 +104,76 @@ function ENT:Think()
 	self:NextThink( CurTime() + 0.25 )
 
 	self:SetNetworkedInt( "TargetZ", self:GetTargetZ() )
-
+	
 	return true
-
+	
 end
 
 /*---------------------------------------------------------
    Name: Simulate
 ---------------------------------------------------------*/
 function ENT:PhysicsSimulate( phys, deltatime )
-
+	
 	local Pos = phys:GetPos()
 	local txt = string.format( "Speed: %i\nResistance: %.2f", self:GetSpeed(), self:GetAirResistance() )
 	txt = txt.."\nZ pos: "..math.floor(Pos.z) //.."Target: "..math.floor(self:GetTargetZ())
-
+	
 	Wire_TriggerOutput(self, "A: Zpos", Pos.z)
 	Wire_TriggerOutput(self, "B: Xpos", Pos.x)
 	Wire_TriggerOutput(self, "C: Ypos", Pos.y)
-
-
+	
+	
 	if (self:GetHoverMode()) then
-
+		
 		txt = txt.." (on)"
 		self:SetOverlayText( txt )
-
+		
 		if ( self.ZVelocity != 0 ) then
-
+			
 			self:SetTargetZ( self:GetTargetZ() + (self.ZVelocity * deltatime * self:GetSpeed()) )
 			self:GetPhysicsObject():Wake()
-
+			
 		end
-
+		
 		phys:Wake()
-
+		
 		local Vel = phys:GetVelocity()
 		local Distance = self:GetTargetZ() - Pos.z
 		local AirResistance = self:GetAirResistance()
-
-
+		
+		
 		if ( Distance == 0 ) then return end
-
+		
 		local Exponent = Distance^2
-
+		
 		if ( Distance < 0 ) then
 			Exponent = Exponent * -1
 		end
-
+		
 		Exponent = Exponent * deltatime * 300
-
+		
 		local physVel = phys:GetVelocity()
 		local zVel = physVel.z
-
+		
 		Exponent = Exponent - (zVel * deltatime * 600 * ( AirResistance + 1 ) )
 		// The higher you make this 300 the less it will flop about
 		// I'm thinking it should actually be relative to any objects we're connected to
 		// Since it seems to flop more and more the heavier the object
-
+		
 		Exponent = math.Clamp( Exponent, -5000, 5000 )
-
+		
 		local Linear = Vector(0,0,0)
 		local Angular = Vector(0,0,0)
-
+		
 		Linear.z = Exponent
-
+		
 		if ( AirResistance > 0 ) then
-
+		
 			Linear.y = physVel.y * -1 * AirResistance
 			Linear.x = physVel.x * -1 * AirResistance
-
+		
 		end
-
+		
 		return Angular, Linear, SIM_GLOBAL_ACCELERATION
 	else
 		txt = txt.." (off)"
@@ -264,9 +264,9 @@ function MakeWireHoverBall( pl, Pos, Ang, model, speed, resistance, strength, no
 		resistance = resistance
 	}
 	table.Merge( wire_ball:GetTable(), ttable )
-
+	
 	pl:AddCount( "wire_hoverballs", wire_ball )
-
+	
 	return wire_ball
 end
 

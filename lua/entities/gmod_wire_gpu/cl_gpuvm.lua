@@ -6,7 +6,7 @@ local VM = {}
 function ENT:OverrideVM()
   -- Store VM calls that will be overriden
   self.VM.BaseReset = self.VM.Reset
-
+  
   -- Add additional VM functionality
   for k,v in pairs(VM) do
     if k == "OpcodeTable" then
@@ -17,7 +17,7 @@ function ENT:OverrideVM()
       self.VM[k] = v
     end
   end
-
+  
   self.VM.ErrorText = {}
   self.VM.ErrorText[2]  = "Program ended unexpectedly"
   self.VM.ErrorText[3]  = "Arithmetic division by zero"
@@ -30,7 +30,7 @@ function ENT:OverrideVM()
   self.VM.ErrorText[16] = "Pants integrity violation"
   self.VM.ErrorText[17] = "Frame instruction limit"
   self.VM.ErrorText[23] = "Error reading string data"
-
+  
   self.VM.Interrupt = function(self,interruptNo,interruptParameter,isExternal,cascadeInterrupt)
     if self.ASYNC == 1 then
       if self.EntryPoint5 > 0 then
@@ -48,22 +48,22 @@ function ENT:OverrideVM()
         self.LINT = interruptNo
       else
         if (interruptNo == 2) and (self.XEIP == 0) then self.INTR = 1 return end
-
+        
         if self.RenderEnable == 1 then
           surface.SetTexture(0)
           surface.SetDrawColor(0,0,0,120)
           surface.DrawRect(0,0,self.ScreenWidth,self.ScreenHeight)
-
+    
           surface.CreateFont("Coolvetica", 26, 200, true, false,"WireGPU_ErrorFont")
           draw.DrawText("Error in the instruction stream","WireGPU_ErrorFont",48,16,Color(255,255,255,255))
           draw.DrawText((self.ErrorText[interruptNo] or "Unknown error").." (#"..interruptNo..")","WireGPU_ErrorFont",16,16+32*2,Color(255,255,255,255))
           draw.DrawText("Parameter: "..interruptParameter,"WireGPU_ErrorFont",16,16+32*3,Color(255,255,255,255))
           draw.DrawText("Address: "..self.XEIP,"WireGPU_ErrorFont",16,16+32*4,Color(255,255,255,255))
-
+          
           local errorPosition = CPULib.Debugger.PositionByPointer[self.XEIP]
           if errorPosition then
             local posText = HCOMP:formatPrefix(errorPosition.Line,errorPosition.Col,errorPosition.File)
-
+            
             draw.DrawText("Debugging data present (may be invalid):","WireGPU_ErrorFont",16,16+32*6,Color(255,255,255,255))
             draw.DrawText("Error at "..posText,"WireGPU_ErrorFont",16,16+32*7,Color(255,255,255,255))
             draw.DrawText("Line: <not available>","WireGPU_ErrorFont",16,16+32*9,Color(255,255,255,255))
@@ -73,7 +73,7 @@ function ENT:OverrideVM()
       end
     end
   end
-
+  
   -- Override ports
   self.VM.WritePort = function(VM,Port,Value)
     VM:WriteCell(63488+Port,Value)
@@ -81,7 +81,7 @@ function ENT:OverrideVM()
   self.VM.ReadPort = function(VM,Port)
     return VM:ReadCell(63488+Port)
   end
-
+  
   -- Override writecell
   self.VM.BaseWriteCell = self.VM.WriteCell
   self.VM.WriteCell = function(VM,Address,Value)
@@ -131,7 +131,7 @@ function ENT:OverrideVM()
   self.VM.InternalRegister[46] = nil --IDLE
   self.VM.InternalRegister[47] = nil --INTR
   self.VM.InternalRegister[52] = nil --NIDT
-
+  
   -- Remove some instructions
   self.VM.OperandCount[16]  = nil --RD
   self.VM.OperandCount[17]  = nil --WD
@@ -164,7 +164,7 @@ function ENT:OverrideVM()
   self.VM.OperandCount[125] = nil --GRL
   self.VM.OperandCount[131] = nil --SMAP
   self.VM.OperandCount[132] = nil --GMAP
-
+  
   -- Add some extra lookups
   self.VM.FontName = {}
   self.VM.FontName[0] = "Lucida Console"
@@ -175,7 +175,7 @@ function ENT:OverrideVM()
   self.VM.FontName[5] = "Coolvetica"
   self.VM.FontName[6] = "Akbar"
   self.VM.FontName[7] = "csd"
-
+  
   -- Add text layouter
   self.VM.Layouter = MakeTextScreenLayouter()
   self.VM.Entity = self
@@ -213,10 +213,10 @@ function VM:Reset()
   self.FS = 0
   self.KS = 0
   self.LS = 0
-
+  
   -- Extended registers
   for reg=0,31 do self["R"..reg] = 0 end
-
+  
   self.ESZ = 32768    -- Stack size register
   self.CMPR = 0       -- Compare register
   self.XEIP = 0       -- Current instruction address register
@@ -379,7 +379,7 @@ function VM:Reset()
   self.Memory[65463] = 0.5
   self.Memory[65462] = 0
   self.Memory[65461] = 0
-
+  
   -- Coordinate pipe
   --  0 - direct (0..512 or 0..1024 range)
   --  1 - mapped to screen
@@ -409,13 +409,13 @@ function VM:Reset()
   self.DistanceCulling = 0
   -- 5 VERTEX_TEXTURING Enable texturing from sprite buffer
   self.VertexTexturing = 0
-
+  
   -- Font layouter related
   self.Font = 0
   self.FontSize = 12
   self.TextBox = { x = 512, y = 512, z = 0, w = 0 }
   self.WordWrapMode = 0
-
+  
   -- Current color
   self.Color = {x = 0, y = 0, z = 0, w = 255}
   self.Material = nil
@@ -434,7 +434,7 @@ function VM:Reset()
   self.ProjectionMatrix[4]  = 0  self.ProjectionMatrix[5]  = 1  self.ProjectionMatrix[6]  = 0  self.ProjectionMatrix[7]  = 0
   self.ProjectionMatrix[8]  = 0  self.ProjectionMatrix[9]  = 0  self.ProjectionMatrix[10] = 1  self.ProjectionMatrix[11] = 0
   self.ProjectionMatrix[12] = 0  self.ProjectionMatrix[13] = 0  self.ProjectionMatrix[14] = 0  self.ProjectionMatrix[15] = 1
-
+  
   -- Reset buffers:
   self.StringCache = {}
   self.VertexBuffer = {}
@@ -514,7 +514,7 @@ function VM:RestoreAsyncThread()
     self:SaveAsyncThread_Util()
     self.AsyncState.IP = self.EntryPoint4
   end
-
+  
   self:RestoreAsyncThread_Util()
 end
 
@@ -525,19 +525,19 @@ end
 --------------------------------------------------------------------------------
 function VM:HardReset()
   self:Reset()
-
+  
   -- Reset registers that usually persist over normal reset
   self.Memory[65533] = 1
   self.Memory[65532] = 0
   self.Memory[65531] = 0
   self.Memory[65535] = 1
-
+  
   self.Memory[65529] = 0
   self.Memory[65528] = 0
   self.Memory[65527] = 60000
-
+  
   self.Memory[65502] = 0
-
+  
   -- Entrypoints to special calls
   --  0  DRAW   Called when screen is being drawn
   --  1  INIT   Called when screen is hard reset
@@ -552,10 +552,10 @@ function VM:HardReset()
   self.EntryPoint5 = 0
   self.EntryPoint6 = 0
   self.EntryPoint7 = 0
-
+  
   -- Is running asynchronous thread
   self.ASYNC = 0
-
+  
   -- Has initialized already
   self.INIT = 0
 end
@@ -569,10 +569,10 @@ function VM:ComputeTextureUV(vertex,u,v)
   local texturesOnSide = math.floor(512/self.Memory[65521])
   local textureX = (1/texturesOnSide) *           (self.Texture % texturesOnSide)
   local textureY = (1/texturesOnSide) * math.floor(self.Texture / texturesOnSide)
-
+  
   local uvStep = (1/512)
   local du,dv = u,v
-
+  
   if (self.Memory[65466] ~= 0) or (self.Memory[65465] ~= 1) then
     local cu,cv = self.Memory[65464],self.Memory[65463]
     local tu,tv = u-cu,v-cv
@@ -605,7 +605,7 @@ function VM:CoordinateTransform(x,y)
     local vD = math.sqrt((x-cX)^2+(y-cY)^2) + 1e-7
     local vX = x / vD
     local vY = y / vD
-
+    
     -- Calculate angle of rotation for the point
     local A
     if self.RAMSize == 65536 then A = math.atan2(vX,vY) -- Old GPU
@@ -614,7 +614,7 @@ function VM:CoordinateTransform(x,y)
 
     -- Rotate point by a certain angle
     A = A + self.Memory[65482]
-
+    
     -- Generate new coordinates
     tX = cX + math.cos(A) * vD * self.Memory[65481] * self.Memory[65475]
     tY = cY + math.sin(A) * vD * self.Memory[65481] * self.Memory[65474]
@@ -640,17 +640,17 @@ function VM:CoordinateTransform(x,y)
     tX = 0.5*self.ScreenWidth+tX
     tY = 0.5*self.ScreenHeight+tY
   end
-
+  
   -- Apply raster quality transform
   local transformedCoordinate = { x = tX, y = tY}
   local rasterQuality = self.Memory[65518]
-
+  
   if rasterQuality > 0 then
     local W,H = self.ScreenWidth/2,self.ScreenHeight/2
     transformedCoordinate.x = (tX-W)*(1-(rasterQuality/W))+W
     transformedCoordinate.y = (tY-H)*(1-(rasterQuality/H))+H
   end
-
+  
   return transformedCoordinate
 end
 
@@ -707,7 +707,7 @@ function VM:VertexTransform(inVertex,toScreen)
   elseif self.VertexPipe == 3 then -- Perspective transform
     local tX = (vertex.x + self.Memory[65512])/(vertex.z + self.Memory[65512])
     local tY = (vertex.y + self.Memory[65512])/(vertex.z + self.Memory[65512])
-
+    
     local resultCoordinate = self:CoordinateTransform(tX,tY)
     resultVertex.x = resultCoordinate.x
     resultVertex.y = resultCoordinate.y
@@ -730,14 +730,14 @@ function VM:VertexTransform(inVertex,toScreen)
     if not toScreen then
       -- Transform into world coordinates
       world = {}
-
+      
       for i=0,3 do
         world[i] = self.ModelMatrix[i*4+0] * vertex.x +
                    self.ModelMatrix[i*4+1] * vertex.y +
                    self.ModelMatrix[i*4+2] * vertex.z +
                    self.ModelMatrix[i*4+3] * vertex.w
       end
-
+  
       worldVertex.x = world[0]
       worldVertex.y = world[1]
       worldVertex.z = world[2]
@@ -753,7 +753,7 @@ function VM:VertexTransform(inVertex,toScreen)
 
     -- Transform into screen coordinates
     local screen = {}
-
+    
     for i=0,3 do
       screen[i] = self.ProjectionMatrix[i*4+0] * world[0] +
                   self.ProjectionMatrix[i*4+1] * world[1] +
@@ -799,7 +799,7 @@ function VM:ReadString(address)
   local charString = ""
   local charCount = 0
   local currentChar = 255
-
+  
   while currentChar ~= 0 do
     currentChar = self:ReadCell(address + charCount)
 
@@ -811,7 +811,7 @@ function VM:ReadString(address)
         return ""
       end
     end
-
+    
     charCount = charCount + 1
     if charCount > 8192 then
       self:Interrupt(23,0)
@@ -855,7 +855,7 @@ function VM:FontWrite(posaddr,text)
   -- Create font
   surface.CreateFont(self.FontName[self.Font], self.FontSize, 800, true, false,
          "WireGPU_"..self.FontName[self.Font]..self.FontSize)
-
+    
   -- Draw text
   if self.RenderEnable == 1 then
     if self.WordWrapMode == 1 then
@@ -881,10 +881,10 @@ function VM:DrawLine(point1,point2,drawNow)
   -- Line centerpoint
   local cX = (point1.x + point2.x) / 2
   local cY = (point1.y + point2.y) / 2
-
+  
   -- Line width
   local W = self.Memory[65476]
-
+  
   -- Line length and angle
   local L = math.sqrt((point1.x-point2.x)^2+(point1.y-point2.y)^2) + 1e-7
   local dX = (point2.x-point1.x) / L
@@ -894,7 +894,7 @@ function VM:DrawLine(point1,point2,drawNow)
 
   -- Generate vertexes
   local vertexBuffer = { {}, {}, {}, {} }
-
+  
   vertexBuffer[1].x = cX - 0.5 * L * math.cos(A-dA)
   vertexBuffer[1].y = cY - 0.5 * L * math.sin(A-dA)
   vertexBuffer[1].u = 0
@@ -945,14 +945,14 @@ function VM:FlushBuffer()
   --   vertexData.color
   --
   -- Light positions: [WORLD SPACE]
-
+      
   if self.VertexBufEnabled == 1 then
     -- Do not flush color-only buffer
     if (#self.VertexBuffer == 1) and (not self.VertexBuffer[1].vertex) then
       self.VertexBuffer = {}
       return
     end
-
+  
     -- Sort triangles by distance
     if self.VertexBufZSort == 1 then
       table.sort(self.VertexBuffer,triangleSortFunction)
@@ -981,60 +981,60 @@ function VM:FlushBuffer()
 
       if vertexData.vertex then
         resultTriangle  = {}
-
+        
         resultTriangle[1] = {}
         resultTriangle[1].x = vertexData.transformedVertex[1].x
         resultTriangle[1].y = vertexData.transformedVertex[1].y
         resultTriangle[1].u = vertexData.transformedVertex[1].u
         resultTriangle[1].v = vertexData.transformedVertex[1].v
-
+  
         resultTriangle[2] = {}
         resultTriangle[2].x = vertexData.transformedVertex[2].x
         resultTriangle[2].y = vertexData.transformedVertex[2].y
         resultTriangle[2].u = vertexData.transformedVertex[2].u
         resultTriangle[2].v = vertexData.transformedVertex[2].v
-
+  
         resultTriangle[3] = {}
         resultTriangle[3].x = vertexData.transformedVertex[3].x
         resultTriangle[3].y = vertexData.transformedVertex[3].y
         resultTriangle[3].u = vertexData.transformedVertex[3].u
         resultTriangle[3].v = vertexData.transformedVertex[3].v
-
+  
         -- Additional processing
         if (self.VertexCulling == 1) or (self.VertexLighting == 1) then
           -- Get vertices (world space)
           local v1 = vertexData.vertex[1]
           local v2 = vertexData.vertex[2]
           local v3 = vertexData.vertex[3]
-
+          
           -- Compute barycenter (world space)
           local vpos = {
             x = (v1.x+v2.x) * 1/3,
             y = (v1.y+v2.y) * 1/3,
             z = (v1.z+v2.z) * 1/3
           }
-
+  
           -- Compute normal (world space)
           local x1 = v2.x - v1.x
           local y1 = v2.y - v1.y
           local z1 = v2.z - v1.z
-
+  
           local x2 = v3.x - v1.x
           local y2 = v3.y - v1.y
           local z2 = v3.z - v1.z
-
+  
           local normal = {
             x = y1*z2-y2*z1,
             y = z1*x2-z2*x1,
             z = x1*y2-x2*y1
           }
-
+  
           -- Normalize it
           local d = (normal.x^2 + normal.y^2 + normal.z^2)^(1/2)+1e-7
           normal.x = normal.x / d
           normal.y = normal.y / d
           normal.z = normal.z / d
-
+  
           -- Perform culling
           if self.VertexCulling == 1 then
             if self.Memory[65469] == 0 then
@@ -1043,12 +1043,12 @@ function VM:FlushBuffer()
               cullVertex = (normal.x*v1.x + normal.y*v1.y + normal.z*v1.z) >= 0
             end
           end
-
+  
           -- Perform vertex lighting
           if (self.VertexLighting == 1) and (not cullVertex) then
             -- Extra color generated by lights
             local lightColor = { x = 0, y = 0, z = 0, w = 255}
-
+  
             -- Apply all lights (world space calculations)
             for i=0,7 do
               if self.Lights[i] then
@@ -1061,7 +1061,7 @@ function VM:FlushBuffer()
                 lightPosition.x = lightPosition.x / lightLength
                 lightPosition.y = lightPosition.y / lightLength
                 lightPosition.z = lightPosition.z / lightLength
-
+                
                 local lightDot
                 if self.Memory[65468] == 0 then
                   lightDot = math.abs(lightPosition.x*normal.x +
@@ -1073,49 +1073,49 @@ function VM:FlushBuffer()
                                       lightPosition.z*normal.z))*self.Lights[i].Color.w
 
                 end
-
+  
                 lightColor.x = math.min(lightColor.x + self.Lights[i].Color.x * lightDot,255)
                 lightColor.y = math.min(lightColor.y + self.Lights[i].Color.y * lightDot,255)
                 lightColor.z = math.min(lightColor.z + self.Lights[i].Color.z * lightDot,255)
               end
             end
-
+            
             -- Modulate object color with light color
             resultColor.x = (1/255) * resultColor.x * lightColor.x
             resultColor.y = (1/255) * resultColor.y * lightColor.y
             resultColor.z = (1/255) * resultColor.z * lightColor.z
           end
-
+  
           -- Perform distance culling
           if (self.DistanceCulling == 1) and (not cullVertex) then
             local Infront = {}
             local Behind = {}
-
+  
             local frontCullDistance = self.Memory[65470]
             local K = -frontCullDistance
-
+  
             -- Generate list of vertices which go behind the camera
             if v1.z - K >= 0
             then Behind [#Behind  + 1] = v1
             else Infront[#Infront + 1] = v1
             end
-
+            
             if v2.z - K >= 0
             then Behind [#Behind  + 1] = v2
             else Infront[#Infront + 1] = v2
             end
-
+            
             if v3.z - K >= 0
             then Behind [#Behind  + 1] = v3
             else Infront[#Infront + 1] = v3
             end
-
+  
             if #Behind == 1 then
               local Point1 = Infront[1]
               local Point2 = Infront[2]
               local Point3 = Behind[1]
               local Point4 = {}
-
+  
               local D1 = {
                 x = Point3.x - Point1.x,
                 y = Point3.y - Point1.y,
@@ -1126,40 +1126,40 @@ function VM:FlushBuffer()
                 y = Point3.y - Point2.y,
                 z = Point3.z - Point2.z,
               }
-
+  
               local T1 = D1.z
               local T2 = D2.z
-
+  
               if (T1 ~= 0) and (T2 ~= 0) then
                 local S1 = (K - Point1.z)/T1
                 local S2 = (K - Point2.z)/T2
-
+  
                 -- Calculate the new UV values
                 Point4.u = Point2.u + S2 * (Point3.u - Point2.u)
                 Point4.v = Point2.v + S2 * (Point3.v - Point2.v)
-
+  
                 Point3.u = Point1.u + S1 * (Point3.u - Point1.u)
                 Point3.v = Point1.v + S1 * (Point3.v - Point1.v)
-
+  
                 -- Calculate new coordinates
                 Point3.x = Point1.x + S1 * D1.x
                 Point3.y = Point1.y + S1 * D1.y
                 Point3.z = Point1.z + S1 * D1.z
-
+  
                 Point4.x = Point2.x + S2 * D2.x
                 Point4.y = Point2.y + S2 * D2.y
                 Point4.z = Point2.z + S2 * D2.z
-
+  
                 -- Transform the points (from world space to screen space)
                 local P1t = self:VertexTransform(Point1,true)
                 local P2t = self:VertexTransform(Point2,true)
                 local P3t = self:VertexTransform(Point3,true)
                 local P4t = self:VertexTransform(Point4,true)
-
+  
                 resultTriangle[1] = P1t
                 resultTriangle[2] = P2t
                 resultTriangle[3] = P3t
-
+  
                 resultTriangle2 = {}
                 resultTriangle2[1] = P2t
                 resultTriangle2[2] = P3t
@@ -1169,7 +1169,7 @@ function VM:FlushBuffer()
               local Point1 = Infront[1]
               local Point2 = Behind[1]
               local Point3 = Behind[2]
-
+              
               local D1 = {
                 x = Point2.x - Point1.x,
                 y = Point2.y - Point1.y,
@@ -1180,35 +1180,35 @@ function VM:FlushBuffer()
                 y = Point3.y - Point1.y,
                 z = Point3.z - Point1.z,
               }
-
+              
               local T1 = D1.z
               local T2 = D2.z
-
+  
               if (T1 ~= 0) and (T2 ~= 0) then
                 local S1 = (K - Point1.z)/T1
                 local S2 = (K - Point1.z)/T2
-
+  
                 --Calculate the new UV values
                 Point2.u = Point1.u + S1 * (Point2.u - Point1.u)
                 Point2.v = Point1.v + S1 * (Point2.v - Point1.v)
-
+  
                 Point3.u = Point1.u + S2 * (Point3.u - Point1.u)
                 Point3.v = Point1.v + S2 * (Point3.v - Point1.v)
-
+  
                 -- Calculate new coordinates
                 Point2.x = Point1.x + S1 * D1.x
                 Point2.y = Point1.y + S1 * D1.y
                 Point2.z = Point1.z + S1 * D1.z
-
+  
                 Point3.x = Point1.x + S2 * D2.x
                 Point3.y = Point1.y + S2 * D2.y
                 Point3.z = Point1.z + S2 * D2.z
-
+  
                 -- Transform the points (from world space to screen space)
                 local P1t = self:VertexTransform(Point1,true)
                 local P2t = self:VertexTransform(Point2,true)
                 local P3t = self:VertexTransform(Point3,true)
-
+  
                 resultTriangle[1] = P1t
                 resultTriangle[2] = P2t
                 resultTriangle[3] = P3t
@@ -1244,7 +1244,7 @@ function VM:FlushBuffer()
                 self:DrawLine(point1,point2,true)
               end
             end
-
+            
             if resultTriangle2  then
               for i=1,#resultTriangle2 do
                 local point1 = resultTriangle2[i]
@@ -1281,7 +1281,7 @@ function VM:SetColor(color)
       }
     end
   end
-
+  
   self.Color = self:ColorTransform(color)
 end
 
@@ -1301,7 +1301,7 @@ function VM:SetMaterial(material)
       }
     end
   end
-
+  
   self.Material = material
 end
 
@@ -1355,7 +1355,7 @@ function VM:DrawToBuffer(vertexData,isWireframe)
       self.VertexBuffer[#self.VertexBuffer].transformedVertex = {}
       self.VertexBuffer[#self.VertexBuffer].wireframe = isWireframe
     end
-
+    
     -- Add RT material if required
     if self.VertexTexturing == 1 then
       if self.Memory[65517] == 1 then
@@ -1366,7 +1366,7 @@ function VM:DrawToBuffer(vertexData,isWireframe)
       end
     end
 
-
+    
     -- Add all vertices
     for _,vertex in ipairs(vertexData) do
       local screenVertex,worldVertex = self:VertexTransform(vertex)
@@ -1375,13 +1375,13 @@ function VM:DrawToBuffer(vertexData,isWireframe)
     end
   else
     local resultPoly = {}
-
+    
     -- Transform vertices
     for _,vertex in ipairs(vertexData) do
       local screenVertex,worldVertex = self:VertexTransform(vertex)
       table.insert(resultPoly,screenVertex)
     end
-
+    
     -- Draw
     if self.RenderEnable == 1 then
       self:BindState()
@@ -1428,7 +1428,7 @@ VM.OpcodeTable[200] = function(self)  --DRECT_TEST
   self:Dyn_Emit("if VM.RenderEnable == 1 then")
     self:Dyn_Emit("$L W = VM.ScreenWidth")
     self:Dyn_Emit("$L H = VM.ScreenHeight")
-
+    
     self:Dyn_Emit("surface.SetTexture(0)")
     self:Dyn_Emit("surface.SetDrawColor(200,200,200,255)")
     self:Dyn_Emit("surface.DrawRect(W*0.125*0,0,W*0.125,H*0.80)")
@@ -1444,7 +1444,7 @@ VM.OpcodeTable[200] = function(self)  --DRECT_TEST
     self:Dyn_Emit("surface.DrawRect(W*0.125*5,0,W*0.125,H*0.80)")
     self:Dyn_Emit("surface.SetDrawColor(000,000,200,255)")
     self:Dyn_Emit("surface.DrawRect(W*0.125*6,0,W*0.125,H*0.80)")
-
+  
     self:Dyn_Emit("for gray=0,7 do")
       self:Dyn_Emit("surface.SetDrawColor(31*gray,31*gray,31*gray,255)")
       self:Dyn_Emit("surface.DrawRect(W*0.125*gray,H*0.80,W*0.125,H*0.20)")
@@ -1575,7 +1575,7 @@ VM.OpcodeTable[220] = function(self)  --DVXDATA_2F
 
     self:Dyn_Emit("VM:ComputeTextureUV(VD[IDX],VD[IDX].x/512,VD[IDX].y/512)")
   self:Dyn_Emit("end")
-
+  
   self:Dyn_EmitInterruptCheck()
   self:Dyn_Emit("VM:DrawToBuffer(VD)")
 end
@@ -1590,18 +1590,18 @@ VM.OpcodeTable[221] = function(self)  --DVXDATA_2F_TEX
       self:Dyn_Emit("  x = VM:ReadCell(VDATA+VIDX*4+0),")
       self:Dyn_Emit("  y = VM:ReadCell(VDATA+VIDX*4+1),")
       self:Dyn_Emit("}")
-
+      
       self:Dyn_Emit("VM:ComputeTextureUV(VD[IDX],VM:ReadCell(VDATA+VIDX*4+2),VM:ReadCell(VDATA+VIDX*4+3))")
     self:Dyn_Emit("else")
       self:Dyn_Emit("VD[IDX] = {")
       self:Dyn_Emit("  x = VM:ReadCell(ADDR+(IDX-1)*4+0),")
       self:Dyn_Emit("  y = VM:ReadCell(ADDR+(IDX-1)*4+1),")
       self:Dyn_Emit("}")
-
+      
       self:Dyn_Emit("VM:ComputeTextureUV(VD[IDX],VM:ReadCell(ADDR+(IDX-1)*4+2),VM:ReadCell(ADDR+(IDX-1)*4+3))")
     self:Dyn_Emit("end")
   self:Dyn_Emit("end")
-
+  
   self:Dyn_EmitInterruptCheck()
   self:Dyn_Emit("VM:DrawToBuffer(VD)")
 end
@@ -1646,11 +1646,11 @@ VM.OpcodeTable[222] = function(self)  --DVXDATA_3F
       self:Dyn_Emit("  z = VM:ReadCell(ADDR+(IDX-1)*9+8),")
       self:Dyn_Emit("}")
     self:Dyn_Emit("end")
-
+    
     self:Dyn_Emit("VM:ComputeTextureUV(VD[1],0,0)")
     self:Dyn_Emit("VM:ComputeTextureUV(VD[2],1,0)")
     self:Dyn_Emit("VM:ComputeTextureUV(VD[3],1,1)")
-
+    
     self:Dyn_EmitInterruptCheck()
     self:Dyn_Emit("VM:DrawToBuffer(VD)")
   self:Dyn_Emit("end")
@@ -1679,7 +1679,7 @@ VM.OpcodeTable[223] = function(self)  --DVXDATA_3F_TEX
       self:Dyn_Emit("  y = VM:ReadCell(VDATA+VIDX3*5+1),")
       self:Dyn_Emit("  z = VM:ReadCell(VDATA+VIDX3*5+2),")
       self:Dyn_Emit("}")
-
+      
       self:Dyn_Emit("VM:ComputeTextureUV(VD[1],VM:ReadCell(VDATA+VIDX1*5+3),VM:ReadCell(VDATA+VIDX1*5+4))")
       self:Dyn_Emit("VM:ComputeTextureUV(VD[2],VM:ReadCell(VDATA+VIDX2*5+3),VM:ReadCell(VDATA+VIDX2*5+4))")
       self:Dyn_Emit("VM:ComputeTextureUV(VD[3],VM:ReadCell(VDATA+VIDX3*5+3),VM:ReadCell(VDATA+VIDX3*5+4))")
@@ -1699,12 +1699,12 @@ VM.OpcodeTable[223] = function(self)  --DVXDATA_3F_TEX
       self:Dyn_Emit("  y = VM:ReadCell(ADDR+(IDX-1)*15+11),")
       self:Dyn_Emit("  z = VM:ReadCell(ADDR+(IDX-1)*15+12),")
       self:Dyn_Emit("}")
-
+      
       self:Dyn_Emit("VM:ComputeTextureUV(VD[1],VM:ReadCell(ADDR+(IDX-1)*15+ 3),VM:ReadCell(ADDR+(IDX-1)*15+ 4))")
       self:Dyn_Emit("VM:ComputeTextureUV(VD[2],VM:ReadCell(ADDR+(IDX-1)*15+ 8),VM:ReadCell(ADDR+(IDX-1)*15+ 9))")
       self:Dyn_Emit("VM:ComputeTextureUV(VD[3],VM:ReadCell(ADDR+(IDX-1)*15+13),VM:ReadCell(ADDR+(IDX-1)*15+14))")
     self:Dyn_Emit("end")
-
+    
     self:Dyn_EmitInterruptCheck()
     self:Dyn_Emit("VM:DrawToBuffer(VD)")
   self:Dyn_Emit("end")
@@ -1759,7 +1759,7 @@ VM.OpcodeTable[225] = function(self)  --DRECT
   self:Dyn_Emit("$L VD = {}")
   self:Dyn_Emit("$L ADDR1 = $1")
   self:Dyn_Emit("$L ADDR2 = $2")
-
+  
   self:Dyn_Emit("VD[1] = {")
   self:Dyn_Emit("  x = VM:ReadCell(ADDR1+0),")
   self:Dyn_Emit("  y = VM:ReadCell(ADDR1+1)}")
@@ -1772,12 +1772,12 @@ VM.OpcodeTable[225] = function(self)  --DRECT
   self:Dyn_Emit("VD[4] = {")
   self:Dyn_Emit("  x = VM:ReadCell(ADDR1+0),")
   self:Dyn_Emit("  y = VM:ReadCell(ADDR2+1)}")
-
+  
   self:Dyn_Emit("VM:ComputeTextureUV(VD[1],0,0)")
   self:Dyn_Emit("VM:ComputeTextureUV(VD[2],1,0)")
   self:Dyn_Emit("VM:ComputeTextureUV(VD[3],1,1)")
   self:Dyn_Emit("VM:ComputeTextureUV(VD[4],0,1)")
-
+  
   self:Dyn_EmitInterruptCheck()
   self:Dyn_Emit("VM:DrawToBuffer(VD)")
 end
@@ -1788,7 +1788,7 @@ VM.OpcodeTable[226] = function(self)  --DCIRCLE
   self:Dyn_Emit("$L START = VM:ReadCell(65478)")
   self:Dyn_Emit("$L END = VM:ReadCell(65477)")
   self:Dyn_Emit("$L STEP = (END-START)/SIDES")
-
+  
   self:Dyn_Emit("$L VEC = VM:ReadVector2f($1)")
   self:Dyn_EmitInterruptCheck()
 
@@ -1802,11 +1802,11 @@ VM.OpcodeTable[226] = function(self)  --DCIRCLE
     self:Dyn_Emit("VD[3] = {")
     self:Dyn_Emit("  x = VEC.x + R*math.sin(START+STEP*(IDX+1)),")
     self:Dyn_Emit("  y = VEC.y + R*math.cos(START+STEP*(IDX+1))}")
-
+    
     self:Dyn_Emit("VM:ComputeTextureUV(VD[1],0,0)")
     self:Dyn_Emit("VM:ComputeTextureUV(VD[2],1,0)")
     self:Dyn_Emit("VM:ComputeTextureUV(VD[3],1,1)")
-
+    
     self:Dyn_Emit("VM:DrawToBuffer(VD)")
   self:Dyn_Emit("end")
 end
@@ -1830,7 +1830,7 @@ VM.OpcodeTable[228] = function(self)  --DRECTWH
   self:Dyn_Emit("VD[4] = {")
   self:Dyn_Emit("  x = VM:ReadCell(ADDR1+0),")
   self:Dyn_Emit("  y = VM:ReadCell(ADDR1+1)+VM:ReadCell(ADDR2+1)}")
-
+  
   self:Dyn_Emit("VM:ComputeTextureUV(VD[1],0,0)")
   self:Dyn_Emit("VM:ComputeTextureUV(VD[2],1,0)")
   self:Dyn_Emit("VM:ComputeTextureUV(VD[3],1,1)")
@@ -1892,7 +1892,7 @@ VM.OpcodeTable[234] = function(self)  --DORECTWH
   self:Dyn_Emit("$L VD = {}")
   self:Dyn_Emit("$L ADDR1 = $1")
   self:Dyn_Emit("$L ADDR2 = $2")
-
+  
   self:Dyn_Emit("VD[1] = {")
   self:Dyn_Emit("  x = VM:ReadCell(ADDR1+0),")
   self:Dyn_Emit("  y = VM:ReadCell(ADDR1+1)}")
@@ -1905,7 +1905,7 @@ VM.OpcodeTable[234] = function(self)  --DORECTWH
   self:Dyn_Emit("VD[4] = {")
   self:Dyn_Emit("  x = VM:ReadCell(ADDR1+0),")
   self:Dyn_Emit("  y = VM:ReadCell(ADDR1+1)+VM:ReadCell(ADDR2+1)}")
-
+  
   self:Dyn_EmitInterruptCheck()
   self:Dyn_Emit("VM:DrawLine(VD[1],VD[2])")
   self:Dyn_Emit("VM:DrawLine(VD[2],VD[3])")
@@ -1926,7 +1926,7 @@ VM.OpcodeTable[238] = function(self)  --DPIXEL
   self:Dyn_Emit("$L COLOR = VM:ColorTransform(VM:ReadVector4f($2))")
   self:Dyn_Emit("$L POS = VM:ReadVector2f($1)")
   self:Dyn_EmitInterruptCheck()
-
+  
   self:Dyn_Emit("surface.SetTexture(0)")
   self:Dyn_Emit("surface.SetDrawColor(COLOR.x,COLOR.y,COLOR.z,COLOR.w)")
   self:Dyn_Emit("surface.DrawRect(math.floor(POS.x),math.floor(POS.y),1,1)")
@@ -1988,11 +1988,11 @@ end
 VM.OpcodeTable[246] = function(self)  --DWRITEFMT string.format(
   self:Dyn_Emit("$L text = VM:ReadString($2)")
   self:Dyn_EmitInterruptCheck()
-
+  
   self:Dyn_Emit("$L ptr = $2 + #text + 1")
   self:Dyn_Emit("$L ptr2 = VM.Memory[65512] or 0")
   self:Dyn_Emit("if ptr2 ~= 0 then ptr = ptr2 end")
-
+  
   self:Dyn_Emit("local finaltext = \"\"")
 
   self:Dyn_Emit("local inparam = false")
@@ -2130,7 +2130,7 @@ VM.OpcodeTable[280] = function(self)  --DDFRAME
   self:Dyn_Emit("$L V2 = VM:ReadVector2f(ADDR+2)") -- W,H
   self:Dyn_Emit("$L V3 = VM:ReadVector4f(ADDR+4)") -- C1,C2,C3,BorderSize
   self:Dyn_EmitInterruptCheck()
-
+  
   self:Dyn_Emit("$L CSHADOW    = VM:ReadVector3f(V3.x)")
   self:Dyn_Emit("$L CHIGHLIGHT = VM:ReadVector3f(V3.y)")
   self:Dyn_Emit("$L CFACE      = VM:ReadVector3f(V3.z)")
@@ -2149,7 +2149,7 @@ VM.OpcodeTable[280] = function(self)  --DDFRAME
   self:Dyn_Emit("VD1[4] = {")
   self:Dyn_Emit("  x = V3.w + V1.x,")
   self:Dyn_Emit("  y = V3.w + V1.y + V2.y}")
-
+  
   -- Highlight rectangle
   self:Dyn_Emit("$L VD2 = {}")
   self:Dyn_Emit("VD2[1] = {")
@@ -2164,7 +2164,7 @@ VM.OpcodeTable[280] = function(self)  --DDFRAME
   self:Dyn_Emit("VD2[4] = {")
   self:Dyn_Emit("  x = -V3.w + V1.x,")
   self:Dyn_Emit("  y = -V3.w + V1.y + V2.y}")
-
+  
   -- Face rectangle
   self:Dyn_Emit("$L VD3 = {}")
   self:Dyn_Emit("VD3[1] = {")
@@ -2184,12 +2184,12 @@ VM.OpcodeTable[280] = function(self)  --DDFRAME
   self:Dyn_Emit("VM:ComputeTextureUV(VD1[2],1,0)")
   self:Dyn_Emit("VM:ComputeTextureUV(VD1[3],1,1)")
   self:Dyn_Emit("VM:ComputeTextureUV(VD1[4],0,1)")
-
+  
   self:Dyn_Emit("VM:ComputeTextureUV(VD2[1],0,0)")
   self:Dyn_Emit("VM:ComputeTextureUV(VD2[2],1,0)")
   self:Dyn_Emit("VM:ComputeTextureUV(VD2[3],1,1)")
   self:Dyn_Emit("VM:ComputeTextureUV(VD2[4],0,1)")
-
+  
   self:Dyn_Emit("VM:ComputeTextureUV(VD3[1],0,0)")
   self:Dyn_Emit("VM:ComputeTextureUV(VD3[2],1,0)")
   self:Dyn_Emit("VM:ComputeTextureUV(VD3[3],1,1)")
@@ -2234,7 +2234,7 @@ VM.OpcodeTable[285] = function(self)  --DDTERRAIN
         self:Dyn_Emit("$L Z2 = VM:ReadCell(ADDR+16+(Y-1)*W+(X-0)")
         self:Dyn_Emit("$L Z3 = VM:ReadCell(ADDR+16+(Y-0)*W+(X-0)")
         self:Dyn_Emit("$L Z4 = VM:ReadCell(ADDR+16+(Y-0)*W+(X-1)")
-
+      
         self:Dyn_Emit("VD[1] = {")
         self:Dyn_Emit("  x = XPOS,")
         self:Dyn_Emit("  y = YPOS,")
@@ -2247,12 +2247,12 @@ VM.OpcodeTable[285] = function(self)  --DDTERRAIN
         self:Dyn_Emit("  x = XPOS+1,")
         self:Dyn_Emit("  y = YPOS+1,")
         self:Dyn_Emit("  y = Z3}")
-
+        
         self:Dyn_Emit("VM:ComputeTextureUV(VD[1],0,0)")
         self:Dyn_Emit("VM:ComputeTextureUV(VD[2],1,0)")
         self:Dyn_Emit("VM:ComputeTextureUV(VD[3],1,1)")
         self:Dyn_Emit("VM:DrawToBuffer(VD)")
-
+        
         self:Dyn_Emit("VD[1] = {")
         self:Dyn_Emit("  x = XPOS,")
         self:Dyn_Emit("  y = YPOS,")

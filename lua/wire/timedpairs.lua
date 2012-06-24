@@ -41,7 +41,7 @@ end
 
 hook.Add("Think","WireLib_Timedpairs", function()
 	if not next(functions) then return end
-
+	
 	local toremove = {}
 
 	for name, data in pairs( functions ) do
@@ -51,7 +51,7 @@ hook.Add("Think","WireLib_Timedpairs", function()
 			if data.currentindex <= #lookup then -- If there are any more values..
 				local kv = lookup[data.currentindex] or {} -- Get the current key and value
 				local ok, err = pcall( data.callback, kv.key, kv.value, unpack(data.args) ) -- DO EET
-
+				
 				if not ok then -- oh noes
 					ErrorNoHalt( "Error in Timedpairs '" .. name .. "': " .. err )
 					toremove[#toremove+1] = name
@@ -64,7 +64,7 @@ hook.Add("Think","WireLib_Timedpairs", function()
 				if data.endcallback then -- If we had any end callback function
 					local kv = data.lookup[data.currentindex-1] or {} -- get previous key & value
 					local ok, err = pcall( data.endcallback, kv.key, kv.value, unpack(data.args) )
-
+					
 					if not ok then
 						ErrorNoHalt( "Error in Timedpairs '" .. name .. "' (in end function): " .. err )
 					end
@@ -74,7 +74,7 @@ hook.Add("Think","WireLib_Timedpairs", function()
 			end
 		end
 	end
-
+	
 	for i=1,#toremove do -- Remove all that were flagged for removal
 		functions[toremove[i]] = nil
 	end

@@ -73,9 +73,9 @@ local ModelList = {
 	["hexagon"]           = "hexagon",
 	["octagon"]           = "octagon",
 	["right_prism"]       = "right_prism",
-
+	
 	// Removed models with their replacements
-
+	
 	["dome"]             = "hq_dome",
 	["dome2"]            = "hq_hdome",
 	["hqcone"]           = "hq_cone",
@@ -87,9 +87,9 @@ local ModelList = {
 	["hqsphere2"]        = "hq_sphere",
 	["hqtorus"]          = "hq_torus_oldsize",
 	["hqtorus2"]         = "hq_torus_oldsize",
-
+	
 	// HQ models with their short names
-
+	
 	["hqhdome"]          = "hq_hdome",
 	["hqhdome2"]         = "hq_hdome_thin",
 	["hqhdome3"]         = "hq_hdome_thick",
@@ -115,7 +115,7 @@ for _,v in pairs( ModelList ) do
 	if !added[v] then
 		util.PrecacheModel( "models/Holograms/" .. v .. ".mdl" )
 		resource.AddSingleFile( "models/Holograms/" .. v .. ".mdl" )
-
+		
 		added[v] = true
 	end
 end
@@ -240,10 +240,10 @@ local function rescale(Holo, scale)
 	local z = math.Clamp( scale[3], minval, maxval )
 
 	local scale = Vector(x, y, z)
-
+	
 	local obbmax = Holo.ent:OBBMaxs()
 	local obbmin = Holo.ent:OBBMins()
-
+	
 	if Holo.scale ~= scale then
 		table.insert(scale_queue, { Holo, scale })
 		Holo.scale = scale
@@ -429,22 +429,22 @@ local function CreateHolo(self, index, pos, scale, ang, color, model)
 		PlayerAmount[self.uid] = PlayerAmount[self.uid]+1
 		Holo.ent = prop
 		Holo.e2owner = self
-
+		
 		prop:CallOnRemove( "holo_on_parent_removal", function( ent, self, index ) --Remove on parent remove
 			local parent = ent:GetParent()
-
+			
 			if !IsValid( parent ) then return end
-
+			
 			local Holo = CheckIndex( self, index )
 			if !Holo then return end
-
+			
 			PlayerAmount[self.uid] = PlayerAmount[self.uid] - 1
 			SetIndex( self, index, nil )
 		end, self, index )
 	end
 
 	if not validEntity(prop) then return nil end
-	if color then prop:SetColor(color[1],color[2],color[3],255) end
+	if color then prop:SetColor(Color(color[1],color[2],color[3],255)) end
 
 	rescale(Holo, scale)
 
@@ -607,7 +607,7 @@ __e2setcost(5)
 
 e2function number holoCanCreate()
 	if (not checkOwner(self)) then return 0 end
-
+	
 	if CheckSpawnTimer(self, true) == false or PlayerAmount[self.uid] >= GetConVar("wire_holograms_max"):GetInt() then
 
 		return 0
@@ -648,7 +648,7 @@ e2function void holoScaleUnits(index, vector size)
 	local x = size[1] / propsize.x
 	local y = size[2] / propsize.y
 	local z = size[3] / propsize.z
-
+	
 	rescale(Holo, Vector(x, y, z))
 end
 
@@ -657,7 +657,7 @@ e2function vector holoScaleUnits(index)
 	if not Holo then return {0,0,0} end
 
 	local scale = Holo.scale or {0,0,0} -- TODO: maybe {1,1,1}?
-
+	
 	local propsize = Holo.ent:OBBMaxs()-Holo.ent:OBBMins()
 
 	return Vector(scale[1] * propsize.x, scale[2] * propsize.y, scale[3] * propsize.z)
@@ -729,30 +729,30 @@ e2function void holoColor(index, vector color)
 	local Holo = CheckIndex(self, index)
 	if not Holo then return end
 
-	local _,_,_,alpha = Holo.ent:GetColor()
-	Holo.ent:SetColor(color[1],color[2],color[3],alpha)
+	local c = Holo.ent:GetColor()
+	Holo.ent:SetColor(Color(color[1],color[2],color[3],c.a))
 end
 
 e2function void holoColor(index, vector4 color)
 	local Holo = CheckIndex(self, index)
 	if not Holo then return end
 
-	Holo.ent:SetColor(color[1],color[2],color[3],color[4])
+	Holo.ent:SetColor(Color(color[1],color[2],color[3],color[4]))
 end
 
 e2function void holoColor(index, vector color, alpha)
 	local Holo = CheckIndex(self, index)
 	if not Holo then return end
 
-	Holo.ent:SetColor(color[1],color[2],color[3],alpha)
+	Holo.ent:SetColor(Color(color[1],color[2],color[3],alpha))
 end
 
 e2function void holoAlpha(index, alpha)
 	local Holo = CheckIndex(self, index)
 	if not Holo then return end
 
-	local r,g,b = Holo.ent:GetColor()
-	Holo.ent:SetColor(r,g,b,alpha)
+	local c = Holo.ent:GetColor()
+	Holo.ent:SetColor(Color(c.r,c.g,c.b,alpha))
 end
 
 e2function void holoShadow(index, has_shadow)
@@ -847,7 +847,7 @@ local function Parent_Hologram(holo, ent, bone, attachment)
 	if ent:GetParent() and ent:GetParent():IsValid() and ent:GetParent() == holo.ent then return end
 
 	holo.ent:SetParent(ent)
-
+	
 	if bone != nil then
 		holo.ent:SetParentPhysNum(bone)
 	end
@@ -911,7 +911,7 @@ end
 e2function void holoUnparent(index)
 	local Holo = CheckIndex(self, index)
 	if not Holo then return end
-
+		
 	Holo.ent:SetParent(nil)
 	Holo.ent:SetParentPhysNum(0)
 end
@@ -1127,3 +1127,5 @@ registerCallback( "postinit", function()
 		wire_holograms = nil
 	end )
 end )
+
+-- CLOSE

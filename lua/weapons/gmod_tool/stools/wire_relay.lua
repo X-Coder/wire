@@ -44,14 +44,14 @@ TOOL.ClientConVar = {
 cleanup.Register( "wire_relays" )
 
 function TOOL:LeftClick( trace )
-
+	
 	if (!trace.HitPos) then return false end
 	if (trace.Entity:IsPlayer()) then return false end
 	if ( CLIENT ) then return true end
 	if not util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) then return false end
-
+	
 	local ply = self:GetOwner()
-
+	
 	local _keygroup1   = self:GetClientNumber( "keygroup1" )
 	local _keygroup2   = self:GetClientNumber( "keygroup2" )
 	local _keygroup3   = self:GetClientNumber( "keygroup3" )
@@ -66,52 +66,52 @@ function TOOL:LeftClick( trace )
 	local _throws      = self:GetClientNumber( "throws" )
 	local _model       = self:GetClientInfo( "model" )
 	if not util.IsValidModel( _model ) or not util.IsValidProp( _model ) then return end
-
+	
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_relay" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( _keygroup1, _keygroup2, _keygroup3, _keygroup4, _keygroup5, _keygroupoff, _toggle, _normclose, _poles, _throws, _nokey )
 		return true
 	end
-
+	
 	if ( !self:GetSWEP():CheckLimit( "wire_relays" ) ) then return false end
-
+	
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
-
+	
 	local wire_relay = MakeWireRelay( ply, trace.HitPos, Ang, _model, _keygroup1, _keygroup2, _keygroup3, _keygroup4, _keygroup5, _keygroupoff, _toggle, _normclose, _poles, _throws, _nokey )
-
+	
 	local min = wire_relay:OBBMins()
 	wire_relay:SetPos( trace.HitPos - trace.HitNormal * min.z )
-
+	
 	local const = WireLib.Weld(wire_relay, trace.Entity, trace.PhysicsBone, true)
-
+	
 	undo.Create("WireRelay")
 		undo.AddEntity( wire_relay )
 		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
-
+	
 	ply:AddCleanup( "wire_relays", wire_relay )
-
+	
 	return true
 end
 
 if (SERVER) then
-
+	
 	function MakeWireRelay( pl, Pos, Ang, model, keygroup1, keygroup2, keygroup3, keygroup4, keygroup5, keygroupoff, toggle, normclose, poles, throws, nokey)
 		--print(model)
 		if ( !pl:CheckLimit( "wire_relays" ) ) then return false end
-
+		
 		local wire_relay = ents.Create( "gmod_wire_relay" )
 		if (!wire_relay:IsValid()) then return false end
-
+		
 		wire_relay:SetAngles( Ang )
 		wire_relay:SetPos( Pos )
 		wire_relay:SetModel( Model(model) )
 		wire_relay:Spawn()
-
+		
 		wire_relay:Setup( keygroup1, keygroup2, keygroup3, keygroup4, keygroup5, keygroupoff, toggle, normclose, poles, throws )
 		wire_relay:SetPlayer( pl )
-
+		
 		if (!nokey) then
 			if (keygroupoff) then
 				numpad.OnDown( pl, keygroupoff, "WireRelay_On", wire_relay, 0 )
@@ -138,7 +138,7 @@ if (SERVER) then
 				numpad.OnUp( pl, keygroup5, "WireRelay_Off", wire_relay, 5 )
 			end
 		end
-
+		
 		local ttable = {
 			keygroup1   = keygroup1,
 			keygroup2   = keygroup2,
@@ -154,36 +154,36 @@ if (SERVER) then
 			pl          = pl
 		}
 		table.Merge(wire_relay, ttable )
-
+		
 		pl:AddCount( "wire_relays", wire_relay )
-
+		
 		return wire_relay
 	end
-
+	
 	duplicator.RegisterEntityClass("gmod_wire_relay", MakeWireRelay, "Pos", "Ang", "Model", "keygroup1", "keygroup2", "keygroup3", "keygroup4", "keygroup5", "keygroupoff", "toggle", "normclose", "poles", "throws", "nokey")
-
+	
 end
 
 function TOOL:UpdateGhost( ent, player )
-
+	
 	if ( !ent || !ent:IsValid() ) then return end
-
+	
 	local trace = player:GetEyeTrace()
-
+	
 	if (!trace.Hit || trace.Entity:IsPlayer() || trace.Entity:GetClass() == "gmod_wire_relay" ) then
 		ent:SetNoDraw( true )
 		return
 	end
-
+	
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
-
+	
 	local min = ent:OBBMins()
 	ent:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	ent:SetAngles( Ang )
-
+	
 	ent:SetNoDraw( false )
-
+	
 end
 
 function TOOL:Think()
@@ -191,19 +191,19 @@ function TOOL:Think()
 	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != model ) then
 		self:MakeGhostEntity( model, Vector(0,0,0), Angle(0,0,0) )
 	end
-
+	
 	self:UpdateGhost( self.GhostEntity, self:GetOwner() )
-
+	
 end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_relay_name", Description = "#Tool_wire_relay_desc" })
-
+	
 	panel:AddControl("ComboBox", {
 		Label = "#Presets",
 		MenuButton = "1",
 		Folder = "wire_relay",
-
+		
 		Options = {
 			Default = {
 				wire_relay_keygroup1 = "1",
@@ -218,7 +218,7 @@ function TOOL.BuildCPanel(panel)
 				wire_relay_throws = "2"
 			}
 		},
-
+		
 		CVars = {
 			[0] = "wire_relay_keygroup1",
 			[1] = "wire_relay_keygroup2",
@@ -232,9 +232,9 @@ function TOOL.BuildCPanel(panel)
 			[9] = "wire_relay_throws"
 		}
 	})
-
-
-
+	
+	
+	
 	panel:AddControl("Slider", {
 		Label = "#WireRelayTool_poles",
 		Type = "Integer",
@@ -242,7 +242,7 @@ function TOOL.BuildCPanel(panel)
 		Max = "8",
 		Command = "wire_relay_poles"
 	})
-
+	
 	panel:AddControl("Slider", {
 		Label = "#WireRelayTool_throws",
 		Type = "Integer",
@@ -250,13 +250,13 @@ function TOOL.BuildCPanel(panel)
 		Max = "10",
 		Command = "wire_relay_throws"
 	})
-
-
+	
+	
 	panel:AddControl("CheckBox", {
 		Label = "#WireRelayTool_toggle",
 		Command = "wire_relay_toggle"
 	})
-
+	
 	panel:AddControl("ComboBox", {
 		Label = "#WireRelayTool_normclose",
 		Options = {
@@ -268,12 +268,12 @@ function TOOL.BuildCPanel(panel)
 			["Closed to 5"] = { wire_relay_normclose = "5" }
 		}
 	})
-
+	
 	panel:AddControl("CheckBox", {
 		Label = "#WireRelayTool_nokey",
 		Command = "wire_relay_nokey"
 	})
-
+	
 	panel:AddControl("Numpad", {
 		Label = "#WireRelayTool_keygroupoff", Label2 = "#WireRelayTool_keygroup1",
 		Command = "wire_relay_keygroupoff", Command2 = "wire_relay_keygroup1",
@@ -289,5 +289,5 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_relay_keygroup4", Command2 = "wire_relay_keygroup5",
 		ButtonSize = "22"
 	})
-
+	
 end

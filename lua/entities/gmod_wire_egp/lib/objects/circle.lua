@@ -20,10 +20,10 @@ Obj.Draw = function( self )
 			local tempx = x * self.w * c - y * self.h * s + self.x
 			y = x * self.w * s + y * self.h * c + self.y
 			x = tempx
-
+			
 			vertices[#vertices+1] = { x = x, y = y, u = u, v = v }
 		end
-
+		
 		surface.SetDrawColor( self.r, self.g, self.b, self.a )
 		if (vertices and #vertices>0) then
 			surface.DrawPoly( vertices )

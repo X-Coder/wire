@@ -112,7 +112,7 @@ e2function number string:toNumber()
  	if ret == nil then return 0 end
  	return ret
 end
-
+ 
 e2function number string:toNumber(number base)
 	local ret = tonumber(this, base)
 	if ret == nil then return 0 end
@@ -482,7 +482,7 @@ end
 -- (By Divran)
 e2function table string:gmatch(string pattern, position)
 	this = this:Right( -position-1 )
-	local OK, ret = pcall( gmatch, self, this, pattern )
+	local OK, ret = pcall( gmatch, self, this, pattern )	
 	if (!OK) then
 		self.player:ChatPrint( ret or "Unknown error in str:gmatch" )
 		return table_Copy( DEFAULT )

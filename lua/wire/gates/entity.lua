@@ -12,7 +12,7 @@ GateActions["entity_applyf"] = {
 	output = function(gate, Ent , Vec )
 		if !Ent then return end
 		if !Ent:IsValid() or !Ent:GetPhysicsObject():IsValid() then return end
-		if !(E2Lib.getOwner(gate, Ent) == E2Lib.getOwner(gate, gate)) then return end
+		if !(E2Lib.getOwner(gate, Ent) == E2Lib.getOwner(gate, gate)) then return end	
 		if !IsVector(Vec) then Vec = Vector(0, 0, 0) end
 		Ent:GetPhysicsObject():ApplyForceCenter(Vec)
 	end,
@@ -29,7 +29,7 @@ GateActions["entity_applyof"] = {
 	output = function(gate, Ent , Vec , Offset )
 		if !Ent then return end
 		if !Ent:IsValid() or !Ent:GetPhysicsObject():IsValid() then return end
-		if !(E2Lib.getOwner(gate, Ent) == E2Lib.getOwner(gate, gate)) then return end
+		if !(E2Lib.getOwner(gate, Ent) == E2Lib.getOwner(gate, gate)) then return end		
 		if !IsVector(Vec) then Vec = Vector (0, 0, 0) end
 		if !IsVector(Offset) then Offset = Vector (0, 0, 0) end
 		Ent:GetPhysicsObject():ApplyForceOffset(Vec, Offset)
@@ -49,37 +49,30 @@ GateActions["entity_applyaf"] = {
 	output = function(gate, Ent , Ang )
 		if !Ent then return end
 		if !Ent:IsValid() or !Ent:GetPhysicsObject():IsValid() then return end
-		if !(E2Lib.getOwner(gate, Ent) == E2Lib.getOwner(gate, gate)) then return end
-
-		if angForce.p == 0 and angForce.y == 0 and angForce.r == 0 then return end
-
-		local phys = this:GetPhysicsObject()
-
-		-- assign vectors
-		local up = this:GetUp()
-		local left = this:GetRight() * -1
-		local forward = this:GetForward()
-
-		-- apply pitch force
-		if angForce.p ~= 0 then
-			local pitch = up      * (angForce.p * 0.5)
-			phys:ApplyForceOffset( forward, pitch )
-			phys:ApplyForceOffset( forward * -1, pitch * -1 )
-		end
-
-		-- apply yaw force
-		if angForce.y ~= 0 then
-			local yaw   = forward * (angForce.y * 0.5)
-			phys:ApplyForceOffset( left, yaw )
-			phys:ApplyForceOffset( left * -1, yaw * -1 )
-		end
-
-		-- apply roll force
-		if angForce.r ~= 0 then
-			local roll  = left    * (angForce.r * 0.5)
-			phys:ApplyForceOffset( up, roll )
-			phys:ApplyForceOffset( up * -1, roll * -1 )
-		end
+		if !(E2Lib.getOwner(gate, Ent) == E2Lib.getOwner(gate, gate)) then return end	
+		if !Ang then Ang = Angle (0, 0, 0) end
+			local phys = Ent:GetPhysicsObject()
+			local pos = Ent:LocalToWorld(phys:GetMassCenter())
+			local up = Ent:GetUp()
+			local right = Ent:GetRight()
+			local forward = Ent:GetForward()
+			
+			local pitch = up      * (Ang.p*0.5)
+			local yaw   = forward * (Ang.y*0.5)
+			local roll  = right   * (Ang.r*0.5)
+			
+			if not phys:IsValid() then return end
+			-- apply pitch force
+			phys:ApplyForceOffset( forward, pos + pitch )
+			phys:ApplyForceOffset( forward * -1, pos - pitch )
+			
+			-- apply yaw force
+			phys:ApplyForceOffset( right, pos - yaw )
+			phys:ApplyForceOffset( right * -1, pos + yaw )
+			
+			-- apply roll force
+			phys:ApplyForceOffset( up, pos - roll )
+			phys:ApplyForceOffset( up * -1, pos + roll )
 
 	end,
 	label = function()
@@ -98,33 +91,27 @@ GateActions["entity_applytorq"] = {
 	output = function(gate, Ent , Vec )
 		if !Ent then return end
 		if not Ent:IsValid() then return end
-		if !(E2Lib.getOwner(gate, Ent) == E2Lib.getOwner(gate, gate)) then return end
+		if !(E2Lib.getOwner(gate, Ent) == E2Lib.getOwner(gate, gate)) then return end	
 		local phys = Ent:GetPhysicsObject()
 		if not phys:IsValid() then return end
-
-		if Vec.x == 0 and Vec.y == 0 and Vec.z == 0 then return end
-
-		local phys = this:GetPhysicsObject()
-
+	
+		if not !IsVector(Vec) then Vec = Vector( 0, 0, 0 ) end
+		
 		local tq = Vec
 		local torqueamount = tq:Length()
-
-		-- Convert torque from local to world axis
-		tq = phys:LocalToWorld( tq ) - phys:GetPos()
-
-		-- Find two vectors perpendicular to the torque axis
 		local off
-		if abs(tq.x) > torqueamount * 0.1 or abs(tq.z) > torqueamount * 0.1 then
-			off = Vector(-tq.z, 0, tq.x)
+		if abs(torque[3]) > torqueamount*0.1 or abs(Vec.x) > torqueamount*0.1 then
+			off = Vector(-Vec.z, 0, Vec.x)
 		else
-			off = Vector(-tq.y, tq.x, 0)
+			off = Vector(-Vec.y, Vec.x, 0)
 		end
-		off = off:GetNormal() * torqueamount * 0.5
-
-		local dir = ( tq:Cross(off) ):GetNormal()
-
-		phys:ApplyForceOffset( dir, off )
-		phys:ApplyForceOffset( dir * -1, off * -1 )
+		off:Normalize()
+		local dir = tq:Cross(off)
+	
+		dir = phys:LocalToWorld(dir)-phys:GetPos()
+		local masscenter = phys:GetMassCenter()
+		phys:ApplyForceOffset( dir * 0.5, phys:LocalToWorld(masscenter+off) )
+		phys:ApplyForceOffset( dir * -0.5, phys:LocalToWorld(masscenter-off) )
 	end,
 	label = function()
 		return ""
@@ -572,12 +559,13 @@ GateActions["entity_owner"] = {
 	timed = true,
 	output = function(gate, Ent)
 		if !Ent:IsValid() then return E2Lib.getOwner(gate,gate)	 end
-		return E2Lib.getOwner(gate,Ent)
+		return E2Lib.getOwner(gate,Ent)	
 	end,
 	label = function(Out,Ent)
 		return string.format ("owner(%s) = %s", Ent, tostring(Out))
 	end
 }
+GateActions["entity_player"] = GateActions["entity_owner"]
 
 GateActions["entity_isheld"] = {
 	name = "Is Player Holding",
@@ -770,7 +758,7 @@ GateActions["entity_setcol"] = {
 		if !Ent:IsValid() then return end
 		if !(E2Lib.getOwner(gate, gate) == E2Lib.getOwner(gate, Ent)) then return end
 		if !IsVector(Col) then Col = Vector(255,255,255) end
-		Ent:SetColor(Col.x,Col.y,Col.z,255)
+		Ent:SetColor(Color(Col.x,Col.y,Col.z,255))
 	end,
 	label = function(Out, Ent , Col)
 		if !IsVector(Col) then Col = Vector(0,0,0) end
@@ -804,9 +792,9 @@ GateActions["entity_clr"] = {
 	timed = true,
 	output = function(gate, Ent)
 		if !Ent:IsValid() then return Vector(0,0,0) end
-		local r,g,b = Ent:GetColor()
-		if !Vector(r,g,b) then return Vector(0,0,0) end
-		return Vector(r,g,b)
+		local c = Ent:GetColor()
+		if !Vector(r.r,c.g,c.b) then return Vector(0,0,0) end
+		return Vector(c.r,c.g,c.b)
 	end,
 	label = function(Out, Ent)
 		return string.format ("color(%s) = (%d,%d,%d)", Ent , Out.x, Out.y, Out.z)
@@ -861,10 +849,9 @@ GateActions["entity_select"] = {
 
 GateActions["entity_bearing"] = {
 	name = "Bearing",
-	inputs = { "Entity", "Position" },
+	inputs = { "Entity", "Position", "Clk" },
 	inputtypes = { "ENTITY", "VECTOR", "NORMAL" },
 	outputtypes = { "NORMAL" },
-	timed = true,
 	output = function( gate, Entity, Position )
 		if (!Entity:IsValid()) then return 0 end
 		Position = Entity:WorldToLocal(Position)
@@ -877,10 +864,9 @@ GateActions["entity_bearing"] = {
 
 GateActions["entity_elevation"] = {
 	name = "Elevation",
-	inputs = { "Entity", "Position" },
+	inputs = { "Entity", "Position", "Clk" },
 	inputtypes = { "ENTITY", "VECTOR", "NORMAL" },
 	outputtypes = { "NORMAL" },
-	timed = true,
 	output = function( gate, Entity, Position )
 		if (!Entity:IsValid()) then return 0 end
 		Position = Entity:WorldToLocal(Position)
@@ -894,22 +880,21 @@ GateActions["entity_elevation"] = {
 
 GateActions["entity_heading"] = {
 	name = "Heading",
-	inputs = { "Entity", "Position" },
+	inputs = { "Entity", "Position", "Clk" },
 	inputtypes = { "ENTITY", "VECTOR", "NORMAL" },
 	outputs = { "Bearing", "Elevation", "Heading" },
 	outputtypes = { "NORMAL", "NORMAL", "ANGLE" },
-	timed = true,
 	output = function( gate, Entity, Position )
 		if (!Entity:IsValid()) then return 0, 0, Angle(0,0,0) end
 		Position = Entity:WorldToLocal(Position)
-
+		
 		-- Bearing
 		local bearing = 180 / math.pi * math.atan2( Position.y, Position.x )
-
+		
 		-- Elevation
 		local len = Position:Length()
 		elevation = 180 / math.pi * math.asin( Position.z / len )
-
+		
 		return bearing, elevation, Angle(bearing,elevation,0)
 	end,
 	label = function( Out, Entity, Position )

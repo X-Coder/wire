@@ -14,7 +14,7 @@ function ENT:Initialize()
 end
 
 function ENT:Setup( out180 )
-
+	
 	self.Out180 = out180 --wft is this used for
 	self:SetOut180(out180)
 	self.Value = 0

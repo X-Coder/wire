@@ -6,7 +6,7 @@ function HCOMP:NewLeaf(parentLeaf)
     Operands = {},
     ParentLabel = self.CurrentParentLabel,
   }
-
+  
   if parentLeaf then
     leaf.CurrentPosition = parentLeaf.CurrentPosition
   else
@@ -77,7 +77,7 @@ function HCOMP:AddLeafToTail(leaf)
   if self.BusyRegisters then
     leaf.BusyRegisters = self.BusyRegisters
   end
-
+  
   if self.GenerateInlineFunction then
     table.insert(self.InlineFunctionCode,leaf)
   else
@@ -93,7 +93,7 @@ function HCOMP:FreeRegister()
   for i=1,6 do
     if not self.RegisterBusy[i] then return i end
   end
-
+  
   -- Try to find a register that wasnt pushed to stack yet
 --  for i=1,6 do
 --    if not self.RegisterStackOffset[i] then
@@ -104,7 +104,7 @@ function HCOMP:FreeRegister()
 --    end
 --  end
   -- FIXME: non-busy register must always exist?
-
+  
   self:Error("Out of free registers",self.ErrorReportLeaf)
   return 1
 end
@@ -131,7 +131,7 @@ function HCOMP:MakeFirstOperandTemporary(operands)
   }
   movLeaf.Operands[2] = operands[1]
   self:GenerateLeaf(movLeaf)
-
+  
   -- Sets operand to be free register, and marks it as temporary and busy
   operands[1] = movLeaf.Operands[1]
   operands[1].Temporary = true
@@ -159,7 +159,7 @@ function HCOMP:ReadOperandFromStack(operands,index,forceRead)
   else -- Stack offset is a leaf that returns a constant value
     -- Register must be marked used up so its not used in next gen step
     self.RegisterBusy[freeReg] = true
-
+  
     -- Request result of this leaf into a register
     local offsetReg,isTemp = self:GenerateLeaf(operands[index].Stack,true)
     rstackLeaf.Operands[2] = {
@@ -168,17 +168,17 @@ function HCOMP:ReadOperandFromStack(operands,index,forceRead)
       Temporary = isTemp
     }
     self.RegisterBusy[offsetReg] = isTemp
-
+    
     self.RegisterBusy[freeReg] = false
   end
 
   -- Generate "RSTACK" leaf
   self:GenerateLeaf(rstackLeaf)
-
+  
   -- Mark register as used (couldn't do before or else code generator would
   -- mess up the RSTACK instruction)
   self.RegisterBusy[freeReg] = true
-
+  
   -- Change the operand (and make sure it retains stack offset)
   operands[index] = rstackLeaf.Operands[1]
   operands[index].Temporary = true
@@ -202,7 +202,7 @@ function HCOMP:ReadOperandFromMemory(operands,index)
       rstackLeaf.Operands[1] = { Register = freeReg }
       rstackLeaf.Operands[2] = { Constant = operands[index].MemoryPointer.Stack, Segment = 16 }
       self:GenerateLeaf(rstackLeaf)
-
+    
       operands[index] = { MemoryRegister = freeReg, Temporary = true }
       self.RegisterBusy[freeReg] = true
       return addrReg
@@ -264,18 +264,18 @@ end
 function HCOMP:GenerateLeaf(leaf,needResult)
   -- Set this leaf for error reporting (small hack)
   self.ErrorReportLeaf = leaf
-
+  
 --  local initTempRegisters = {}
 --  for k,v in pairs(self.RegisterBusy) do
 --    initTempRegisters[k] = v
 --  end
-
+  
   -- If we have previous leaf, generate it
   if leaf.PreviousLeaf then
     self:GenerateLeaf(leaf.PreviousLeaf,false)
     leaf.PreviousLeaf = nil
   end
-
+  
   -- Do not generate invalid tree leaves
   if not leaf.Opcode then
     if not leaf.PreviousLeaf then --not leaf.Register then
@@ -287,7 +287,7 @@ function HCOMP:GenerateLeaf(leaf,needResult)
     end
     return
   end
-
+  
   -- If operand has a previous leaf assigned, generate it
 --  for i=1,#leaf.Operands do
 --    if leaf.Operands[i].PreviousLeaf then
@@ -360,7 +360,7 @@ function HCOMP:GenerateLeaf(leaf,needResult)
     else
       genOperands[i] = {}
       for k,v in pairs(leaf.Operands[i]) do genOperands[i][k] = v end
-
+      
       -- Need a real explict value if its laying on stack, and we want to write into it
       -- Do not gen explict value if our opcode is MOV though (we can turn it into sstack later)
       -- Also do not generate explict value if its an explict assign
@@ -370,15 +370,15 @@ function HCOMP:GenerateLeaf(leaf,needResult)
           self:ReadOperandFromStack(genOperands,i)
         end
       end
-
+      
       -- Need a real explict value if its a non-constant address to memory
       if       genOperands[i].MemoryPointer and
          (type(genOperands[i].MemoryPointer) == "table") and
          (not genOperands[i].MemoryPointer.TokenList) then
-
+         
         self:ReadOperandFromMemory(genOperands,i)
       end
-
+      
       -- Calculate pointer to the label if required
       -- was "(i > 1) and genOperands[i].PointerToLabel"
       if genOperands[i].PointerToLabel then
@@ -397,12 +397,12 @@ function HCOMP:GenerateLeaf(leaf,needResult)
           genOperands[i] = { Constant = {{ Type = self.TOKEN.IDENT, Data = genOperands[i].PointerToLabel.Name, Position = leaf.CurrentPosition }} }
         end
       end
-
+      
       -- Make register operand temporary if requested
       if genOperands[i].ForceTemporary then
         local initReg = genOperands[i].Register
         genOperands[i].ForceTemporary = false
-
+        
         if self.RegisterBusy[initReg] then
           local freeReg = self:FreeRegister()
           self.RegisterBusy[initReg] = false
@@ -417,7 +417,7 @@ function HCOMP:GenerateLeaf(leaf,needResult)
           movLeaf.Operands[1] = { Register = freeReg, Temporary = true }
           movLeaf.Operands[2] = { Register = initReg }
           self.RegisterBusy[freeReg] = true
-
+          
           local addrReg,isTemp = self:GenerateLeaf(movLeaf,true)
           genOperands[i] = { Register = addrReg, Temporary = isTemp }
           self.RegisterBusy[addrReg] = isTemp
@@ -426,7 +426,7 @@ function HCOMP:GenerateLeaf(leaf,needResult)
           popLeaf.Opcode = "pop"
           popLeaf.Operands[1] = { Register = initReg }
           self:GenerateLeaf(popLeaf)
-
+          
           self.RegisterBusy[initReg] = true
         else
           genOperands[i].Temporary = true
@@ -434,7 +434,7 @@ function HCOMP:GenerateLeaf(leaf,needResult)
         end
       end
     end
-
+    
     i = i - 1
   end
 
@@ -446,7 +446,7 @@ function HCOMP:GenerateLeaf(leaf,needResult)
     if (#leaf.Operands > 1) and (genOperands[2].TrigonometryHack) then
       genOperands[2] = genOperands[1]
     end
-
+  
     -- Are we trying to operate on a value which is busy or must not be changed? (MOV busyReg,<...>)
     -- But if register is temporary, lets just re-assign it
     if (not leaf.ExplictAssign) and
@@ -471,7 +471,7 @@ function HCOMP:GenerateLeaf(leaf,needResult)
       genOperands[1].Segment = 16
       genOperands[1].Stack = nil
     end
-
+    
     -- Check if we are trying to do "INC VAR" when VAR is a stack, explict one
     if leaf.ExplictAssign and (genOperands[1].Stack) then
       -- INC STK(10) -> INC STK(10); SSTACK EBP:10,VAR
@@ -484,20 +484,20 @@ function HCOMP:GenerateLeaf(leaf,needResult)
         sstackLeaf.Operands[1] = { Register = offsetReg, Temporary = isTemp }
         self.RegisterBusy[offsetReg] = isTemp
       end
-
+      
       genOperands[1].Stack = nil
       sstackLeaf.Operands[1].Segment = 16
       sstackLeaf.Operands[2] = genOperands[1]
       leaf.NextLeaf = sstackLeaf
     end
-
+    
     -- Are we trying to do "ADD VAR,<...>" when VAR is a stack one?
     -- At this point "VAR" is already read into a register, so generate this leaf, and then
     -- change it to sstack
     if (genOperands[1].Stack) and (genOperands[1].Register) then
       local tempReg = genOperands[1].Register
       local stackOffset = genOperands[1].Stack
-
+      
       -- Generate proper opcode for the opepration
       local operationLeaf = self:NewLeaf(leaf)
       operationLeaf.Opcode = leaf.Opcode
@@ -513,7 +513,7 @@ function HCOMP:GenerateLeaf(leaf,needResult)
         operationLeaf.Operands[2].Stack = nil
       end
       self:GenerateLeaf(operationLeaf)
-
+      
       -- Turn this operation into SSTACK
       leaf.Opcode = "sstack"
       genOperands[2] = {
@@ -542,7 +542,7 @@ function HCOMP:GenerateLeaf(leaf,needResult)
           leaf.Opcode = "mov"
           genOperands[1] = { Register = destRegister, Temporary = true } --FIXME
           isDestTemp = true
-
+          
           -- This happens when there is a code tree like this:
           -- cmp
           --   0
@@ -555,7 +555,7 @@ function HCOMP:GenerateLeaf(leaf,needResult)
               -- HACK: generate opcode before the MOV
               self:GenerateOpcode(leaf,genOperands)
               leaf.Opcode = nil
-
+              
               local movLeaf = self:NewLeaf(leaf)
               destRegister = self:FreeRegister()
               movLeaf.Opcode = "mov"
@@ -592,7 +592,7 @@ function HCOMP:GenerateLeaf(leaf,needResult)
      (leaf.Opcode) then
     self:GenerateOpcode(leaf,genOperands)
   end
-
+  
   -- Generate next leaf too, if required
   if leaf.NextLeaf then
     self:GenerateLeaf(leaf.NextLeaf,false)
@@ -610,7 +610,7 @@ function HCOMP:GenerateLeaf(leaf,needResult)
       end
     end
   end
-
+  
 --  for k,v in pairs(initTempRegisters) do
 --    self.RegisterBusy[k] = v
 --    if not (isDestTemp and (destRegister == k)) then
@@ -662,14 +662,14 @@ end
 -- Generate leaf (called by the stage, it generates special leaves too)
 function HCOMP:StageGenerateLeaf(leaf)
   if self.Settings.OutputCodeTree then self:PrintLeaf(leaf) end
-
+  
   if self.Settings.NoUnreferencedLeaves == true then
     if leaf.ParentLabel and (leaf.ParentLabel.Referenced == false) then
       -- Do not generate leafs that are parented to unreferenced labels
       return false
     end
   end
-
+  
   if (leaf.Opcode == "DATA") or
      (leaf.Opcode == "LABEL") or
      (leaf.Opcode == "MARKER") then
@@ -679,15 +679,15 @@ function HCOMP:StageGenerateLeaf(leaf)
     -- Make sure it never attempts to use ESP/EBP, mark them always busy
     self.RegisterBusy = { false,false,false,false,false,false,true,true }
     self.RegisterStackOffset = {}
-
+    
     if leaf.BusyRegisters then
       for k,v in pairs(leaf.BusyRegisters) do
         self.RegisterBusy[k] = v
       end
     end
-
+    
     self:GenerateLeaf(leaf)
-
+  
     return false
   end
 end

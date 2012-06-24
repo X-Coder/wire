@@ -47,3 +47,5 @@ e2function number operator_bshl( a, b )
 end
 
 __e2setcost(nil)
+
+-- CLOSE

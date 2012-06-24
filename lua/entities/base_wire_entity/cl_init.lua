@@ -17,6 +17,41 @@ function ENT:Draw()
 	Wire_Render(self)
 end
 
+local matOutlineWhite   = Material( "white_outline" )
+local ScaleNormal               = Vector()
+local ScaleOutline1             = Vector() * 1.05
+local ScaleOutline2             = Vector() * 1.1
+local matOutlineBlack   = Material( "black_outline" )
+
+function ENT:DrawEntityOutline( size )
+    
+    size = size or 1.0
+    render.SuppressEngineLighting( true )
+    render.SetAmbientLight( 1, 1, 1 )
+    render.SetColorModulation( 1, 1, 1 )
+    
+        // First Outline    
+        self:SetModelScale( ScaleOutline2 * size )
+        render.MaterialOverride( matOutlineBlack )
+        self:DrawModel()
+        
+        
+        // Second Outline
+        self:SetModelScale( ScaleOutline1 * size )
+        render.MaterialOverride( matOutlineWhite )
+        self:DrawModel()
+        
+        // Revert everything back to how it should be
+        render.MaterialOverride( nil )
+        self:SetModelScale( ScaleNormal )
+        
+    render.SuppressEngineLighting( false )
+    
+    local c = self:GetColor()
+    render.SetColorModulation( c.r / 255, c.g / 255, c.b / 255 )
+
+end
+
 function ENT:DoNormalDraw()
 	local trace = LocalPlayer():GetEyeTrace()
 	local looked_at = trace.Entity == self and trace.Fraction*16384 < 256
@@ -25,7 +60,7 @@ function ENT:DoNormalDraw()
 			self.OldRenderGroup = self.RenderGroup
 			self.RenderGroup = RENDERGROUP_TRANSLUCENT
 		end
-		self:DrawEntityOutline(1.0)
+		-- self:DrawEntityOutline(1.0) TO BE FIXED - GM13
 		self:DrawModel()
 	else
 		if self.OldRenderGroup then

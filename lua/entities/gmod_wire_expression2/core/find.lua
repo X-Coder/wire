@@ -60,7 +60,7 @@ local function filter_default(self)
 	local chip = self.entity
 	return function(ent)
 		if forbidden_classes[ent:GetClass()] then return false end
-
+		
 		if ent == chip then return false end
 		return true
 	end
@@ -71,7 +71,7 @@ end
 -- Generates a filter that filters out everything not in a lookup table.
 local function filter_in_lookup(lookup)
 	if table_IsEmpty(lookup) then return filter_none end
-
+	
 	return function(ent)
 		return lookup[ent]
 	end
@@ -80,7 +80,7 @@ end
 -- Generates a filter that filters out everything in a lookup table.
 local function filter_not_in_lookup(lookup)
 	if table_IsEmpty(lookup) then return filter_all end
-
+	
 	return function(ent)
 		return not lookup[ent]
 	end
@@ -89,7 +89,7 @@ end
 -- Generates a filter that filters out everything not in a lookup table.
 local function filter_function_result_in_lookup(lookup, func)
 	if table_IsEmpty(lookup) then return filter_none end
-
+	
 	return function(ent)
 		return lookup[func(ent)]
 	end
@@ -98,7 +98,7 @@ end
 -- Generates a filter that filters out everything in a lookup table.
 local function filter_function_result_not_in_lookup(lookup, func)
 	if table_IsEmpty(lookup) then return filter_all end
-
+	
 	return function(ent)
 		return not lookup[func(ent)]
 	end
@@ -107,7 +107,7 @@ end
 -- checks if binary_predicate(func(ent), key) matches for any of the keys in the lookup table. Returns false if it does.
 local function filter_binary_predicate_match_none(lookup, func, binary_predicate)
 	if table_IsEmpty(lookup) then return filter_all end
-
+	
 	return function(a)
 		a = func(a)
 		for b,_ in pairs(lookup) do
@@ -120,7 +120,7 @@ end
 -- checks if binary_predicate(func(ent), key) matches for any of the keys in the lookup table. Returns true if it does.
 local function filter_binary_predicate_match_one(lookup, func, binary_predicate)
 	if table_IsEmpty(lookup) then return filter_none end
-
+	
 	return function(a)
 		a = func(a)
 		for b,_ in pairs(lookup) do
@@ -147,7 +147,7 @@ local _filter_and = {
 -- Usage: filter = filter_and(filter1, filter2, filter3)
 local function filter_and(...)
 	local args = {...}
-
+	
 	-- filter out all filter_all entries
 	filterList(args, function(f)
 		if f == filter_none then
@@ -155,7 +155,7 @@ local function filter_and(...)
 		end
 		return f ~= filter_all
 	end)
-
+	
 	local combiner = _filter_and[#args]
 	if not combiner then return nil end -- TODO: write generic combiner
 	return combiner(unpack(args))
@@ -175,7 +175,7 @@ local _filter_or = {
 -- Usage: filter = filter_or(filter1, filter2, filter3)
 local function filter_or(...)
 	local args = {...}
-
+	
 	-- filter out all filter_none entries
 	filterList(args, function(f)
 		if f == filter_all then
@@ -183,7 +183,7 @@ local function filter_or(...)
 		end
 		return f ~= filter_none
 	end)
-
+	
 	local combiner = _filter_or[#args]
 	if not combiner then return nil end -- TODO: write generic combiner
 	return combiner(unpack(args))
@@ -197,35 +197,35 @@ end
 -- This function should be called after the black- or whitelists have changed.
 local function update_filters(self)
 	-- Do not update again until the filters are invalidated the next time.
-
+		
 	local find = self.data.find
-
+	
 	---------------------
 	--    blacklist    --
 	---------------------
-
+	
 	-- blacklist for single entities
 	local bl_entity_filter = filter_not_in_lookup(find.bl_entity)
 	-- blacklist for a player's props
 	local bl_owner_filter = filter_function_result_not_in_lookup(find.bl_owner, function(ent) return getOwner(self,ent) end)
-
+	
 	-- blacklist for models
 	local bl_model_filter = filter_binary_predicate_match_none(find.bl_model, function(ent) return string.lower(ent:GetModel() or "") end, string.match)
 	-- blacklist for classes
 	local bl_class_filter = filter_binary_predicate_match_none(find.bl_class, function(ent) return string.lower(ent:GetClass()) end, string.match)
-
+	
 	-- combine all blacklist filters (done further down)
 	--local filter_blacklist = filter_and(bl_entity_filter, bl_owner_filter, bl_model_filter, bl_class_filter)
-
+	
 	---------------------
 	--    whitelist    --
 	---------------------
-
+	
 	local filter_whitelist = filter_all
-
+	
 	-- if not all whitelists are empty, use the whitelists.
 	local whiteListInUse = not (table_IsEmpty(find.wl_entity) and table_IsEmpty(find.wl_owner) and table_IsEmpty(find.wl_model) and table_IsEmpty(find.wl_class))
-
+	
 	if whiteListInUse then
 		-- blacklist for single entities
 		local wl_entity_filter = filter_in_lookup(find.wl_entity)
@@ -241,7 +241,7 @@ local function update_filters(self)
 		filter_whitelist = filter_or(wl_entity_filter, wl_owner_filter, wl_model_filter, wl_class_filter)
 	end
 	---------------------
-
+	
 	-- finally combine all filters
 	--self.data.findfilter = filter_and(find.filter_default, filter_blacklist, filter_whitelist)
 	self.data.findfilter = filter_and(find.filter_default, bl_entity_filter, bl_owner_filter, bl_model_filter, bl_class_filter, filter_whitelist)
@@ -249,12 +249,12 @@ end
 
 local function applyFindList(self, findlist)
 	local findfilter = self.data.findfilter
-	if not findfilter then
+	if not findfilter then 
 		update_filters(self)
 		findfilter = self.data.findfilter
 	end
 	filterList(findlist, findfilter)
-
+	
 	self.data.findlist = findlist
 	return #findlist
 end
@@ -276,7 +276,7 @@ registerCallback("construct", function(self)
 		bl_owner = {},
 		bl_model = {},
 		bl_class = {},
-
+		
 		wl_entity = {},
 		wl_owner = {},
 		wl_model = {},
@@ -300,7 +300,7 @@ hook.Add("EntityRemoved", "wire_expression2_find_EntityRemoved", function(ent)
 		find.bl_owner[ent] = nil
 		find.wl_entity[ent] = nil
 		find.wl_owner[ent] = nil
-
+		
 		filterList(chip.findlist, function(v) return ent ~= v end)
 	end
 end)
@@ -325,7 +325,7 @@ local delay = 0
 local function addcount()
 	if (delay > CurTime()) then return end
 	delay = CurTime() + findrate()
-
+	
 	for v,_ in pairs( chiplist ) do
 		if (v and v.findcount and v.findcount < maxfinds()) then
 			v.findcount = v.findcount + 1
@@ -367,7 +367,7 @@ end
 e2function number findInSphere(vector center, radius)
 	if query_blocked(self, 1) then return 0 end
 	center = Vector(center[1], center[2], center[3])
-
+	
 	return applyFindList(self,ents.FindInSphere(center, radius))
 end
 
@@ -379,10 +379,10 @@ e2function number findInCone(vector position, vector direction, length, degrees)
 	direction = Vector(direction[1], direction[2], direction[3]):Normalize()
 
 	local findlist = ents.FindInSphere(position, length)
-
+	
 	local cosDegrees = math.cos(math.rad(degrees))
 	local Dot = direction.Dot
-
+	
 	-- update filter and apply it, together with the cone filter. This is an optimization over applying the two filters in separate passes
 	if not self.data.findfilter then update_filters(self) end
 	filterList(findlist, filter_and(
@@ -391,7 +391,7 @@ e2function number findInCone(vector position, vector direction, length, degrees)
 			return Dot(direction, (ent:GetPos() - position):Normalize()) > cosDegrees
 		end
 	))
-
+	
 	self.data.findlist = findlist
 	return #findlist
 end
@@ -441,7 +441,7 @@ end
 e2function void findExcludeEntities(array arr)
 	local bl_entity = self.data.find.bl_entity
 	local validEntity = validEntity
-
+	
 	for _,ent in ipairs(arr) do
 		if not validEntity(ent) then return end
 		bl_entity[ent] = true
@@ -499,7 +499,7 @@ end
 e2function void findAllowEntities(array arr)
 	local bl_entity = self.data.find.bl_entity
 	local validEntity = validEntity
-
+	
 	for _,ent in ipairs(arr) do
 		if not validEntity(ent) then return end
 		bl_entity[ent] = nil
@@ -557,7 +557,7 @@ end
 e2function void findIncludeEntities(array arr)
 	local wl_entity = self.data.find.wl_entity
 	local validEntity = validEntity
-
+	
 	for _,ent in ipairs(arr) do
 		if not validEntity(ent) then return end
 		wl_entity[ent] = true
@@ -615,7 +615,7 @@ end
 e2function void findDisallowEntities(array arr)
 	local wl_entity = self.data.find.wl_entity
 	local validEntity = validEntity
-
+	
 	for _,ent in ipairs(arr) do
 		if not validEntity(ent) then return end
 		wl_entity[ent] = nil
@@ -676,7 +676,7 @@ e2function void findClearBlackList()
 	find.bl_owner = {}
 	find.bl_model = {}
 	find.bl_class = {}
-
+	
 	invalidate_filters(self)
 end
 
@@ -711,7 +711,7 @@ e2function void findClearWhiteList()
 	find.wl_owner = {}
 	find.wl_model = {}
 	find.wl_class = {}
-
+	
 	invalidate_filters(self)
 end
 
@@ -789,7 +789,7 @@ e2function number findSortByDistance(vector position)
 	table.sort(findlist, function(a, b)
 		if not validEntity(a) then return false end -- !(invalid < b) <=> (b <= invalid)
 		if not validEntity(b) then return true end -- (valid < invalid)
-
+		
 		return Distance(position, a:GetPos()) < Distance(position, b:GetPos())
 	end)
 	return #findlist
@@ -799,9 +799,9 @@ end
 
 local function applyClip(self, filter)
 	local findlist = self.data.findlist
-
+	
 	filterList(findlist, filter)
-
+	
 	return #findlist
 end
 
@@ -876,9 +876,9 @@ end
 e2function number findClipToRegion(vector origin, vector perpendicular)
 	origin = Vector(origin[1], origin[2], origin[3])
 	perpendicular = Vector(perpendicular[1], perpendicular[2], perpendicular[3])
-
+	
 	local perpdot = perpendicular:Dot(origin)
-
+	
 	return applyClip(self, function(ent)
 		if !validEntity(ent) then return false end
 		return perpdot < perpendicular:Dot(ent:GetPos())
@@ -890,11 +890,11 @@ local function inrange( vec1, vecmin, vecmax )
 	if (vec1.x < vecmin.x) then return false end
 	if (vec1.y < vecmin.y) then return false end
 	if (vec1.z < vecmin.z) then return false end
-
+	
 	if (vec1.x > vecmax.x) then return false end
 	if (vec1.y > vecmax.y) then return false end
 	if (vec1.z > vecmax.z) then return false end
-
+	
 	return true
 end
 
@@ -914,10 +914,10 @@ end
 e2function number findClipFromBox( vector min, vector max )
 
 	min, max = sanitize( min, max )
-
+	
 	min = Vector(min[1], min[2], min[3])
 	max = Vector(max[1], max[2], max[3])
-
+	
 	return applyClip( self, function(ent)
 		return !inrange(ent:GetPos(),min,max)
 	end)
@@ -927,10 +927,10 @@ end
 e2function number findClipToBox( vector min, vector max )
 
 	min, max = sanitize( min, max )
-
+	
 	min = Vector(min[1], min[2], min[3])
 	max = Vector(max[1], max[2], max[3])
-
+	
 	return applyClip( self, function(ent)
 		return inrange(ent:GetPos(),min,max)
 	end)
@@ -975,3 +975,5 @@ e2function number findClipToEntities( array entities )
 		return lookup[ent]
 	end)
 end
+
+-- CLOSE

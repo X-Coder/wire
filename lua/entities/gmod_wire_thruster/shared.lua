@@ -53,7 +53,7 @@ function ENT:NetSetMul( mul )
 		return
 	end
 	LastTimeA = CurTime()
-
+	
 	if (CurTime() > LastTime + Limit) then
 		self:SetNetworkedInt(5, math.floor(mul*100))
 		LastTime = CurTime()

@@ -15,29 +15,29 @@ end
 e2function vector entity:getColor()
 	if !validEntity(this) then return {0,0,0} end
 
-	local r,g,b = this:GetColor()
-	return { r, g, b }
+	local c = this:GetColor()
+	return { c.r, c.g, c.b }
 end
 
 e2function vector4 entity:getColor4()
 	if !validEntity(this) then return {0,0,0,0} end
-
-	return { this:GetColor() }
+	local c = this:GetColor()
+	return { c.r, c.g, c.b, c.a }
 end
 
 e2function number entity:getAlpha()
 	if !validEntity(this) then return 0 end
 
-	local _,_,_,alpha = this:GetColor()
-	return alpha
+	local c = this:GetColor()
+	return c.a
 end
 
 e2function void entity:setColor(rv2, rv3, rv4)
 	if !validEntity(this) then return end
 	if !isOwner(self, this) then return end
 
-	local _,_,_,alpha = this:GetColor()
-	this:SetColor(ColorClamp(rv2, rv3, rv4, alpha))
+	local c = this:GetColor()
+	this:SetColor(Color(ColorClamp(rv2, rv3, rv4, c.a)))
 end
 
 e2function void entity:setColor(rv2, rv3, rv4, rv5)
@@ -46,15 +46,15 @@ e2function void entity:setColor(rv2, rv3, rv4, rv5)
 
 	if this:IsPlayer() --[[or this:IsWeapon()]] then rv5 = 255 end
 
-	this:SetColor(ColorClamp(rv2, rv3, rv4, rv5))
+	this:SetColor(Color(ColorClamp(rv2, rv3, rv4, rv5)))
 end
 
 e2function void entity:setColor(vector rv2)
 	if !validEntity(this) then return end
 	if !isOwner(self, this) then return end
 
-	local _,_,_,alpha = this:GetColor()
-	this:SetColor(ColorClamp(rv2[1], rv2[2], rv2[3], alpha))
+	local c = this:GetColor()
+	this:SetColor(Color(ColorClamp(rv2[1], rv2[2], rv2[3], c.a)))
 end
 
 e2function void entity:setColor(vector rv2, rv3)
@@ -63,7 +63,7 @@ e2function void entity:setColor(vector rv2, rv3)
 
 	if this:IsPlayer() --[[or this:IsWeapon()]] then rv3 = 255 end
 
-	this:SetColor(ColorClamp(rv2[1], rv2[2], rv2[3], rv3))
+	this:SetColor(Color(ColorClamp(rv2[1], rv2[2], rv2[3], rv3)))
 end
 
 e2function void entity:setColor(vector4 rv2)
@@ -77,7 +77,7 @@ e2function void entity:setColor(vector4 rv2)
 		alpha = rv2[4]
 	end
 
-	this:SetColor(ColorClamp(rv2[1], rv2[2], rv2[3], alpha))
+	this:SetColor(Color(ColorClamp(rv2[1], rv2[2], rv2[3], alpha)))
 end
 
 e2function void entity:setAlpha(rv2)
@@ -86,8 +86,8 @@ e2function void entity:setAlpha(rv2)
 
 	if this:IsPlayer() --[[or this:IsWeapon()]] then return end
 
-	local r,g,b = this:GetColor()
-	this:SetColor(r, g, b, Clamp(rv2, 0, 255))
+	local c = this:GetColor()
+	this:SetColor(Color(c.r, c.g, c.b, Clamp(rv2, 0, 255)))
 end
 
 --- Converts <hsv> from the [http://en.wikipedia.org/wiki/HSV_color_space HSV color space] to the [http://en.wikipedia.org/wiki/RGB_color_space RGB color space]

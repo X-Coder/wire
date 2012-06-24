@@ -83,7 +83,7 @@ end
 
 
 function ENT:GetOverlayText()
-
+	
 	local txt = "Thrust = "
 	local force = self:NetGetForce()
 	if (self:IsOn()) then
@@ -92,7 +92,7 @@ function ENT:GetOverlayText()
 		txt = txt .. "off"
 	end
 	txt = txt .. "\nMul: " .. force .. "\nMode: "
-
+	
 	local mode = self:GetMode()
 	if (self.Mode == 0) then
 		txt = txt .. "XYZ Local"
@@ -101,11 +101,11 @@ function ENT:GetOverlayText()
 	elseif (self.Mode == 2) then
 		txt = txt .. "XY Local, Z World"
 	end
-
+	
 	if (not SinglePlayer()) then
 		local PlayerName = self:GetPlayerName()
 		txt = txt .. "\n(" .. PlayerName .. ")"
 	end
-
+	
 	return txt
 end

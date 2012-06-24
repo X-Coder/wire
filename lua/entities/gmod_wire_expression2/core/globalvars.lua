@@ -28,14 +28,14 @@ __e2setcost(1)
 registerOperator("ass", "xgt", "xgt", function(self, args)
 	local lhs, op2, scope = args[2], args[3], args[4]
 	local      rhs = op2[1](self, op2)
-
+	
 	local Scope = self.Scopes[scope]
 	if !Scope.lookup then Scope.lookup = {} end
 	local lookup = Scope.lookup
-
+	
 	-- remove old lookup entry
 	if lookup[rhs] then lookup[rhs][lhs] = nil end
-
+	
 	-- add new lookup entry
 	local lookup_entry = lookup[rhs]
 	if not lookup_entry then
@@ -55,9 +55,9 @@ registerOperator("fea","xgt","s",function(self,args)
 	local tbl = args[5]
 	tbl = tbl[1](self,tbl)
 	local statement = args[6]
-
+	
 	local len = valtypeid:len()
-
+	
 	local keys = {}
 	local count = 0
 	for key,_ in pairs(tbl) do
@@ -66,19 +66,19 @@ registerOperator("fea","xgt","s",function(self,args)
 			keys[count] = key
 		end
 	end
-
+	
 	for i=1,count do
 		self:PushScope()
 		local key = keys[i]
 		if tbl[key] ~= nil then
 			self.prf = self.prf + 3
-
+			
 			self.Scope.vclk[keyname] = true
 			self.Scope.vclk[valname] = true
-
+	
 			self.Scope[keyname] = key:sub(len+1)
 			self.Scope[valname] = tbl[key]
-
+			
 			local ok, msg = pcall(statement[1], self, statement)
 			if not ok then
 				if msg == "break" then self:PopScope() break
@@ -131,12 +131,12 @@ __e2setcost(5)
 e2function void gRemoveAll()
 	for k,v in pairs( gvars[self.uid] ) do
 		self.prf = self.prf + 0.3
-
+		
 		for k2,v2 in pairs( v ) do
 			self.prf = self.prf + 0.3
 			v[k2] = nil
 		end
-
+		
 		gvars[self.uid][k] = nil
 	end
 end
@@ -157,21 +157,21 @@ end
 local string_sub = string.sub
 e2function table gtable:toTable()
 	local ret = {n={},ntypes={},s={},stypes={},size=0,istable=true,depth=0}
-
+	
 	for k,v in pairs( this ) do
 		local typeid, index = string_sub( k, 1,1 ), string_sub( k, 2 )
-		if typeid == "x" then
+		if typeid == "x" then 
 			typeid = string_sub( k, 1,3 )
 			index = string_sub( k, 4 )
 		end
-
+		
 		ret.s[index] = v
 		ret.stypes[index] = typeid
 		ret.size = ret.size + 1
 	end
-
+	
 	self.prf = self.prf + ret.size / 3
-
+	
 	return ret
 end
 
@@ -193,7 +193,7 @@ registerCallback("postinit",function()
 			if (k == "NORMAL") then k = "NUMBER" end
 			k = upperfirst(k)
 
-
+			
 			-- Table[index,type] functions
 			local function getf( self, args )
 				local op1, op2 = args[2], args[3]
@@ -213,7 +213,7 @@ registerCallback("postinit",function()
 				if (type(rv2) == "number") then rv2 = tostring(rv2) end
 				rv1[v[1]..rv2] = rv3
 			end
-
+			
 			registerOperator("idx", v[1].."=xgts", v[1], getf) -- G[S,type]
 			registerOperator("idx", v[1].."=xgts"..v[1], v[1], setf) -- G[S,type]
 			registerOperator("idx", v[1].."=xgtn", v[1], getf) -- G[N,type] (same as G[N:toString(),type])
@@ -265,7 +265,7 @@ registerCallback("postinit",function()
 		end -- allowed check
 	end -- loop
 end) -- postinit
-
+	
 
 ------------------------------------------------------------------------------------------------
 -- ALL BELOW FUNCTIONS ARE DEPRECATED (Only for compability)
@@ -301,13 +301,13 @@ end
 registerCallback("postinit",function()
 
 	local types = {}
-
+	
 	types.Str = { "s", wire_expression_types.STRING }
 	types.Num = { "n", wire_expression_types.NORMAL }
 	types.Ent = { "e", wire_expression_types.ENTITY }
 	types.Vec = { "v", wire_expression_types.VECTOR }
 	types.Ang = { "a", wire_expression_types.ANGLE  }
-
+	
 	local function GetVar( Group, Tbl, Index, Type )
 		if (Tbl[Group]) then
 			local val = Tbl[Group][Type..Index]
@@ -318,9 +318,9 @@ registerCallback("postinit",function()
 	end
 
 	for k,v in pairs( types ) do
-
+	
 		__e2setcost(8)
-
+		
 		-- gSet*(S,*)
 		registerFunction("gSet"..k,"s"..v[1],"",function(self,args)
 			local op1, op2 = args[2], args[3]
@@ -352,7 +352,7 @@ registerCallback("postinit",function()
 				return default
 			end
 		end)
-
+		
 		-- gSet*(N,*) (same as gSet*(N:toString(),*)
 		registerFunction("gSet"..k,"n"..v[1],"",function(self,args)
 			local op1, op2 = args[2], args[3]
@@ -365,7 +365,7 @@ registerCallback("postinit",function()
 				gvars[self.uid][self.data.gvars.group][v[1]..tostring(rv1)] = rv2
 			end
 		end)
-
+		
 		-- gGet*(N) (same as gGet*(N:toString()))
 		registerFunction("gGet"..k,"n",v[1],function(self,args)
 			local op1 = args[2]
@@ -384,7 +384,7 @@ registerCallback("postinit",function()
 				return default
 			end
 		end)
-
+		
 		-- gDelete*(S)
 		registerFunction("gDelete"..k,"s",v[1],function(self,args)
 			local op1 = args[2]
@@ -410,7 +410,7 @@ registerCallback("postinit",function()
 			if (type(default) == "table") then default = table.Copy(default) end
 			return default
 		end)
-
+		
 		-- gDelete*(N) (same as gDelete*(N:toString()))
 		registerFunction("gDelete"..k,"n",v[1],function(self,args)
 			local op1 = args[2]
@@ -436,9 +436,9 @@ registerCallback("postinit",function()
 			if (type(default) == "table") then default = table.Copy(default) end
 			return default
 		end)
-
+		
 		__e2setcost(5)
-
+		
 		-- gDeleteAll*()
 		registerFunction("gDeleteAll"..k,"","",function(self,args)
 			for k,v in pairs( gvars[self.uid][self.data.gvars.group] ) do
@@ -449,7 +449,7 @@ registerCallback("postinit",function()
 			end
 		end)
 	end
-
+	
 end)
 ------------------------------------------------------------------------------------------------
 -- ALL ABOVE FUNCTIONS ARE DEPRECATED (Only for compability)
@@ -465,3 +465,5 @@ registerCallback("construct",function(self)
 end)
 
 __e2setcost(nil)
+
+-- CLOSE

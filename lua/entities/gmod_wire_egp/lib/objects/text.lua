@@ -64,7 +64,7 @@ Obj.Draw = function( self )
 				if (!h) then _,h = surface_GetTextSize( self.text ) end
 				y = y - (h * ((self.valign%10)/2))
 			end
-
+			
 			surface_SetTextPos( x, y )
 			surface_DrawText( self.text )
 		else
@@ -78,7 +78,7 @@ Obj.Draw = function( self )
 				if (!h) then _,h = surface_GetTextSize( self.text ) end
 				y = (h * ((self.valign%10)/2))
 			end
-
+		
 			-- Thanks to Wizard for the base to this rotateable text code. I edited it a bit to properly support alignment
 			matAng.y = self.angle
 			mat:SetAngle(matAng)

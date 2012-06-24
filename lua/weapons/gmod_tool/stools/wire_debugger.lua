@@ -35,9 +35,9 @@ function TOOL:LeftClick(trace)
 	for k,cmp in ipairs(Components[ply_idx]) do
 		if (cmp == trace.Entity) then return end
 	end
-
+	
 	table.insert(Components[ply_idx], trace.Entity)
-
+	
 	return true
 end
 
@@ -69,9 +69,9 @@ if CLIENT then
 		if self:GetClientNumber("showports") == 0 then return end
 		local ent = LocalPlayer():GetEyeTraceNoCursor().Entity
 		if not ent:IsValid() then return end
-
+		
 		local inputs, outputs = WireLib.GetPorts(ent)
-
+		
 		if inputs and #inputs ~= 0 then
 			surface.SetFont("Trebuchet24")
 			local boxh, boxw = 0,0
@@ -84,14 +84,14 @@ if CLIENT then
 				if textw > boxw then boxw = textw end
 				boxh = boxh + texth
 			end
-
+			
 			local boxx, boxy = ScrW()/2-boxw-32, ScrH()/2-boxh/2
 			draw.RoundedBox(8,
 				boxx-8, boxy-8,
 				boxw+16, boxh+16,
 				Color(109,146,129,192)
 			)
-
+			
 			for num,port in ipairs(inputs) do
 				surface.SetTextPos(boxx,boxy+port.y)
 				if port[4] then
@@ -104,7 +104,7 @@ if CLIENT then
 				port.y = nil
 			end
 		end
-
+		
 		if outputs and #outputs ~= 0 then
 			surface.SetFont("Trebuchet24")
 			local boxh, boxw = 0,0
@@ -117,14 +117,14 @@ if CLIENT then
 				if textw > boxw then boxw = textw end
 				boxh = boxh + texth
 			end
-
+			
 			local boxx, boxy = ScrW()/2+32, ScrH()/2-boxh/2
 			draw.RoundedBox(8,
 				boxx-8, boxy-8,
 				boxw+16, boxh+16,
 				Color(109,146,129,192)
 			)
-
+			
 			for num,port in ipairs(outputs) do
 				surface.SetTextPos(boxx,boxy+port.y)
 				surface.SetTextColor(Color(255,255,255,255))
@@ -146,10 +146,10 @@ end
 
 
 if (SERVER) then
-
+	
 	local dbg_line_cache = {}
 	local dbg_line_time = {}
-
+	
 	local formatPort = {}
 	WireLib.Debugger = { formatPort = formatPort } -- Make it global
 	function formatPort.NORMAL(value)
@@ -167,26 +167,26 @@ if (SERVER) then
 	function formatPort.ANGLE(value)
 		return string.format("(%.1f,%.1f,%.1f)", value.p, value.y, value.r)
 	end
-
+	
 	formatPort.ENTITY = function(ent)
 		if not validEntity(ent) then return "(null)" end -- this uses validEntity from E2, which is faster, but maybe we shouldn't use it.
 		return tostring(ent)
 	end
 	formatPort.BONE = e2_tostring_bone
-
+	
 	function formatPort.MATRIX(value)
 		local RetText = "[11="..value[1]..",12="..value[2]..",13="..value[3]
 			  RetText = RetText..",21="..value[4]..",22="..value[5]..",23="..value[6]
 			  RetText = RetText..",31="..value[7]..",32="..value[8]..",33="..value[9].."]"
 		return RetText
 	end
-
+	
 	function formatPort.MATRIX2(value)
 		local RetText = "[11="..value[1]..",12="..value[2]
 			  RetText = RetText..",21="..value[3]..",22="..value[4].."]"
 		return RetText
 	end
-
+	
 	function formatPort.MATRIX4(value)
 		local RetText = "[11="..value[1]..",12="..value[2]..",13="..value[3]..",14="..value[4]
 			  RetText = RetText..",21="..value[5]..",22="..value[6]..",23="..value[7]..",24="..value[8]
@@ -194,10 +194,10 @@ if (SERVER) then
 			  RetText = RetText..",41="..value[13]..",42="..value[14]..",43="..value[15]..",44="..value[16].."]"
 		return RetText
 	end
-
+	
 	function formatPort.ARRAY(value, OrientVertical)
 		local RetText = ""
-		local ElementCount = 0
+		local ElementCount = 0 
 		for Index, Element in ipairs(value) do
 			ElementCount = ElementCount+1
 			if(ElementCount > 10) then
@@ -246,20 +246,20 @@ if (SERVER) then
 		RetText = string.sub(RetText,1,-3)
 		return "{"..RetText.."}"
 	end
-
+	
 	function formatPort.TABLE(value, OrientVertical)
 		local RetText = ""
-		local ElementCount = 0
+		local ElementCount = 0 
 		for Index, Element in pairs(value) do
 			ElementCount = ElementCount+1
 			if(ElementCount > 7) then
 				break
 			end
-
+			
 			local long_typeid = string.sub(Index,1,1) == "x"
 			local typeid = string.sub(Index,1,long_typeid and 3 or 1)
 			local IdxID = string.sub(Index,(long_typeid and 3 or 1)+1)
-
+			
 			RetText = RetText..IdxID.."="
 			--Check for array element type
 			if(typeid == "n") then --number
@@ -303,40 +303,40 @@ if (SERVER) then
 		RetText = string.sub(RetText,1,-3)
 		return "{"..RetText.."}"
 	end
-
+	
 	-- Shouldn't this be in WireLib instead???
 	function WireLib.registerDebuggerFormat(typename, func)
 		formatPort[typename:upper()] = func
 	end
-
+	
 	local function Wire_DebuggerThink()
 		for ply,cmps in pairs(Components) do
-
+			
 			if ( !ply ) or ( !ply:IsValid() ) or ( !ply:IsPlayer() ) then -- if player has left, clear the hud
-
+				
 				Components[ply] = nil
-
+				
 			else
-
+				
 				OrientVertical = ply:GetInfoNum("wire_debugger_orientvertical") ~= 0
-
+				
 				-- TODO: Add EntityRemoved hook to clean up Components array.
 				table.Compact(cmps, function(cmp) return cmp:IsValid() and IsWire(cmp) end)
-
+				
 				-- TODO: only send in TOOL:*Click/Reload hooks maybe.
 				umsg.Start("WireDbgLineCount", ply)
 					umsg.Short(#cmps)
 				umsg.End()
-
+				
 				if #cmps == 0 then Components[ply] = nil end
-
+				
 				for l,cmp in ipairs(cmps) do
 					local dbginfo = cmp.WireDebugName
 					if not dbginfo or dbginfo == "No Name" then
 						dbginfo = cmp:GetClass()
 					end
 					dbginfo = dbginfo .. " (" ..cmp:EntIndex() .. ") - "
-
+					
 					if (cmp.Inputs and table.Count(cmp.Inputs) > 0) then
 						if OrientVertical then
 							dbginfo = dbginfo .. "\n"
@@ -347,7 +347,7 @@ if (SERVER) then
 						end
 						for k, Input in pairs_sortvalues(cmp.Inputs, WireLib.PortComparator) do
 							if formatPort[Input.Type] then
-								dbginfo = dbginfo .. k .. ":" .. formatPort[Input.Type](Input.Value, OrientVertical)
+								dbginfo = dbginfo .. k .. ":" .. formatPort[Input.Type](Input.Value, OrientVertical) 
 								if OrientVertical then
 									dbginfo = dbginfo .. "\n"
 								else
@@ -356,7 +356,7 @@ if (SERVER) then
 							end
 						end
 					end
-
+					
 					if (cmp.Outputs and table.Count(cmp.Outputs) > 0) then
 						if(cmp.Inputs and table.Count(cmp.Inputs) > 0) then
 							dbginfo = dbginfo .. "\n "
@@ -379,11 +379,11 @@ if (SERVER) then
 							end
 						end
 					end
-
+					
 					if (not cmp.Inputs) and (not cmp.Outputs) then
 						dbginfo = dbginfo .. "No info"
 					end
-
+					
 					dbg_line_cache[ply] = dbg_line_cache[ply] or {}
 					dbg_line_time[ply] = dbg_line_time[ply] or {}
 					if (dbg_line_cache[ply][l] ~= dbginfo) then
@@ -393,7 +393,7 @@ if (SERVER) then
 							if(string.len(dbginfo)>200) then
 								NumOfUMSG = math.ceil(string.len(dbginfo)/200)
 							end
-
+							
 							for i=1, NumOfUMSG do
 								local MsgPart = string.sub(dbginfo,(i-1)*200+1, i*200)
 								umsg.Start("WireDbgLine", ply)
@@ -404,7 +404,7 @@ if (SERVER) then
 									umsg.String(MsgPart)
 								umsg.End()
 							end
-
+							
 							dbg_line_cache[ply][l] = dbginfo
 							if (SinglePlayer()) then
 								dbg_line_time[ply][l] = CurTime() + 0.05
@@ -414,13 +414,13 @@ if (SERVER) then
 						end
 					end
 				end
-
+				
 			end
-
+			
 		end
 	end
 	hook.Add("Think", "Wire_DebuggerThink", function() PCallError(Wire_DebuggerThink) end)
-
+	
 end
 
 
@@ -432,14 +432,14 @@ if (CLIENT) then
 	local dgb_orient_vert = false
 	local BoxWidth = 300
 	local LastBoxUpdate = CurTime()-5
-
+	
 	local function DebuggerDrawHUD()
 		local dbginfo = ""
 		if (dbg_line_count <= 0) then return end
-
+		
 		--setup the font
 		surface.SetFont("Default")
-
+		
 		--buid the table of entries
 		local Entry_Count = dbg_line_count
 		local Line_Count = 0
@@ -450,12 +450,12 @@ if (CLIENT) then
 			if(Line) then
 				local CurEntry = {}
 				CurEntry.Lines = {}
-
+				
 				local ExplodeLines = string.Explode("\n", Line)
-
+				
 				for Index, ExplodeLine in ipairs(ExplodeLines) do --break it into multible lines for 1 entry
 					if(string.Trim(ExplodeLine) != "") then
-
+					
 						local XPos = 0
 						if(Index > 1) then
 							if dgb_orient_vert then --if the string is not the first and it is vertical, line it up acordingly
@@ -472,14 +472,14 @@ if (CLIENT) then
 							end
 
 						end
-
+					
 						local TrimLine = {
-							LineText = string.Trim(ExplodeLine),
+							LineText = string.Trim(ExplodeLine), 
 							OffsetPos = { XPos, Line_Count*14 } --move the next text down some for each line
 						}
 						table.insert(CurEntry.Lines, TrimLine )
 						Line_Count = Line_Count+1
-
+						
 					end
 				end
 
@@ -489,17 +489,17 @@ if (CLIENT) then
 				else
 					CurEntry.TextColor = Color(130,255,158)
 				end
-
+				
 				--put it in the table
 				table.insert(Entries, CurEntry)
-
+				
 				--switch the color
 				ColorType = 1-ColorType
 			end
 		end
+		
 
-
-
+		
 		--determine the box width every second
 		if(LastBoxUpdate < CurTime()-1) then
 			local LongestWidth = 0
@@ -508,7 +508,7 @@ if (CLIENT) then
 				for LineIndex, Line in ipairs(Entry.Lines) do
 					TextWidth, TextHeight = surface.GetTextSize(string.Trim(Line.LineText))
 					TextWidth = TextWidth+Line.OffsetPos[1] --offset it with the text's offset
-
+					
 					if(TextWidth > LongestWidth) then
 						LongestWidth = TextWidth
 					end
@@ -517,8 +517,8 @@ if (CLIENT) then
 			BoxWidth = LongestWidth+16
 			LastBoxUpdate = CurTime()
 		end
-
-
+		
+		
 		--move the box down if the active weapon is the tool gun
 		local MoveBox = 0
 		if(LocalPlayer():IsValid() and LocalPlayer():IsPlayer()) then
@@ -528,12 +528,12 @@ if (CLIENT) then
 		else --return if the player is dead or non-existant
 			return
 		end
-
-
+		
+		
 		-- TODO: account for larger usage info boxes.
 		--draw the box
 		draw.RoundedBox(8, 2, 2+143*MoveBox, BoxWidth, Line_Count*14+16, Color(50, 50, 50, 128))
-
+		
 		--step through all of the entries and their text to print them
 		for EntryIndex, Entry in ipairs(Entries) do
 			for LineIndex, Line in ipairs(Entry.Lines) do
@@ -543,10 +543,10 @@ if (CLIENT) then
 					pos = { Line.OffsetPos[1]+10, 143*MoveBox+10+Line.OffsetPos[2] },
 					color = Entry.TextColor
 					})
-
+				
 			end
 		end
-
+		
 	end
 	hook.Add("HUDPaint", "DebuggerDrawHUD", DebuggerDrawHUD)
 
@@ -554,7 +554,7 @@ if (CLIENT) then
 		dbg_line_count = um:ReadShort()
 	end
 	usermessage.Hook("WireDbgLineCount", Debugger_Msg_LineCount)
-
+	
 	local function Debugger_Msg_Line(um)
 		local i = um:ReadShort()
 		local NumOfUMSG = um:ReadShort()
@@ -576,15 +576,15 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_debugger_name", Description = "#Tool_wire_debugger_desc" })
-
+	
 	panel:AddControl("CheckBox", {
 			Label = "#Tool_wire_debugger_showports",
 			Command = "wire_debugger_showports"
 		})
-
+		
 	panel:AddControl("CheckBox", {
 			Label = "#Tool_wire_debugger_orientvertical",
 			Command = "wire_debugger_orientvertical"
 		})
-
+	
 end

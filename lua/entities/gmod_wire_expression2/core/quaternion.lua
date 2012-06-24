@@ -33,12 +33,12 @@ registerType("quaternion", "q", { 0, 0, 0, 0 },
 
 local function format(value)
 	local r,i,j,k,dbginfo
-
+	
 	r = ""
 	i = ""
 	j = ""
 	k = ""
-
+	
 	if abs(value[1]) > 0.0005 then
 		r = Round(value[1]*1000)/1000
 	end
@@ -155,19 +155,19 @@ e2function quaternion quat(vector forward, vector up)
 	local x = Vector(forward[1], forward[2], forward[3])
 	local z = Vector(up[1], up[2], up[3])
 	local y = z:Cross(x):GetNormalized() --up x forward = left
-
+	
 	local ang = x:Angle()
 	if ang.p > 180 then ang.p = ang.p - 360 end
 	if ang.y > 180 then ang.y = ang.y - 360 end
-
+	
 	local yyaw = Vector(0,1,0)
 	yyaw:Rotate(Angle(0,ang.y,0))
-
-	local roll = acos(math.Clamp(y:Dot(yyaw), -1, 1))*rad2deg
-
+	
+	local roll = acos(y:Dot(yyaw))*rad2deg
+	
 	local dot = y.z
 	if dot < 0 then roll = -roll end
-
+	
 	local p, y, r = ang.p, ang.y, roll
 	p = p*deg2rad*0.5
 	y = y*deg2rad*0.5
@@ -233,7 +233,7 @@ __e2setcost(2)
 registerOperator("ass", "q", "q", function(self, args)
 	local lhs, op2, scope = args[2], args[3], args[4]
 	local      rhs = op2[1](self, op2)
-
+	
 	self.Scopes[scope][lhs] = rhs
 	self.Scopes[scope].vclk[lhs] = true
 	return rhs
@@ -522,7 +522,7 @@ e2function quaternion slerp(quaternion q0, quaternion q1, number t)
 	else
 		q11 = { q1[1], q1[2], q1[3], q1[4] }  -- dunno if just q11 = q1 works
 	end
-
+	
 	local l = q0[1]*q0[1] + q0[2]*q0[2] + q0[3]*q0[3] + q0[4]*q0[4]
 	if l==0 then return { 0, 0, 0, 0 } end
 	local invq0 = { q0[1]/l, -q0[2]/l, -q0[3]/l, -q0[4]/l }
@@ -594,7 +594,7 @@ e2function number rotationAngle(quaternion q)
 	local l2 = q[1]*q[1] + q[2]*q[2] + q[3]*q[3] + q[4]*q[4]
 	if l2 == 0 then return 0 end
 	local l = sqrt(l2)
-	local ang = 2*acos(math.Clamp(q[1]/l, -1, 1))*rad2deg  //this returns angle from 0 to 360
+	local ang = 2*acos(q[1]/l)*rad2deg  //this returns angle from 0 to 360
 	if ang > 180 then ang = ang - 360 end  //make it -180 - 180
 	return ang
 end
@@ -642,27 +642,27 @@ end
 e2function angle quaternion:toAngle()
 	local l = sqrt(this[1]*this[1]+this[2]*this[2]+this[3]*this[3]+this[4]*this[4])
 	local q1, q2, q3, q4 = this[1]/l, this[2]/l, this[3]/l, this[4]/l
-
+	
 	local x = Vector(q1*q1 + q2*q2 - q3*q3 - q4*q4,
 		2*q3*q2 + 2*q4*q1,
 		2*q4*q2 - 2*q3*q1)
-
+		
 	local y = Vector(2*q2*q3 - 2*q4*q1,
 		q1*q1 - q2*q2 + q3*q3 - q4*q4,
 		2*q2*q1 + 2*q3*q4)
-
+		
 	local ang = x:Angle()
 	if ang.p > 180 then ang.p = ang.p - 360 end
 	if ang.y > 180 then ang.y = ang.y - 360 end
-
+	
 	local yyaw = Vector(0,1,0)
 	yyaw:Rotate(Angle(0,ang.y,0))
-
-	local roll = acos(math.Clamp(y:Dot(yyaw), -1, 1))*rad2deg
-
+	
+	local roll = acos(y:Dot(yyaw))*rad2deg
+	
 	local dot = q2*q1 + q3*q4
 	if dot < 0 then roll = -roll end
-
+	
 	return {ang.p, ang.y, roll}
 end
 
@@ -677,3 +677,5 @@ e2function string quaternion:toString()
 end
 
 __e2setcost(nil)
+
+-- CLOSE

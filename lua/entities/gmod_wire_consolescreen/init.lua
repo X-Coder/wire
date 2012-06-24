@@ -25,7 +25,7 @@ function ENT:Initialize()
 
   self.Memory[2020] = 0
   self.Memory[2021] = 0
-
+  
   self.Memory[2022] = 3/4
   self.Memory[2023] = 0
   self.Memory[2024] = 0

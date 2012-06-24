@@ -228,9 +228,9 @@ e2function void wirelink:egpPoly( number index, ... )
 	if (!EGP:ValidEGP( this )) then return end
 	local args = {...}
 	if (#args<3) then return end -- No less than 3
-
+	
 	local max = maxvertices()
-
+	
 	-- Each arg must be a vec2 or vec4
 	local vertices = {}
 	for k,v in ipairs( args ) do
@@ -244,7 +244,7 @@ e2function void wirelink:egpPoly( number index, ... )
 			end
 		end
 	end
-
+	
 	local bool, obj = EGP:CreateObject( this, EGP.Objects.Names["Poly"], { index = index, vertices = vertices }, self.player )
 	if (bool) then EGP:DoAction( this, self, "SendObject", obj ) Update(self,this) end
 end
@@ -253,9 +253,9 @@ e2function void wirelink:egpPoly( number index, array args )
 	if (!EGP:IsAllowed( self, this )) then return end
 	if (!EGP:ValidEGP( this )) then return end
 	if (#args<3) then return end -- No less than 3
-
+	
 	local max = maxvertices()
-
+	
 	-- Each arg must be a vec2 or vec4
 	local vertices = {}
 	for k,v in ipairs( args ) do
@@ -269,7 +269,7 @@ e2function void wirelink:egpPoly( number index, array args )
 			end
 		end
 	end
-
+	
 	local bool, obj = EGP:CreateObject( this, EGP.Objects.Names["Poly"], { index = index, vertices = vertices }, self.player )
 	if (bool) then EGP:DoAction( this, self, "SendObject", obj ) Update(self,this) end
 end
@@ -283,9 +283,9 @@ e2function void wirelink:egpPolyOutline( number index, ... )
 	if (!EGP:ValidEGP( this )) then return end
 	local args = {...}
 	if (#args<3) then return end -- No less than 3
-
+	
 	local max = maxvertices()
-
+	
 	-- Each arg must be a vec2 or vec4
 	local vertices = {}
 	for k,v in ipairs( args ) do
@@ -299,7 +299,7 @@ e2function void wirelink:egpPolyOutline( number index, ... )
 			end
 		end
 	end
-
+	
 	local bool, obj = EGP:CreateObject( this, EGP.Objects.Names["PolyOutline"], { index = index, vertices = vertices }, self.player )
 	if (bool) then EGP:DoAction( this, self, "SendObject", obj ) Update(self,this) end
 end
@@ -310,7 +310,7 @@ e2function void wirelink:egpPolyOutline( number index, array args )
 	if (#args<3) then return end -- No less than 3
 
 	local max = maxvertices()
-
+	
 	-- Each arg must be a vec2 or vec4
 	local vertices = {}
 	for k,v in ipairs( args ) do
@@ -324,7 +324,7 @@ e2function void wirelink:egpPolyOutline( number index, array args )
 			end
 		end
 	end
-
+	
 	local bool, obj = EGP:CreateObject( this, EGP.Objects.Names["PolyOutline"], { index = index, vertices = vertices }, self.player )
 	if (bool) then EGP:DoAction( this, self, "SendObject", obj ) Update(self,this) end
 end
@@ -333,12 +333,12 @@ e2function void wirelink:egpAddVertices( number index, array args )
 	if (!EGP:IsAllowed( self, this )) then return end
 	if (!EGP:ValidEGP( this )) then return end
 	if (#args<3) then return end -- No less than 3
-
+	
 	local bool, k, v = EGP:HasObject( this, index )
-	if (bool) then
+	if (bool) then 
 
 		local max = maxvertices()
-
+		
 		-- Each arg must be a vec2 or vec4
 		local vertices = {}
 		for k,v in ipairs( args ) do
@@ -352,7 +352,7 @@ e2function void wirelink:egpAddVertices( number index, array args )
 				end
 			end
 		end
-
+		
 		if (EGP:EditObject( v, { vertices = vertices } )) then
 			EGP:InsertQueue( this, self.player, EGP._SetVertex, "SetVertex", index, vertices, true )
 			Update(self,this)
@@ -517,17 +517,17 @@ e2function void wirelink:egpAngle( number index, vector2 worldpos, vector2 axisp
 	local bool, k, v = EGP:HasObject( this, index )
 	if (bool) then
 		if (v.x and v.y) then
-
+			
 			local vec, ang = LocalToWorld(Vector(axispos[1],axispos[2],0), Angle(0,0,0), Vector(worldpos[1],worldpos[2],0), Angle(0,-angle,0))
-
+			
 			local x = vec.x
 			local y = vec.y
-
+			
 			angle = -ang.yaw
-
+			
 			local t = { x = x, y = y }
 			if (v.angle) then t.angle = angle end
-
+			
 			if (EGP:EditObject( v, t )) then EGP:DoAction( this, self, "SendObject", v ) Update(self,this) end
 		end
 	end
@@ -623,12 +623,12 @@ end
 e2function void wirelink:egpParent( number index, entity parent )
 	if not parent or not parent:IsValid() then return end
 	if (!EGP:IsAllowed( self, this )) then return end
-
+	
 	local bool, k, v = EGP:HasObject( this, index )
 	if bool and v.Is3DTracker then
 		if v.parententity == parent then return end -- Already parented to that
 		v.parententity = parent
-
+		
 		EGP:DoAction( this, self, "SendObject", v )
 		Update(self,this)
 	end
@@ -663,7 +663,7 @@ e2function number wirelink:egpParent( number index )
 	end
 	return 0
 end
-
+	
 --------------------------------------------------------
 -- Clear & Remove
 --------------------------------------------------------
@@ -916,23 +916,22 @@ e2function void wirelink:egpDrawTopLeft( number onoff )
 end
 
 -- this code has some wtf strange things
-local function ScalePoint( this, x, y )
+local function ScalePoint( this, x, y )	
 	local xMin = this.xScale[1]
 	local xMax = this.xScale[2]
 	local yMin = this.yScale[1]
 	local yMax = this.yScale[2]
-
+	
 	x = ((x - xMin) * 512) / (xMax - xMin) - xMax
 	y = ((y - yMin) * 512) / (yMax - yMin) - yMax
-
+	
 	return x,y
 end
-
 
 __e2setcost(20)
 e2function vector wirelink:egpToWorld( vector2 pos )
 	if not EGP:ValidEGP( this ) then return Vector(0,0,0) end
-
+	
 	local class = this:GetClass()
 	if class == "gmod_wire_egp_emitter" then
 		local x,y = pos[1]*0.25,pos[2]*0.25 -- 0.25 because the scale of the 3D2D is 0.25.
@@ -945,13 +944,13 @@ e2function vector wirelink:egpToWorld( vector2 pos )
 		if not monitor then return Vector(0,0,0) end
 
 		local x,y = pos[1],pos[2]
-
+		
 		if this.Scaling then
 			x,y = ScalePoint( this, x, y )
 		else
 			x,y = x-256,y-256
 		end
-
+		
 		x = x * monitor.RS / monitor.RatioX
 		y = y * monitor.RS
 
@@ -959,7 +958,7 @@ e2function vector wirelink:egpToWorld( vector2 pos )
 		vec:Rotate(monitor.rot)
 		return this:LocalToWorld(vec+monitor.offset)
 	end
-
+	
 	return Vector(0,0,0)
 end
 
@@ -1134,3 +1133,5 @@ registerCallback("construct",function(self)
 	self.data.EGP.RunOnEGP = {}
 	self.data.EGP.UpdatesNeeded = {}
 end)
+
+-- CLOSE

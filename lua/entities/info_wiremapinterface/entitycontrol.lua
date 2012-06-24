@@ -81,7 +81,7 @@ function ENT:GiveWireInterfece(EntsToAdd)
 
 	self:Timedpairs("WireMapInterface_Adding", EntsToAdd, 1, function(obj1, obj2, self)
 		if (!IsValid(self)) then return false end -- Stop loop when the entity gets removed.
-		if (self.WirePortsChanged) then
+		if (self.WirePortsChanged) then 
 			self:TriggerOutput("onwireentsstartchanging", self)
 		end
 		self.WirePortsChanged = nil
@@ -197,7 +197,7 @@ function ENT:RemoveEntitiesByTable(Table, callback)
 		if (!IsValid(Entity)) then return end
 		if (!IsValid(Entity._WireMapInterfaceEnt)) then return end
 		if (Entity._WireMapInterfaceEnt ~= self) then return end
-		if (self and self.WirePortsChanged) then
+		if (self and self.WirePortsChanged) then 
 			self:TriggerOutput("onwireentsstartchanging", self)
 			self.WirePortsChanged = nil
 		end

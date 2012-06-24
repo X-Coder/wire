@@ -127,7 +127,7 @@ function ENT:DoJob()
 				dojob = false
 			end
 		end
-
+		
 		if dojob then
 			if (self.Command[9] == 0) then self.Command[8] = 0 end
 			local sector_addr = self.Sector.."."..self.Track.."."..self.Stack//{s=sector,t=track,st=stack}
@@ -143,26 +143,26 @@ end
 function ENT:Think()
 	local vStart = self:GetPos()
 	local vForward = self:GetUp()
-
+		
 		local trace = {}
 		trace.start = vStart
 		trace.endpos = vStart + (vForward * self:GetBeamRange())
 		trace.filter = { self }
 	local trace = util.TraceLine( trace )
 
-	if ((self.Command[0] ~= 0) or (self.Command[1] ~= 0)) then
+	if ((self.Command[0] ~= 0) or (self.Command[1] ~= 0)) then		
 		if (self.Command[0] == 1) then //write ray (blue)
-			if (Color(self:GetColor()) != Color(0,0,255,255)) then
-				self:SetColor(0, 0, 255, 255)
+			if (self:GetColor() != Color(0,0,255,255)) then
+				self:SetColor(Color(0, 0, 255, 255))
 			end
 		else //read ray (red)
-			if (Color(self:GetColor()) != Color(255,0,0,255)) then
-				self:SetColor(255, 0, 0, 255)
+			if (self:GetColor() != Color(255,0,0,255)) then
+				self:SetColor(Color(255, 0, 0, 255))
 			end
 		end
 	else
-		if (Color(self:GetColor()) != Color(255,255,255,255)) then
-			self:SetColor(255, 255, 255, 255)
+		if (self:GetColor() != Color(255,255,255,255)) then
+			self:SetColor(Color(255, 255, 255, 255))
 		end
 	end
 
@@ -213,7 +213,7 @@ function ENT:Think()
 			self.Command[6]  = self.Command[2]*disk.BytesPerBlock //[R] Current address (global)
 			self.Command[7]  = (disk.TrackSectors[track]+sector)*disk.BytesPerBlock //[R] Current address (in current stack)
 
-			if ((self.Command[0] ~= 0) or (self.Command[1] ~= 0)) then
+			if ((self.Command[0] ~= 0) or (self.Command[1] ~= 0)) then		
 				self.Sector = sector
 				self.Track = track
 				self.Stack = stack

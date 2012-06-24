@@ -31,7 +31,7 @@ if CLIENT then
 		hook.Add("OnEntityCreated", "wire_expression2_console", function(ent)
 			if not ValidEntity(ent) then return end
 			if ent ~= LocalPlayer() then return end
-
+			
 			CreateClientConVar("wire_expression2_friendwrite", 0, false, true)
 		end)
 	end
@@ -39,17 +39,17 @@ end
 
 if SERVER then
 	CreateConVar('sbox_maxwire_expressions', 20)
-
+	
 	function TOOL:LeftClick(trace)
 		if not util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) then return false end
-
+		
 		local player = self:GetOwner()
-
+		
 		local model = self:GetModel()
 		local pos = trace.HitPos
 		local ang = trace.HitNormal:Angle()
 		ang.pitch = ang.pitch + 90
-
+		
 		if  trace.Entity:IsValid()
 		    && trace.Entity:GetClass() == "gmod_wire_expression2"
 			&& (trace.Entity.player == player || trace.Entity.player:GetInfoNum("wire_expression2_friendwrite") != 0)
@@ -59,14 +59,14 @@ if SERVER then
 			player:SendLua("wire_expression2_upload()")
 			return true
 		end
-
+		
 		if !self:GetSWEP():CheckLimit("wire_expressions") then return false end
-
+		
 		local entity = ents.Create("gmod_wire_expression2")
 		if not entity or not entity:IsValid() then return false end
-
+		
 		player:AddCount("wire_expressions", entity)
-
+		
 		entity:SetModel(model)
 		entity:SetAngles(ang)
 		entity:SetPos(pos)
@@ -74,29 +74,29 @@ if SERVER then
 		entity:SetPlayer(player)
 		entity.player = player
 		entity:SetNWEntity( "_player", player )
-
+		
 		entity:SetPos(trace.HitPos - trace.HitNormal * entity:OBBMins().z)
 		local constraint = WireLib.Weld(entity, trace.Entity, trace.PhysicsBone, true)
-
+		
 		undo.Create("wire_expression2")
 			undo.AddEntity(entity)
 			undo.SetPlayer(player)
 			undo.AddEntity(constraint)
 		undo.Finish()
-
+		
 		player:AddCleanup("wire_expressions", entity)
-
+		
 		entity:Prepare(player)
 		player:SendLua("wire_expression2_upload()")
 		return true
 	end
-
+	
 	function TOOL:Reload(trace)
 		if trace.Entity:IsPlayer() then return false end
 		if CLIENT then return true end
-
+		
 		local player = self:GetOwner()
-
+		
 		if  trace.Entity:IsValid()
 		    && trace.Entity:GetClass() == "gmod_wire_expression2"
 			&& (trace.Entity.player == player || trace.Entity.player:GetInfoNum("wire_expression2_friendwrite") != 0)
@@ -108,13 +108,13 @@ if SERVER then
 			return false
 		end
 	end
-
+	
 	function MakeWireExpression2(player, Pos, Ang, model, buffer, name, inputs, outputs, vars)
 		if !player:CheckLimit("wire_expressions") then return false end
-
+		
 		local self = ents.Create("gmod_wire_expression2")
 		if !self:IsValid() then return false end
-
+		
 		self:SetModel(model)
 		self:SetAngles(Ang)
 		self:SetPos(Pos)
@@ -122,29 +122,29 @@ if SERVER then
 		self:SetPlayer(player)
 		self.player = player
 		self:SetNWEntity( "player", player )
-
+		
 		buffer = string.Replace(string.Replace(buffer,"£","\""),"€","\n")
-
+		
 		self:SetOverlayText("Expression 2\n" .. name)
 		self.buffer = buffer
-
+		
 		self.Inputs = WireLib.AdjustSpecialInputs(self, inputs[1], inputs[2])
 		self.Outputs = WireLib.AdjustSpecialOutputs(self, outputs[1], outputs[2])
-
+		
 		self.dupevars = vars
-
+		
 		player:AddCount("wire_expressions", self)
 		player:AddCleanup("wire_expressions", self)
 		return self
 	end
-
+	
 	duplicator.RegisterEntityClass("gmod_wire_expression2", MakeWireExpression2, "Pos", "Ang", "Model", "_original", "_name", "_inputs", "_outputs", "_vars")
-
+	
 	function TOOL:RightClick(trace)
 		if trace.Entity:IsPlayer() then return false end
-
+		
 		local player = self:GetOwner()
-
+		
 		if  trace.Entity:IsValid()
 		    && trace.Entity:GetClass() == "gmod_wire_expression2"
 			&& E2Lib.isFriend(trace.Entity.player, player)
@@ -153,22 +153,22 @@ if SERVER then
 			trace.Entity:Prepare(player)
 			return true
 		end
-
+		
 		player:SendLua("openE2Editor()")
 		return false
 	end
-
+	
 elseif CLIENT then
-
+	
 	local dir
 	local lastclick = CurTime()
 	local download = {}
 	local Validation
 	local transfer
-
+	
 	function wire_expression2_upload()
 		if( wire_expression2_editor == nil ) then initE2Editor() end
-
+		
 		if e2_function_data_received then
 			local result = wire_expression2_validate(wire_expression2_editor:GetCode())
 			if result then
@@ -178,11 +178,11 @@ elseif CLIENT then
 		else
 			WireLib.AddNotify( "The Expression 2 function data has not been transferred to the client yet; uploading the E2 to the server for validation.", NOTIFY_ERROR, 7, NOTIFYSOUND_DRIP3 )
 		end
-
+		
 		transfer(wire_expression2_editor:GetCode())
 	end
-
-	function wire_expression2_download(um)
+	
+	--[[function wire_expression2_download(um)
 		if(!um) then return end
 		local chunks = um:ReadShort()
 		if(!download.downloading) then
@@ -193,32 +193,43 @@ elseif CLIENT then
 			download.name = um:ReadString()
 			return
 		end
-
+		
 		if( download.current + 1 == chunks ) then
 			download.current = chunks
 			download.code = download.code .. um:ReadString()
 		else
 			download = {}
 		end
-
+			
 		if( download.downloading && download.chunks == chunks) then
 			if( wire_expression2_editor == nil ) then initE2Editor() end
+			download.code = string.gsub(download.code, "%z", "")
+			print(download.code)
 			wire_expression2_editor:Open(download.name, download.code)
 			wire_expression2_editor.chip = true
 			download = {}
 			return
 		end
-
+		
 	end
-
-	usermessage.Hook("wire_expression2_download", wire_expression2_download)
-
+	
+	usermessage.Hook("wire_expression2_download", wire_expression2_download)]]
+	
+	net.Receive("wire_e2_download", function(len)
+		local name = net.ReadString()
+		local code = net.ReadString()
+		
+		if( wire_expression2_editor == nil ) then initE2Editor() end
+		wire_expression2_editor:Open(name, code)
+		wire_expression2_editor.chip = true
+	end)
+	
 	function TOOL.BuildCPanel(panel)
 		panel:ClearControls()
 		panel:AddControl("Header", { Text = "#Tool_wire_expression2_name", Description = "#Tool_wire_expression2_desc" })
-
+		
 		//ModelPlug_AddToCPanel(panel, "expr2", "wire_expression2", nil, nil, nil, 2)
-
+		
 		panel:AddControl("ComboBox", {
 			MenuButton = "0",
 			Options = {
@@ -227,7 +238,7 @@ elseif CLIENT then
 				["Nano"] = { wire_expression2_size = "_nano" },
 			}
 		})
-
+		
 		panel:AddControl("MaterialGallery", {
 			Height = "100",
 			Width = "100",
@@ -243,16 +254,16 @@ elseif CLIENT then
 				["Processor"] =  { wire_expression2_select = "Processor",  Value = "Processor",  Material = "models/expression 2/prcssor", wire_expression2_model = "models/expression 2/cpu_processor.mdl" },
 			}
 		})
-
+		
 		if( wire_expression2_editor == nil ) then initE2Editor() end
-
+		
 		local FileBrowser = vgui.Create("wire_expression2_browser" , panel)
 		panel:AddPanel(FileBrowser)
 		FileBrowser:Setup("Expression2")
 		FileBrowser:SetSize(235,400)
 		function FileBrowser:OnFileClick()
 			if( wire_expression2_editor == nil ) then initE2Editor() end
-
+			
 			if(dir == self.File.FileDir and CurTime() - lastclick < 1) then
 				wire_expression2_editor:Open(dir)
 			else
@@ -262,7 +273,7 @@ elseif CLIENT then
 				Validation:Validate()
 			end
 		end
-
+		
 		Validation = vgui.Create("Label" , panel)
 		panel:AddPanel(Validation)
 		Validation.OnMousePressed = function(panel) panel:Validate() end
@@ -282,7 +293,7 @@ elseif CLIENT then
 		OpenEditor.DoClick = function(button)
 			wire_expression2_editor:Open()
 		end
-
+		
 		local NewExpression = vgui.Create("DButton" , panel)
 		panel:AddPanel(NewExpression)
 		NewExpression:SetTall(30)
@@ -291,125 +302,141 @@ elseif CLIENT then
 			wire_expression2_editor:Open()
 			wire_expression2_editor:NewScript()
 		end
-
+		
 	end
-
+	
 	function initE2Editor()
 		wire_expression2_editor = vgui.Create( "Expression2EditorFrame")
 		wire_expression2_editor:Setup("Expression 2 Editor","Expression2","E2")
 	end
-
+	
 	function openE2Editor()
 		if( wire_expression2_editor == nil ) then initE2Editor() end
 		wire_expression2_editor:Open()
 	end
-
+	
 	function transfer(code)
 		local encoded = E2Lib.encode(code)
 		local length = encoded:len()
+		Expression2SetProgress(0)
+		net.Start("wire_e2_upload")
+			net.WriteString(encoded)
+		net.SendToServer()
+	end
+	
+	net.Receive("transferred", function(len)
+		if net.ReadLong() == 1 then
+			Expression2SetProgress(100)
+			timer.Create("wire_expression_upload_reset", 0.5, 1, function() Expression2SetProgress(nil) end )
+		end
+	end)
+	
+	--[[function transfer(code)
+		local encoded = E2Lib.encode(code)
+		local length = encoded:len()
 		local chunks = math.ceil(length / 480)
-
+		
 		Expression2SetProgress(0)
 		RunConsoleCommand("wire_expression_upload_begin", code:len(), chunks)
-
+		
 		timer.Create("wire_expression_upload", 1/60, chunks, transfer_callback, { encoded, 1, chunks })
 	end
-
+	
 	function transfer_callback(state)
 		local i = state[2] - 1
-
+		
 		Expression2SetProgress(math.Round((state[2] / state[3]) * 100))
 		RunConsoleCommand("wire_expression_upload_data", state[1]:sub(i * 480 + 1, (i + 1) * 480))
-
+		
 		if state[2] == state[3] then
 			timer.Create("wire_expression_upload_reset", 0.5, 1, function() Expression2SetProgress(nil) end )
-
+			
 			timer.Destroy("wire_expression_upload")
 			RunConsoleCommand("wire_expression_upload_end")
 		end
-
+		
 		state[2] = state[2] + 1
-	end
-
+	end]]
+	
 	/******************************************************************************\
 	  Expression 2 Tool Screen for Garry's Mod
 	  Andreas "Syranide" Svensson, me@syranide.com
 	\******************************************************************************/
-
+	
 	surface.CreateFont("Arial", 40, 1000, true, false, "Expression2ToolScreenFont")
 	surface.CreateFont("Arial", 30, 1000, true, false, "Expression2ToolScreenSubFont")
-
+	
 	local percent = nil
 	local name = "Unnamed"
-
+	
 	function Expression2SetName(n)
 		name = n
 		if !name then
 			name = "Unnamed"
 			return
 		end
-
+		
 		surface.SetFont("Expression2ToolScreenSubFont")
 		local ww = surface.GetTextSize("...")
-
+		
 		local w, h = surface.GetTextSize(name)
 		if w < 240 then return end
-
+		
 		while true do
 			local w, h = surface.GetTextSize(name)
 			if w < 240 - ww then break end
 			name = string.sub(name, 1, -2)
 		end
-
+		
 		name = string.Trim(name) .. "..."
 	end
-
+	
 	function Expression2SetProgress(p)
 		percent = p
 	end
-
+	
 	function DrawTextOutline(text, font, x, y, color, xalign, yalign, bordercolor, border)
 		for i=0,8 do
 			draw.SimpleText(text, font, x + border * math.sin(i * math.pi / 4), y + border * math.cos(i * math.pi / 4), bordercolor, xalign, yalign)
 		end
-
+		
 		draw.SimpleText(text, font, x, y, color, xalign, yalign)
 	end
-
+	
 	local CogColor = Color(150, 34, 34, 255)
 	local CogTexture = surface.GetTextureID("expression 2/cog")
 	if CogTexture == surface.GetTextureID("texturemissing") then CogTexture = nil end
-
-	function TOOL:RenderToolScreen()
+	
+	function TOOL:DrawToolScreen(w, h)
 		cam.Start2D()
-
+			
 			surface.SetDrawColor(32, 32, 32, 255)
 			surface.DrawRect(0, 0, 256, 256)
-
+			
 			if CogTexture then
 				if percent then
 					ToColor = Color(34, 150, 34, 255)
 				else
 					ToColor = Color(150, 34, 34, 255)
 				end
-
+				
 				CogDelta = 750 * FrameTime()
-
+				
 				CogColor.r = CogColor.r + math.max(-CogDelta, math.min(CogDelta, ToColor.r - CogColor.r))
 				CogColor.g = CogColor.g + math.max(-CogDelta, math.min(CogDelta, ToColor.g - CogColor.g))
-				CogColor.b = CogColor.b + math.max(-CogDelta, math.min(CogDelta, ToColor.b - CogColor.b))
-
+				CogColor.b = CogColor.b + math.max(-CogDelta, math.min(CogDelta, ToColor.b - CogColor.b))	
+				
 				surface.SetTexture(CogTexture)
 				surface.SetDrawColor(CogColor.r, CogColor.g, CogColor.b, 255)
 				surface.DrawTexturedRectRotated(256, 256, 455, 455, RealTime() * 10)
 				surface.DrawTexturedRectRotated(30, 30, 227.5, 227.5, RealTime() * -20 + 12.5)
 			end
-
+			
 			surface.SetFont("Expression2ToolScreenFont")
 			local w, h = surface.GetTextSize(" ")
 			surface.SetFont("Expression2ToolScreenSubFont")
 			local w2, h2 = surface.GetTextSize(" ")
-
+			
 			if percent then
 				surface.SetFont("Expression2ToolScreenFont")
 				local w, h = surface.GetTextSize("Uploading")
@@ -420,7 +447,7 @@ elseif CLIENT then
 				DrawTextOutline("Expression 2", "Expression2ToolScreenFont", 128, 128, Color(224, 224, 224, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, Color(0, 0, 0, 255), 4)
 				DrawTextOutline(name, "Expression2ToolScreenSubFont", 128, 128 + (h+h2) / 2 - 4, Color(224, 224, 224, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, Color(0, 0, 0, 255), 4)
 			end
-
+			
 		cam.End2D()
 	end
 end
@@ -428,59 +455,59 @@ end
 /*************************** 'in editor' animation ****************************/
 
 if SERVER then
-
+	
 	/************************* client-side event handling *************************/
 	-- this might fit better elsewhere
-
+	
 	local wire_expression2_event = {}
-
+	
 	concommand.Add("wire_expression2_event", function(ply, command, args)
 		local handler = wire_expression2_event[args[1]]
 		if not handler then return end
 		return handler(ply, args)
 	end)
-
+	
 	-- actual editor open/close handlers
-
+	
 	function wire_expression2_event.editor_open(ply, args)
 		local rp = RecipientFilter()
 		rp:AddAllPlayers()
-
+		
 		umsg.Start("wire_expression2_editor_status", rp)
 			umsg.Entity(ply)
 			umsg.Bool(true)
 		umsg.End()
 	end
-
+	
 	function wire_expression2_event.editor_close(ply, args)
 		local rp = RecipientFilter()
 		rp:AddAllPlayers()
-
+		
 		umsg.Start("wire_expression2_editor_status", rp)
 			umsg.Entity(ply)
 			umsg.Bool(false)
 		umsg.End()
 	end
-
+	
 elseif CLIENT then
-
+	
 	local busy_players = {}
 	hook.Add("EntityRemoved", "wire_expression2_busy_animation", function(ply)
 		busy_players[ply] = nil
 	end)
-
+	
 	local emitter = ParticleEmitter(Vector(0,0,0))
-
+	
 	usermessage.Hook("wire_expression2_editor_status", function(um)
 		local ply = um:ReadEntity()
 		local status = um:ReadBool()
-
+		
 		if not ply:IsValid() then return end
 		if ply == LocalPlayer() then return end
-
+		
 		busy_players[ply] = status or nil
 	end)
-
+	
 	local rolldelta = math.rad(80)
 	timer.Create("wire_expression2_editor_status", 1, 0, function()
 		rolldelta = -rolldelta
@@ -489,23 +516,23 @@ elseif CLIENT then
 			local BonePos, BoneAng = ply:GetBonePosition( BoneIndx )
 			local particle = emitter:Add("expression 2/cog_world", BonePos+Vector(0,0,16))
 			if particle then
-				particle:SetColor(150,34,34,255)
+				particle:SetColor(Color(150,34,34,255))
 				particle:SetVelocity(Vector(0,0,17))
-
+				
 				particle:SetDieTime(3)
 				particle:SetLifeTime(0)
-
+				
 				particle:SetStartSize(10)
 				particle:SetEndSize(10)
-
+				
 				particle:SetStartAlpha(255)
 				particle:SetEndAlpha(0)
-
+				
 				particle:SetRollDelta(rolldelta)
 			end
 		end
 	end)
-
+	
 end
 
 
@@ -514,7 +541,7 @@ function TOOL:UpdateGhostWireExpression2( ent, player )
 		if ( !ent ) then return end
 		if ( !ent:IsValid() ) then return end
 
-		local tr 	= utilx.GetPlayerTrace( player, player:GetCursorAimVector() )
+		local tr 	= util.GetPlayerTrace( player, player:GetCursorAimVector() )
 		local trace 	= util.TraceLine( tr )
 		if (!trace.Hit) then return end
 
@@ -536,16 +563,16 @@ function TOOL:UpdateGhostWireExpression2( ent, player )
 
 	function TOOL:Think()
 		local model = self:GetModel()
-
+		
 		if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != model || (not self.GhostEntity:GetModel()) ) then
 			self:MakeGhostEntity( model, Vector(0,0,0), Angle(0,0,0) )
 		end
 
 		self:UpdateGhostWireExpression2( self.GhostEntity, self:GetOwner() )
 	end
+	
 
-
-
+	
 	local prevmodel,prevvalid
 	function validModelCached(model)
 		if model ~= prevmodel then
@@ -554,19 +581,19 @@ function TOOL:UpdateGhostWireExpression2( ent, player )
 		end
 		return prevvalid
 	end
-
+	
 	function TOOL:GetModel()
 		local scriptmodel = self:GetClientInfo("scriptmodel")
 		if scriptmodel and scriptmodel ~= "" and validModelCached(scriptmodel) then return Model(scriptmodel) end
-
+		
 		local model = self:GetClientInfo("model")
 		local size = self:GetClientInfo("size")
-
+		
 		if model and size then
 			local modelname, modelext = model:match("(.*)(%..*)")
 			if not modelext then
-				if validModelCached( model ) then
-					return model
+				if validModelCached( model ) then 
+					return model 
 				else
 					return "models/beer/wiremod/gate_e2.mdl"
 				end
@@ -576,7 +603,7 @@ function TOOL:UpdateGhostWireExpression2( ent, player )
 				return Model(newmodel)
 			end
 		end
-
+		
 		return "models/beer/wiremod/gate_e2.mdl"
 	end
 

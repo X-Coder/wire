@@ -21,17 +21,17 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	local phys = self:GetPhysicsObject()
-
+	
 	if (phys:IsValid()) then
 		phys:Wake()
 	end
-
+	
 	self.lightr = 255
 	self.lightg = 255
 	self.lightb = 255
-
+	
 	self.Inputs = WireLib.CreateSpecialInputs(self, {"Red", "Green", "Blue", "RGB", "On", "Texture"}, {"NORMAL", "NORMAL", "NORMAL", "VECTOR", "NORMAL", "STRING"})
 	self:TurnOn()
 end
@@ -44,25 +44,25 @@ function ENT:SetLightColor( r, g, b )
 	self.r = r
 	self.g = g
 	self.b = b
-
+	
 	self.lightr = r
 	self.lightg = g
 	self.lightb = b
-
+	
 	self:SetVar( "lightr", r )
 	self:SetVar( "lightg", g )
 	self:SetVar( "lightb", b )
-
-	self:SetColor( r, g, b, 255 )
-
-	self:SetColor( r, g, b, 255 )
-
+	
+	self:SetColor( Color(r, g, b, 255) )
+	
+	self:SetColor( Color(r, g, b, 255) )
+	
 	self.m_strLightColor = Format( "%i %i %i", r, g, b )
-
+	
 	if ( self.flashlight ) then
 		self.flashlight:SetKeyValue( "lightcolor", self.m_strLightColor )
 	end
-
+	
 	self:SetOverlayText( "Red:" .. r .. " Green:" .. g .. " Blue" .. b )
 end
 
@@ -76,11 +76,11 @@ end
 function ENT:SetFlashlightTexture( tex )
 	-- for dupe
 	self.Texture = tex
-
+	
 	if ( self.flashlight ) then
 		self.flashlight:Input( "SpotlightTexture", NULL, NULL, self:GetFlashlightTexture() )
 	end
-
+	
 end
 
 /*---------------------------------------------------------
@@ -113,7 +113,7 @@ function ENT:TriggerInput(iname, value)
 		self:SetFlashlightTexture(value)
 	end
 
-
+	
 end
 
 function ENT:TurnOn()
@@ -123,23 +123,23 @@ function ENT:TurnOn()
 	self.flashlight = ents.Create( "env_projectedtexture" )
 
 		self.flashlight:SetParent( self )
-
+		
 		// The local positions are the offsets from parent..
 		self.flashlight:SetLocalPos( Vector( 0, 0, 0 ) )
 		self.flashlight:SetLocalAngles( Angle(90,90,90) )
-
+		
 		// Looks like only one flashlight can have shadows enabled!
 		self.flashlight:SetKeyValue( "enableshadows", 1 )
 		self.flashlight:SetKeyValue( "farz", 2048 )
 		self.flashlight:SetKeyValue( "nearz", 8 )
-
+		
 		//Todo: Make this tweakable?
 		self.flashlight:SetKeyValue( "lightfov", 50 )
-
+		
 		// Color.. Bright pink if none defined to alert us to error
 		self.flashlight:SetKeyValue( "lightcolor", self.m_strLightColor or "255 0 255" )
-
-
+		
+		
 	self.flashlight:Spawn()
 
 	self.flashlight:Input( "SpotlightTexture", NULL, NULL, self:GetFlashlightTexture() )
@@ -175,15 +175,15 @@ function MakeWireLamp( pl, r, g, b, Texture, Data )
 		duplicator.DoGeneric( wire_lamp, Data )
 		wire_lamp:Setup( r, g, b, Texture )
 	wire_lamp:Spawn()
-
+	
 	duplicator.DoGenericPhysics( wire_lamp, pl, Data )
-
+	
 	wire_lamp:SetPlayer( pl )
 	wire_lamp.pl = pl
-
+	
 	pl:AddCount( "wire_lamps", wire_lamp )
 	pl:AddCleanup( "wire_lamp", wire_lamp )
-
+	
 	return wire_lamp
 end
 

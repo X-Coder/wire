@@ -22,7 +22,7 @@ function Obj:Draw(egp)
 		else
 			objectPosition = Vector(self.target_x,self.target_y,self.target_z)
 		end
-
+		
 		local eyePosition = EyePos()
 
 		local direction = objectPosition-eyePosition
@@ -62,7 +62,7 @@ function Obj:Draw(egp)
 		else
 			pos = Vector(self.target_x,self.target_y,self.target_z)
 		end
-
+		
 		local pos = pos:ToScreen()
 		self.x = pos.x
 		self.y = pos.y

@@ -101,7 +101,7 @@ end)
 
 registerOperator("leq", "nn", "n", function(self, args)
 	local op1, op2 = args[2], args[3]
-
+	
 	local rvd      = op1[1](self, op1) - op2[1](self, op2)
 	if rvd <= delta
 	   then return 1 else return 0 end
@@ -263,7 +263,7 @@ end
 registerFunction("round", "nn", "n", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-
+	
 	local shf = 10 ^ floor(rv2 + 0.5)
 	return floor(rv1*shf+0.5)/shf
 end)

@@ -5,16 +5,16 @@ include('shared.lua')
 ENT.WireDebugName = "Oscilloscope"
 
 function ENT:Initialize()
-
+	
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	self.Inputs = Wire_CreateInputs(self, { "X", "Y", "R", "G", "B", "Pause", "Length", "Update Frequency" })
 end
 
 function ENT:Think()
-	if (self.Inputs.Pause.Value == 0) then
+	if (self.Inputs.Pause.Value == 0) then 
 		self.BaseClass.Think(self)
 
 		local x = math.max(-1, math.min(self.Inputs.X.Value or 0, 1))
@@ -42,9 +42,9 @@ function ENT:TriggerInput(iname, value)
 end
 
 function MakeWireOscilloscope( pl, Pos, Ang, model )
-
+	
 	if ( !pl:CheckLimit( "wire_oscilloscopes" ) ) then return false end
-
+	
 	local wire_oscilloscope = ents.Create( "gmod_wire_oscilloscope" )
 	if (!wire_oscilloscope:IsValid()) then return false end
 	wire_oscilloscope:SetModel( model )
@@ -52,12 +52,12 @@ function MakeWireOscilloscope( pl, Pos, Ang, model )
 	wire_oscilloscope:SetAngles( Ang )
 	wire_oscilloscope:SetPos( Pos )
 	wire_oscilloscope:Spawn()
-
+	
 	wire_oscilloscope:SetPlayer(pl)
 	wire_oscilloscope.pl = pl
-
+	
 	pl:AddCount( "wire_oscilloscopes", wire_oscilloscope )
-
+	
 	return wire_oscilloscope
 end
 

@@ -5,7 +5,7 @@
 local validEntity = E2Lib.validEntity
 local isOwner = E2Lib.isOwner
 registerCallback("e2lib_replace_function", function(funcname, func, oldfunc)
-	if funcname == "isOwner" then
+	if funcname == "isOwner" then 
 		isOwner = func
 	elseif funcname == "validEntity" then
 		validEntity = func
@@ -196,7 +196,7 @@ end
 local Trusts
 
 if CPPI and _R.Player.CPPIGetFriends then
-
+	
 	function Trusts(ply, whom)
 		if ply == whom then return true end
 		local friends = ply:CPPIGetFriends()
@@ -206,39 +206,39 @@ if CPPI and _R.Player.CPPIGetFriends then
 		end
 		return false
 	end
-
+	
 	e2function array entity:friends()
 		if not validEntity(this) then return {} end
 		if not this:IsPlayer() then return {} end
 		if not Trusts(this, self.player) then return {} end
-
+		
 		local ret = this:CPPIGetFriends()
 		if type(ret) ~= "table" then return {} end
 		return ret
 	end
-
+	
 	e2function number entity:trusts(entity whom)
 		if not validEntity(this) then return 0 end
 		if not this:IsPlayer() then return 0 end
 		if not Trusts(this, self.player) then return 0 end
-
+		
 		return Trusts(this, whom) and 1 or 0
 	end
-
+	
 else
-
+	
 	function Trusts(ply, whom)
 		return ply == whom
 	end
-
+	
 	e2function array entity:friends()
 		return {}
 	end
-
+	
 	e2function number entity:trusts(entity whom)
 		return whom == this and 1 or 0
 	end
-
+	
 end
 
 
@@ -246,13 +246,13 @@ local steamfriends = {}
 
 concommand.Add("wire_expression2_friend_status", function(ply, command, args)
 	local friends = {}
-
+	
 	for index in args[1]:gmatch("[^,]") do
 		local n = tonumber(index)
 		if not n then return end
 		table.insert(friends, Entity(index))
 	end
-
+	
 	steamfriends[ply:EntIndex()] = friends
 end)
 
@@ -267,7 +267,7 @@ e2function array entity:steamFriends()
 	if not validEntity(this) then return {} end
 	if not this:IsPlayer() then return {} end
 	if not Trusts(this, self.player) then return {} end
-
+	
 	return steamfriends[this:EntIndex()] or {}
 end
 
@@ -276,10 +276,10 @@ e2function number entity:isSteamFriend(entity friend)
 	if not validEntity(this) then return 0 end
 	if not this:IsPlayer() then return 0 end
 	if not Trusts(this, self.player) then return 0 end
-
+	
 	local friends = steamfriends[this:EntIndex()]
 	if not friends then return 0 end
-
+	
 	return table.HasValue(friends, friend) and 1 or 0
 end
 
@@ -349,7 +349,7 @@ end
 e2function entity entity:aimEntity()
 	if not validEntity(this) then return nil end
 	if not this:IsPlayer() then return nil end
-
+	
 	local ent = this:GetEyeTraceNoCursor().Entity
 	if not ent:IsValid() then return nil end
 	return ent
@@ -358,14 +358,14 @@ end
 e2function vector entity:aimPos()
 	if not validEntity(this) then return {0,0,0} end
 	if not this:IsPlayer() then return {0,0,0} end
-
+	
 	return this:GetEyeTraceNoCursor().HitPos
 end
 
 e2function vector entity:aimNormal()
 	if not validEntity(this) then return {0,0,0} end
 	if not this:IsPlayer() then return {0,0,0} end
-
+	
 	return this:GetEyeTraceNoCursor().HitNormal
 end
 
@@ -373,7 +373,7 @@ end
 e2function bone entity:aimBone()
 	if not validEntity(this) then return nil end
 	if not this:IsPlayer() then return nil end
-
+	
 	local trace = this:GetEyeTraceNoCursor()
 	local ent = trace.Entity
 	if not validEntity(ent) then return nil end

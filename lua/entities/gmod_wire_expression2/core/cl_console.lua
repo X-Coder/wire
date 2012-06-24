@@ -17,7 +17,7 @@ else
 	hook.Add("OnEntityCreated", "wire_expression2_console", function(ent)
 		if not ValidEntity(ent) then return end
 		if ent ~= LocalPlayer() then return end
-
+		
 		CreateCVars()
 	end)
 end

@@ -53,7 +53,7 @@ end
 
 function ENT:InputDeactivate( mul )
 	if ( self.toggle ) then return true end
-
+	
 	return self:Switch( false, mul )
 end
 
@@ -110,7 +110,7 @@ function MakeWireInput( pl, Pos, Ang, model, keygroup, toggle, value_off, value_
 	wire_input:SetPlayer( pl )
 	wire_input:Setup( keygroup, toggle, value_off, value_on )
 	wire_input.pl = pl
-
+	
 	pl:AddCount( "wire_inputs", wire_input )
 	pl:AddCleanup( "gmod_wire_input", wire_input )
 

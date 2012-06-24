@@ -58,28 +58,28 @@ if (SERVER) then
 		if (!trace or !trace.Hit or trace.Entity:IsPlayer()) then return end
 		local ent = ents.Create( "gmod_wire_adv_emarker" )
 		if (!ent:IsValid()) then return end
-
+		
 		-- Pos/Model/Angle
 		ent:SetModel( Model )
 		ent:SetPos( trace.HitPos - trace.HitNormal * ent:OBBMins().z )
 		ent:SetAngles( trace.HitNormal:Angle() + Angle(90,0,0) )
-
+		
 		ent:SetPlayer( ply )
-
+		
 		ent:Spawn()
 		ent:Activate()
-
+		
 		ply:AddCount( "wire_adv_emarkers", ent )
-
+		
 		return ent
 	end
-
+	
 	function TOOL:LeftClick( trace )
 		if (not util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone )) then return end
 		local ply = self:GetOwner()
-
+	
 		local ent = self:CreateMarker( ply, trace, self:GetModel() )
-
+		
 		local const = WireLib.Weld( ent, trace.Entity, trace.PhysicsBone, true )
 		undo.Create("wire_adv_emarker")
 			undo.AddEntity( ent )
@@ -91,12 +91,12 @@ if (SERVER) then
 
 		return true
 	end
-
-
+	
+	
 	function TOOL:RightClick( trace )
 		if (!trace) then return end
 		local ply = self:GetOwner()
-
+		
 		if (trace.Entity:IsValid()) then
 			local ent = trace.Entity
 			if (self:GetStage() == 0 and ent:GetClass() == "gmod_wire_adv_emarker") then
@@ -112,14 +112,14 @@ if (SERVER) then
 				end
 			end
 		end
-
+		
 		return true
 	end
-
+	
 	function TOOL:Reload( trace )
 		if (!trace) then return end
 		local ply = self:GetOwner()
-
+		
 		if (trace.Entity:IsValid()) then
 			local ent = trace.Entity
 			if (self:GetStage() == 0 and ent:GetClass() == "gmod_wire_adv_emarker") then
@@ -142,19 +142,19 @@ if (SERVER) then
 				end
 			end
 		end
-
+		
 		return true
 	end
 else
 	function TOOL:LeftClick( trace ) return !trace.Entity:IsPlayer() end
 	function TOOL:RightClick( trace ) return !trace.Entity:IsPlayer() end
 	function TOOL:Reload( trace ) return !trace.Entity:IsPlayer() end
-
+	
 	function TOOL.BuildCPanel(panel)
 		panel:AddControl("Header", { Text = "#Tool_wire_adv_emarker_name", Description = "#Tool_wire_adv_emarker_desc" })
 		WireDermaExts.ModelSelect(panel, "wire_adv_emarker_model", list.Get( "Wire_Misc_Tools_Models" ), 8)
 	end
-
+	
 	usermessage.Hook("Wire_Adv_EMarker_Links", function(um)
 		local Marker = Entity(um:ReadShort())
 		if (Marker:IsValid()) then
@@ -170,7 +170,7 @@ else
 		end
 	end)
 end
-
+	
 function TOOL:UpdateGhostEmarker( ent, ply )
 	if (!ent or !ent:IsValid()) then return end
 	local trace = ply:GetEyeTrace()
@@ -178,25 +178,25 @@ function TOOL:UpdateGhostEmarker( ent, ply )
 		ent:SetNoDraw( true )
 		return
 	end
-
+	
 	local Ang = trace.HitNormal:Angle() + Angle(90,0,0)
 	ent:SetAngles(Ang)
-
+	
 	local Pos = trace.HitPos - trace.HitNormal * ent:OBBMins().z
 	ent:SetPos( Pos )
-
+	
 	ent:SetNoDraw( false )
 end
 
 function TOOL:Think()
 	local model = self:GetModel()
-
+	
 	if (!self.GhostEntity or !self.GhostEntity:IsValid() or self.GhostEntity:GetModel() != model ) then
 		self:MakeGhostEntity( Model(model), Vector(0,0,0), Angle(0,0,0) )
 	end
-
+	
 	self:UpdateGhostEmarker( self.GhostEntity, self:GetOwner() )
-
+	
 	local ply = self:GetOwner()
 	local trace = ply:GetEyeTrace()
 	if (trace.Hit and trace.Entity and trace.Entity:IsValid() and trace.Entity:GetClass() == "gmod_wire_adv_emarker") then

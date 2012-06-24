@@ -10,16 +10,16 @@ local material 	= "cable/rope"
 CreateConVar('sbox_maxwire_deployers', 2)
 local function MakeBalloonSpawner(pl, Data)
 	if not pl:CheckLimit("wire_deployers") then return nil end
-
+	
 	local ent = ents.Create("sent_deployableballoons")
 	if not ent:IsValid() then return end
 	duplicator.DoGeneric(ent, Data)
 	ent:SetPlayer(pl)
 	ent:Spawn()
 	ent:Activate()
-
+	
 	duplicator.DoGenericPhysics(ent, pl, Data)
-
+	
 	pl:AddCount("wire_deployers", ent)
 	pl:AddCleanup("wire_deployers", ent)
 	return ent
@@ -33,7 +33,7 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 		info.Wires.Length = info.Wires.Lenght
 		info.Wires.Lenght = nil
 	end
-
+	
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 end
 
@@ -104,7 +104,7 @@ local balloon_registry = {}
 
 hook.Add("EntityRemoved", "balloon_deployer", function(ent)
 	local deployer = balloon_registry[ent]
-	if validEntity(deployer) and deployer.TriggerInput then
+	if ValidEntity(deployer) and deployer.TriggerInput then
 		deployer.Deployed = 0
 		deployer:TriggerInput("Deploy", 0)
 	end
@@ -119,7 +119,7 @@ function ENT:DeployBalloons()
 	end
 	balloon:Spawn()
 	balloon:SetRenderMode( RENDERMODE_TRANSALPHA )
-	balloon:SetColor(math.random(0,255), math.random(0,255), math.random(0,255), 255 )
+	balloon:SetColor(Color(math.random(0,255), math.random(0,255), math.random(0,255), 255) )
 	balloon:SetForce(self.force)
 	balloon:SetMaterial("models/balloon/balloon")
 	balloon:SetPlayer(self:GetPlayer())
@@ -128,7 +128,7 @@ function ENT:DeployBalloons()
 	local spawnervec = (self:GetPos()-balloon:GetPos()):Normalize()*250 --just to be sure
 	local trace = util.QuickTrace(balloon:GetPos(),spawnervec,balloon)
 	local Pos = self:GetPos()+(self:GetUp()*25)
-	local attachpoint = Pos + Vector(0,0,-10)
+	local attachpoint = Pos + Vector(0,0,-10)	
 	local LPos1 = balloon:WorldToLocal(attachpoint)
 	local LPos2 = trace.Entity:WorldToLocal(trace.HitPos)
 	local phys = trace.Entity:GetPhysicsObjectNum(trace.PhysicsBone)
@@ -145,7 +145,7 @@ function ENT:DeployBalloons()
 	end
 	self:DeleteOnRemove(balloon)
 	self.Balloon = balloon
-
+	
 	balloon_registry[balloon] = self
 end
 
@@ -160,7 +160,8 @@ function ENT:RetractBalloons()
 	if self.Balloon:IsValid() then
 		local effectdata = EffectData()
 			effectdata:SetOrigin( self.Balloon:GetPos() )
-			effectdata:SetStart( Vector(self.Balloon:GetColor()) )
+			local c = self.Balloon:GetColor()
+			effectdata:SetStart( Vector(c.r, c.g, c.b) )
 		util.Effect( "balloon_pop", effectdata )
 		self.Balloon:Remove()
 	else

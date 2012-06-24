@@ -614,7 +614,7 @@ registerFunction("mix", "vvn", "v", function(self, args)
 	return {x, y, z}
 end)
 
-__e2setcost(3)
+__e2setcost(3) 
 
 // Circular shift function: shiftr( x,y,z ) = ( z,x,y )
 registerFunction("shiftR", "v", "v", function(self, args)
@@ -629,7 +629,7 @@ registerFunction("shiftL", "v", "v", function(self, args)
 	return {rv1[2], rv1[3], rv1[1]}
 end)
 
-__e2setcost(5)
+__e2setcost(5) 
 
 // Returns 1 if the vector lies between (or is equal to) the min/max vectors
 registerFunction("inrange", "vvv", "n", function(self, args)
@@ -801,9 +801,9 @@ end
 
 e2function angle heading(vector originpos,angle originangle, vector pos)
 	pos = WorldToLocal(Vector(pos[1],pos[2],pos[3]),Angle(0,0,0),Vector(originpos[1],originpos[2],originpos[3]),Angle(originangle[1],originangle[2],originangle[3]))
-
+	
 	local bearing = rad2deg*-atan2(pos.y, pos.x)
-
+	
 	local len = pos:Length()
 	if (len < delta) then return { 0, bearing, 0 } end
 	return { rad2deg*asin(pos.z / len), bearing, 0 }

@@ -25,7 +25,7 @@ function ENT:Initialize()
   self.VM = CPULib.VirtualMachine()
   self.VM.SerialNo = CPULib.GenerateSN("CPU")
   self.VM:Reset()
-
+  
   self:SetCPUName()
   self:SetMemoryModel("64krom")
   self.VM.SignalError = function(VM,errorCode)
@@ -76,7 +76,7 @@ function ENT:Initialize()
       else return 0 end
     end
   end
-
+  
   -- Player that debugs the processor
   self.DebuggerPlayer = nil
 end
@@ -131,7 +131,7 @@ function ENT:Run()
     self.VM:Step(8,function(self)
 --      self:Emit("VM.IP = "..(self.PrecompileIP or 0))
 --      self:Emit("VM.XEIP = "..(self.PrecompileTrueXEIP or 0))
-
+        
       self:Dyn_Emit("if (VM.CPUIF.Clk == 1) and (VM.CPUIF.OnVMStep) then")
         self:Dyn_EmitState()
         self:Emit("VM.CPUIF.OnVMStep()")
@@ -159,7 +159,7 @@ function ENT:Run()
     -- How many steps VM must make to keep up with execution
     local Cycles = math.max(1,math.floor(self.Frequency*DeltaTime*0.5))
     self.VM.TimerDT = (DeltaTime/Cycles)
-
+  
     while (Cycles > 0) and (self.Clk > 0) and (self.VM.Idle == 0) do
       -- Run VM step
       local previousTMR = self.VM.TMR
@@ -170,7 +170,7 @@ function ENT:Run()
 
   -- Update VM timer
   self.VM.TIMER = self.VM.TIMER + DeltaTime
-
+  
   -- Reset idle register
   self.VM.Idle = 0
 end
@@ -250,7 +250,7 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
   self.VM.RAMSize  = info.InternalRAMSize or 65536
   self.VM.ROMSize  = info.InternalROMSize or 65536
   self:SetCPUName(info.CPUName)
-
+  
   if info.Memory then--and
      --(((info.UseROM) and (info.UseROM == true)) or
      -- ((info.InternalROMSize) and (info.InternalROMSize > 0))) then

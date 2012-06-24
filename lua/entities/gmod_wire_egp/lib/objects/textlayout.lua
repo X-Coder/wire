@@ -10,7 +10,7 @@ Obj.halign = 0
 Obj.Draw = function( self )
 	if (self.text and #self.text>0) then
 		surface.SetTextColor( self.r, self.g, self.b, self.a )
-
+		
 		if (!EGP.ValidFonts[self.fontid]) then self.fontid = 1 end
 		local font = "WireEGP_" .. self.size .. "_" .. self.fontid
 		if (!EGP.ValidFonts_Lookup[font]) then
@@ -19,23 +19,23 @@ Obj.Draw = function( self )
 			EGP.ValidFonts_Lookup[font] = true
 		end
 		surface.SetFont( font )
-
+		
 		--if (!self.layouter) then self.layouter = EGP:MakeTextLayouter() end -- Trying to make my own layouter...
 		--self.layouter:SetText( self.text, self.x, self.y, self.w, self.h, self.halign, self.valign, (self.fontid != self.oldfontid) )
 		--self.layouter:DrawText()
 		--self.oldfontid = self.fontid
-
+		
 		if (!self.layouter) then self.layouter = MakeTextScreenLayouter() end
 		self.layouter:DrawText(self.text, self.x, self.y, self.w, self.h, self.halign, self.valign)
-
+		
 		--[[
-		if (!self.layouter) then
-			self.layouter = EGP:TextLayouter( font )
+		if (!self.layouter) then 
+			self.layouter = EGP:TextLayouter( font ) 
 			self.layouter:SetJustify( false )
 			self.layouter:SetJustifyLast( false )
 			self.layouter:SetTabWidth( 4 )
 			self.layouter:SetLimitHeight( true )
-			self.oldvalues = {}
+			self.oldvalues = {} 
 		end
 		if (self.oldvalues.x != self.x or
 			self.oldvalues.y != self.y or

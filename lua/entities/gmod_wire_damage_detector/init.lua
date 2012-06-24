@@ -6,7 +6,7 @@ include( 'shared.lua' )
 
 ENT.WireDebugName = "Damage Detector"
 
-local DEFAULT = {n={},ntypes={},s={},stypes={},size=0,istable=true}
+local DEFAULT = {n={},ntypes={},s={},stypes={},size=0,istable=true,depth=0}
 
 // Global table to keep track of all detectors
 local Wire_Damage_Detectors = {}
@@ -35,7 +35,7 @@ local function CheckWireDamageDetectors( ent, inflictor, attacker, amount, dmgin
 				if !detector.updated then
 					detector:UpdateLinkedEnts()
 					detector.updated = true
-					detector:NextThink(CurTime())		-- Update link info once per tick per detector at most
+					detector:NextThink(CurTime()+0.001)		-- Update link info once per tick per detector at most
 				end
 				if detector.key_ents[entID] then
 					detector:UpdateDamage( dmginfo, entID )
@@ -57,7 +57,7 @@ function ENT:Initialize()
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
 
-	self.Outputs = WireLib.CreateSpecialOutputs(self, { "Clk", "Damage", "Attacker", "Victim", "Victims", "Position", "Force", "Type" } , { "NORMAL", "NORMAL", "ENTITY", "ENTITY", "TABLE", "VECTOR", "VECTOR", "STRING" } )
+	self.Outputs = WireLib.CreateSpecialOutputs(self, { "Damage", "Attacker", "Victim", "Victims", "Position", "Force", "Type" } , { "NORMAL", "ENTITY", "ENTITY", "TABLE", "VECTOR", "VECTOR", "STRING" } )
 	self.Inputs = WireLib.CreateSpecialInputs(self, { "On", "Entity", "Entities" }, { "NORMAL", "ENTITY", "ARRAY" } )
 
 	self.on = 0
@@ -67,9 +67,7 @@ function ENT:Initialize()
 	self.firsthit_dmginfo = {}		-- Stores damage info representing damage during an interval
 	self.output_dmginfo = {}		-- Stores the current damage info outputs
 	self.linked_entities = {}
-
-	self.count = 0
-
+	
 	// Store output damage info
 	self.victims = table.Copy(DEFAULT)
 	WireLib.TriggerOutput( self, "Victims", self.victims )
@@ -99,12 +97,12 @@ function ENT:ShowOutput()
 		text = ( "Damage Detector\n" ..
 				 "(Constrained Props)\n" )
 	end
-
+	
 	local linkedent
 	if self.linked_entities and self.linked_entities[0] then
 		linkedent = ents.GetByIndex( self.linked_entities[0] )
 	end
-
+	
 	if IsValid( linkedent ) then
 		if linkedent == self then
 			text = text .. "Linked - Self"
@@ -114,7 +112,7 @@ function ENT:ShowOutput()
 	else
 		text = text .. "Not linked"
 	end
-
+	
 	self:SetOverlayText(text)
 end
 
@@ -162,6 +160,7 @@ function ENT:TriggerInput( iname, value )
 end
 
 function ENT:TriggerOutput()		-- Entity outputs won't trigger again until they change
+	timer.Remove( "wire_damage_detector_" .. tostring(self) )
 
 	local attacker = self.firsthit_dmginfo[1]
 	if ValidEntity(attacker) then
@@ -176,15 +175,15 @@ function ENT:TriggerOutput()		-- Entity outputs won't trigger again until they c
 	else
 		WireLib.TriggerOutput( self, "Victim", null )
 	end
-
+	
 	self.victims.size = table.Count(self.victims.s)
 	WireLib.TriggerOutput( self, "Victims", self.victims or table.Copy(DEFAULT) )
 	WireLib.TriggerOutput( self, "Position", self.firsthit_dmginfo[3] or Vector(0,0,0) )
 	WireLib.TriggerOutput( self, "Force", self.firsthit_dmginfo[4] or Vector(0,0,0) )
-	WireLib.TriggerOutput( self, "Type", self.firsthit_dmginfo[5] or "" )
+	WireLib.TriggerOutput( self, "Type", self.firsthit_dmginfo[5] or "" )	
+	
 	WireLib.TriggerOutput( self, "Damage", self.damage or 0 )
-
-	WireLib.TriggerOutput( self, "Clk", self.count )
+	timer.Create( "wire_damage_detector_" .. tostring(self), 0, 1, WireLib.TriggerOutput, self, "Damage", 0 )
 end
 
 function ENT:UpdateLinkedEnts()		-- Check to see if prop is registered by the detector
@@ -218,7 +217,7 @@ end
 
 function ENT:UpdateDamage( dmginfo, entID )		-- Update damage table
 	local damage = dmginfo:GetDamage()
-
+	
 	if !self.hit then		-- Only register the first target's damage info
 		self.firsthit_dmginfo = {
 			dmginfo:GetAttacker(),
@@ -226,7 +225,7 @@ function ENT:UpdateDamage( dmginfo, entID )		-- Update damage table
 			dmginfo:GetDamagePosition(),
 			dmginfo:GetDamageForce()
 		}
-
+		
 		// Damage type (handle common types)
 		self.dmgtype = ""
 		if dmginfo:IsExplosionDamage() then self.dmgtype = "Explosive"
@@ -235,10 +234,10 @@ function ENT:UpdateDamage( dmginfo, entID )		-- Update damage table
 		elseif dmginfo:IsFallDamage() then self.dmgtype = "Fall"
 		elseif dmginfo:IsDamageType(DMG_CRUSH) then self.dmgtype = "Crush"
 		end
-
+		
 		self.victims = table.Copy(DEFAULT)
 		self.firsthit_dmginfo[5] = self.dmgtype
-
+		
 		self.hit = true
 	end
 
@@ -250,13 +249,10 @@ function ENT:UpdateDamage( dmginfo, entID )		-- Update damage table
 	else
 		self.damage = self.damage + damage
 	end
-
+	
 	// Update victims table (ent, damage)
 	self.victims.s[tostring(entID)] = ( self.victims[tostring(entID)] or 0 ) + damage
 	self.victims.stypes[tostring(entID)] = "n"
-
-	self.count = self.count + 1
-	if self.count == math.huge then self.count = 0 end -- This shouldn't ever happen... unless you're really REALLY bored
 end
 
 function ENT:Think()

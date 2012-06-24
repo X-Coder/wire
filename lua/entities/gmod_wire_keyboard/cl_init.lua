@@ -11,21 +11,21 @@ local function GetRemappedKey( key )
 
 	local current = Wire_Keyboard_Remap[GetConVarString("wire_keyboard_layout")]
 	if (!current) then return "" end
-
+	
 	local ret
-
+	
 	-- Check if a special key is being held down (such as SHIFT)
 	for k,v in pairs( KeyEvents ) do
 		if (v == true and current[k]) then
 			ret = current[k][key] or current.normal[key]
 		end
 	end
-
+	
 	-- Else return the normal key
 	if (!ret) then
 		ret = current.normal[key]
 	end
-
+	
 	if (type(ret) == "string") then ret = string.byte(ret) end
 	return ret
 end
@@ -37,7 +37,7 @@ local function Wire_BlockInput()
 	if (BlockFrame) then
 		BlockFrame:SetVisible(false)
 	end
-
+	
 	if (GetConVarString("wire_keyboard_sync") == "1") then
 		if not BlockFrame then BlockFrame = vgui.Create("TextEntry") end
 		BlockFrame:SetSize(10,10)
@@ -52,7 +52,7 @@ local function Wire_BlockInput()
 			end
 		end
 	end
-
+	
 	UseKeyboard = true
 end
 usermessage.Hook("wire_keyboard_blockinput", Wire_BlockInput)
@@ -62,7 +62,7 @@ local function Wire_ReleaseInput()
 	if (BlockFrame) then
 		BlockFrame:SetVisible(false)
 	end
-
+	
 	UseKeyboard = false
 end
 usermessage.Hook("wire_keyboard_releaseinput", Wire_ReleaseInput)

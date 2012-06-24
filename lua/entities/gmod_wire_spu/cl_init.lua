@@ -37,13 +37,13 @@ local function SPU_SoundEmitterState(um)
   -- Read sound emitters for this SPU
   local gpuIdx = um:ReadLong()
   SoundEmitters[gpuIdx] = {}
-
+  
   -- Fetch all sound emitters
   local count = um:ReadShort()
   for i=1,count do
     SoundEmitters[gpuIdx][i] = um:ReadLong()
   end
-
+  
   -- Recalculate small lookup table for sound emitter system
   recalculateSoundEmitterLookup()
 end
@@ -59,7 +59,7 @@ local function SPU_SoundSources(um)
     SPU.SoundSources[i]:SetNoDraw(true)
     SPU.SoundSources[i]:SetModelScale(Vector(0))
   end
-
+  
   -- Reset VM
   SPU.VM:Reset()
   SPU.VM.Memory[65535] = 1
@@ -77,7 +77,7 @@ local function SPU_MemoryModel(um)
   local SPU = ents.GetByIndex(um:ReadLong())
   if not SPU then return end
   if not SPU:IsValid() then return end
-
+    
   if SPU.VM then
     SPU.VM.ROMSize = um:ReadLong()
     SPU.VM.SerialNo = um:ReadFloat()
@@ -105,14 +105,14 @@ function ENT:Initialize()
   self.VM.CPUVER  = 1.0 -- Beta SPU by default
   self.VM.CPUTYPE = 2 -- ZSPU
   self.ChipType   = 0
-
+  
   -- Create fake sound sources
   self.SoundSources = {}
 
   -- Hard-reset VM and override it
   self:OverrideVM()
   self.VMReset = 0
-
+  
   -- Setup caching
   GPULib.ClientCacheCallback(self,function(Address,Value)
     self.VM:WriteCell(Address,Value)
@@ -142,12 +142,12 @@ end
 function ENT:Run()
   -- Limit frequency
   self.VM.Memory[65527] = math.Clamp(self.VM.Memory[65527],1,1200000)
-
+    
   -- Calculate timing
   local Cycles = math.max(1,math.floor(self.VM.Memory[65527]*self.DeltaTime*0.5))
   self.VM.TimerDT = self.DeltaTime/Cycles
   self.VM.TIMER = self.CurrentTime
-
+  
   -- Run until interrupt, or if async thread then until async thread stops existing
   while (Cycles > 0) and (self.VM.INTR == 0) do
     local previousTMR = self.VM.TMR
@@ -178,7 +178,7 @@ function ENT:Think()
   self.CurrentTime = CurTime()
   self.DeltaTime = math.min(1/30,self.CurrentTime - (self.PreviousTime or 0))
   self.PreviousTime = self.CurrentTime
-
+  
   -- Dont run until all sound sources are init
   if #self.SoundSources == 0 then return end
 

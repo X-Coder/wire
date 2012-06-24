@@ -79,7 +79,7 @@ GateActions["select"] = {
 		if (idx > 0) and (idx <= 8) then
 			return ({...})[idx]
 		end
-
+		
 		return 0
 	end,
 	label = function(Out, Choice)
@@ -93,12 +93,12 @@ GateActions["router"] = {
 	outputs = { "A", "B", "C", "D", "E", "F", "G", "H" },
 	output = function(gate, Path, Data)
 		local result = { 0, 0, 0, 0, 0, 0, 0, 0 }
-
+		
 		local idx = math.floor(Path)
 		if (idx > 0) and (idx <= 8) then
 			result[idx] = Data
 		end
-
+		
 		return unpack(result)
 	end,
 	label = function(Out, Path, Data)
@@ -126,7 +126,7 @@ GateActions["7seg"] = {
 	outputs = { "A", "B", "C", "D", "E", "F", "G" },
 	output = function(gate, A, Clear)
 		if (Clear > 0) then return unpack(SegmentInfo.None) end
-
+		
 		local idx = math.fmod(math.abs(math.floor(A)), 10)
 		if idx > #SegmentInfo then return unpack(SegmentInfo.None) end
 		return unpack(SegmentInfo[idx]) -- same as: return SegmentInfo[idx][1], SegmentInfo[idx][2], ...

@@ -33,13 +33,13 @@ local timerRunning = false
 
 local function checkSignals()
 	timerRunning = false
-
+	
 	-- make a copy of the signal queue so we can add new signals safely while iterating through the existing array
 	local queue = signal_queue
-
+	
 	-- clear the signal queue
 	signal_queue = WireLib.containers.autocleanup:new(2)
-
+	
 	-- loop through all queued signal groups
 	for group,signals in pairs_ac(queue) do
 		-- loop through all queued signals in the group
@@ -51,17 +51,17 @@ local function checkSignals()
 			end
 		end
 	end
-
+	
 end
 
 -- queues a chip's code for execution after at most
 local function postSignal(receiverid, group, name, scope, sender, senderid)
 	-- don't send the signal back to the sender
 	if senderid == receiverid then return end
-
+	
 	-- add the given signal to the queue
 	signal_queue[group][name][receiverid] = { group, name, scope, sender, senderid }
-
+	
 	-- set a timer if it isnt already set
 	if not timerRunning then
 		timerRunning = true
@@ -72,18 +72,18 @@ end
 -- Sends the given signal group/name combination to everyone listening
 -- Note: filter_player is a UNIQUE ID!
 local function broadcastSignal(group, name, scope, sender, filter_player)
-
+	
 	local sender_player = sender.uid
-
+	
 	-- scope 0 => read from scopes[sender.uid]
 	-- scope 1/2 => read from scopes[scope]
 	local contexts = scopes[scope == 0 and sender_player or scope][group][name]
-
+	
 	-- there was no signal registered for the selected scope/group/name combination.
 	if not contexts then return end
 
 	local senderid = sender:EntIndex()
-
+	
 	for receiverid,_ in pairs_ac(contexts) do
 		local receiver_player = Entity(receiverid).uid
 		if (not filter_player or receiver_player == filter_player) and (scope ~= 2 or receiver_player ~= sender_player) then
@@ -121,11 +121,11 @@ e2function void runOnSignal(string name, scope, activate)
 	-- sanitize inputs
 	--if scope >= 3 or scope < 0 then return end
 	scope = math.Clamp(math.floor(scope), 0, 2)
-
+	
 	-- process inputs
 	activate = activate ~= 0 or nil
 	if scope == 0 then scope = self.uid end
-
+	
 	-- (un-)register signal
 	scopes[scope][self.data.signalgroup][name][self.entity:EntIndex()] = activate
 end
@@ -211,20 +211,20 @@ __e2setcost(10)
 --- Sends signal S to the given chip. Multiple calls for different chips do not overwrite each other.
 e2function void signalSendDirect(string name, entity receiver)
 	if not validEntity(receiver) then return end
-
+	
 	local receiverid = receiver:EntIndex()
-
+	
 	-- filter out non-E2 entities
 	if not receiver.context then return end
-
+	
 	-- dont send back to ourselves
 	if receiver.context == self then return end
-
+	
 	local group = self.data.signalgroup
-
+	
 	-- check whether the target entity accepts signals from the "anyone" scope.
 	if not scopes[1][group][name][receiverid] then return end
-
+	
 	-- send the signal
 	postSignal(receiverid, group, name, 1, self.entity, self.entity:EntIndex())
 end
@@ -258,10 +258,10 @@ registerCallback("destruct",function(self)
 			end
 		end
 	end
-
+	
 	-- broadcast the on-remove signal, if one was registered
 	if self.data.removeSignal then broadcastSignal(unpack(self.data.removeSignal)) end
-
+	
 	-- clean up (not actually necessary since the context is destroyed anyway)
 	self.data.signalgroup = nil
 	self.data.removeSignal = nil

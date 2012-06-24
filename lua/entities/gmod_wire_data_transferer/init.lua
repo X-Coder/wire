@@ -27,7 +27,7 @@ function ENT:Initialize()
 	self.Values["F"] = 0
 	self.Values["G"] = 0
 	self.Values["H"] = 0
-
+	
 	self:SetBeamRange(25000)
 	self:ShowOutput()
 end
@@ -73,29 +73,29 @@ function ENT:Think()
 
 	local vStart = self:GetPos()
 	local vForward = self:GetUp()
-
+	
 	local trace = {}
 	   trace.start = vStart
 	   trace.endpos = vStart + (vForward * self:GetBeamRange())
 	   trace.filter = { self }
 	local trace = util.TraceLine( trace )
-
+	
 	local ent = trace.Entity
 
 	if not (ent && ent:IsValid() &&
 	(trace.Entity:GetClass() == "gmod_wire_data_transferer" ||
 	 trace.Entity:GetClass() == "gmod_wire_data_satellitedish" ||
 	  trace.Entity:GetClass() == "gmod_wire_data_store" ))then
-		if(Color(self:GetColor()) != Color(255,255,255,255))then
-			self:SetColor(255, 255, 255, 255)
+		if(self:GetColor() != Color(255,255,255,255))then
+			self:SetColor(Color(255, 255, 255, 255))
 		end
 	return false
 	end
-
-	if(Color(self:GetColor()) != Color(0,255,0,255))then
-		self:SetColor(0, 255, 0, 255)
+	
+	if(self:GetColor() != Color(0,255,0,255))then
+		self:SetColor(Color(0, 255, 0, 255))
 	end
-
+	
 	if(trace.Entity:GetClass() == "gmod_wire_data_transferer")then
 		ent:RecieveValue("A",self.Values.A)
 		ent:RecieveValue("B",self.Values.B)
@@ -116,7 +116,7 @@ function ENT:Think()
 			ent.Transmitter:RecieveValue("G",self.Values.G)
 			ent.Transmitter:RecieveValue("H",self.Values.H)
 		else
-			self:SetColor(255, 0, 0, 255)
+			self:SetColor(Color(255, 0, 0, 255))
 		end
 	elseif(trace.Entity:GetClass() == "gmod_wire_data_store")then
 		Wire_TriggerOutput(self,"A",ent.Values.A)

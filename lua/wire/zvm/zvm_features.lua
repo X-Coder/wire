@@ -53,7 +53,7 @@ function ZVM:Reset()
   self.FS = 0
   self.KS = 0
   self.LS = 0
-
+  
   -- Extended registers
   for reg=0,31 do self["R"..reg] = 0 end
 
@@ -118,7 +118,7 @@ function ZVM:Reset()
   self.PrecompiledData = {}
   self.IsAddressPrecompiled = {}
   self.PageData = {}
-
+  
   -- Restore ROM to memory
   self.INTR = 1
   if self.ROMSize > 0 then
@@ -126,7 +126,7 @@ function ZVM:Reset()
       self:WriteCell(address,value)
     end
   end
-
+  
   -- Reset pages
   self:SetCurrentPage(0)
   self:SetPreviousPage(0)
@@ -194,7 +194,7 @@ end
 function ZVM:ReadCell(Address)
   -- Check bus lock flag
   if self.BusLock == 1 then return end
-
+  
   -- Cycles required to perform memory read
   self.TMR = self.TMR + 5
 
@@ -209,13 +209,13 @@ function ZVM:ReadCell(Address)
     -- Fetch page
     local PageIndex = math.floor(Address / 128)
     local Page = self:GetPageByIndex(PageIndex)
-
+    
     -- Check if page is disabled
     if Page.Disabled == 1 then
       self:Interrupt(7,Address)
       return
     end
-
+    
     -- Check if page is overriden
     if Page.Override == 1 then
       if self.MEMRQ == 2 then -- Data available
@@ -270,7 +270,7 @@ function ZVM:WriteCell(Address,Value)
     self:Interrupt(15,Address)
     return false
   end
-
+  
   -- Invalidate precompiled data
   if self.IsAddressPrecompiled[Address] then
     for k,v in ipairs(self.IsAddressPrecompiled[Address]) do
@@ -284,13 +284,13 @@ function ZVM:WriteCell(Address,Value)
     -- Fetch page
     local PageIndex = math.floor(Address / 128)
     local Page = self:GetPageByIndex(PageIndex)
-
+    
     -- Check if page is disabled
     if Page.Disabled == 1 then
       self:Interrupt(7,Address)
       return false
     end
-
+    
     -- Check if page is overriden
     if Page.Override == 1 then
       if self.MEMRQ == 3 then -- Data was written
@@ -440,17 +440,17 @@ function ZVM:ResetPage(index)
   newPage.Execute     = 1
   newPage.RunLevel    = 0
   newPage.MappedIndex = 0
-
+  
   self.PageData[index] = newPage
 end
 
 function ZVM:SetPagePermissions(index,permissionMask,mappedPage)
   if not self.PageData[index] then self:ResetPage(index) end
   local targetPage = self.PageData[index]
-
+  
   local permissionBits = self:IntegerToBinary(permissionMask)
   local runlevel = math.floor(permissionMask / 256) % 256
-
+  
   targetPage.Disabled    = permissionBits[0]
   targetPage.Remapped    = permissionBits[1]
   targetPage.Trapped     = permissionBits[2]
@@ -491,16 +491,16 @@ function ZVM:GetPageByIndex(index)
       then pageEntryOffset = self.PTBL
       else pageEntryOffset = self.PTBL+(index+1)*2
       end
-
+      
       -- Read page entry
       local pagePermissionMask = self:ReadCell(pageEntryOffset+0)
       local pageMappedTo = self:ReadCell(pageEntryOffset+1)
-
+      
       if (not pagePermissionMask) or (not pageMappedTo) then
         self:Interrupt(13,8)
         return errorPage
       end
-
+      
       self:SetPagePermissions(index,pagePermissionMask,pageMappedTo)
       return self.PageData[index]
     else
@@ -565,13 +565,13 @@ end
 function ZVM:Jump(newIP,newCS)
   local targetXEIP = newIP + (newCS or self.CS)
   local targetPage = self:GetPageByIndex(math.floor(targetXEIP/128))
-
+  
   -- Do not allow execution if not calling from kernel page
   if (self.PCAP == 1) and (targetPage.Execute == 0) and (self.CurrentPage.RunLevel ~= 0) then
     self:Interrupt(14,self.CPAGE)
     return -- Jump failed
   end
-
+  
   self.IP = newIP
   if newCS then
     self.CS = newCS
@@ -622,11 +622,11 @@ function ZVM:Interrupt(interruptNo,interruptParameter,isExternal,cascadeInterrup
   -- Set registers
   self.LINT = interruptNo
   self.LADD = interruptParameter or self.XEIP
-
+  
   -- Output an error externally
   local fractionalParameter = self.LADD * (10^math.floor(-math.log10(math.abs(self.LADD)+1e-12)-1))
   self:SignalError(fractionalParameter+interruptNo)
-
+  
   -- Check if interrupts handling is enabled
   if self.IF == 1 then
     if self.EF == 1 then -- Extended mode
@@ -667,7 +667,7 @@ function ZVM:Interrupt(interruptNo,interruptParameter,isExternal,cascadeInterrup
       else
         self.INTR = 1
       end
-
+      
       -- Set previous page to trigger same logic as if CALL-ing from a privilegied page
       self:SetCurrentPage(self.XEIP)
       self:SetPreviousPage(interruptOffset)
@@ -683,7 +683,7 @@ function ZVM:Interrupt(interruptNo,interruptParameter,isExternal,cascadeInterrup
         if not cascadeInterrupt then self:Interrupt(13,4,false,true) end
         return
       end
-
+      
       if FLAGS[5] == 1 then -- Interrupt enabled
         -- Push return data
         self.BusLock = 0
@@ -714,7 +714,7 @@ function ZVM:Interrupt(interruptNo,interruptParameter,isExternal,cascadeInterrup
         else
           self.INTR = 1
         end
-
+        
         -- Set CMPR
         if FLAGS[3] == 1 then
           self.CMPR = 1
@@ -736,7 +736,7 @@ function ZVM:Interrupt(interruptNo,interruptParameter,isExternal,cascadeInterrup
         if not cascadeInterrupt then self:Interrupt(13,3,false,true) end
         return
       end
-
+      
       -- Memory size check
       if self.RAMSize < 512 then
         if not cascadeInterrupt then self:Interrupt(13,5,false,true) end
@@ -745,10 +745,10 @@ function ZVM:Interrupt(interruptNo,interruptParameter,isExternal,cascadeInterrup
 
       -- Calculate absolute offset in the interrupt table
       local interruptOffset = self.IDTR + interruptNo*2
-
+      
       if interruptOffset > self.RAMSize-2 then interruptOffset = self.RAMSize-2 end
       if interruptOffset < 0              then interruptOffset = 0 end
-
+      
       local interruptOffset = self.Memory[interruptOffset]
       local interruptFlags = self.Memory[interruptOffset+1]
       if (interruptFlags == 32) or (interruptFlags == 96) then
@@ -797,7 +797,7 @@ function ZVM:Interrupt(interruptNo,interruptParameter,isExternal,cascadeInterrup
       end
     end
   end
-
+  
   -- Unlock the bus
   self.BusLock = 0
 end

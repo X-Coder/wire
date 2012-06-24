@@ -19,7 +19,7 @@ function ENT:Setup(key_more,key_less,toggle,value_min,value_max,value_start,spee
 	self.keyless = key_less
 	self.toggle = (toggle == 1 || toggle == true)
 	self.value_min = value_min
-	self.value_max = value_max
+	self.value_max = value_max	
 	self.Value = value_start
 	self.value_start = value_start
 	self.speed = speed
@@ -117,12 +117,12 @@ function MakeWireAdvInput( pl, Pos, Ang, model, keymore, keyless, toggle, value_
 
 	numpad.OnDown( pl, keymore, "WireAdvInput_On", wire_adv_input, 1 )
 	numpad.OnUp( pl, keymore, "WireAdvInput_Off", wire_adv_input, 1 )
-
+	
 	numpad.OnDown( pl, keyless, "WireAdvInput_On", wire_adv_input, -1 )
 	numpad.OnUp( pl, keyless, "WireAdvInput_Off", wire_adv_input, -1 )
 
 	pl:AddCount( "wire_adv_inputs", wire_adv_input )
-
+	
 	return wire_adv_input
 end
 

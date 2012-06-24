@@ -33,7 +33,7 @@ function ENT:Initialize()
 
   -- Connected sound emitters
   self.SoundEmitters = {}
-
+  
   -- Sound sources
   self.SoundSources = {}
   for i=0,WireSPU_MaxChannels-1 do
@@ -44,7 +44,7 @@ function ENT:Initialize()
     self.SoundSources[i]:SetPos(self:GetPos()+Vector(1*math.sin(2*math.pi*i/WireSPU_MaxChannels),1*math.cos(2*math.pi*i/WireSPU_MaxChannels),0))
     self.SoundSources[i]:Spawn()
   end
-
+  
   timer.Create("wire_spu_soundsources_"..math.floor(math.random()*1000000),0.1+math.random()*0.3,1,
     function()
       umsg.Start("wire_spu_soundsources")
@@ -53,7 +53,7 @@ function ENT:Initialize()
            umsg.Long(self.SoundSources[i]:EntIndex())
          end
       umsg.End()
-
+      
 --      for i=0,WireSPU_MaxChannels-1 do
 --        self.SoundSources[i]:SetModelScale(Vector(0))
 --        self.SoundSources[i]:SetNoDraw(true)
@@ -150,7 +150,7 @@ function ENT:WriteCell(Address, Value, Player)
     if (Address ~= 65535) and (Address ~= 65534) then
       -- Write to internal memory
       self.Memory[Address] = Value
-
+      
       -- Add address to cache if cache is not big enough yet
       self.Cache:Write(Address,Value,Player)
       return true
@@ -172,7 +172,7 @@ function ENT:BuildDupeInfo()
   info.RAMSize = self.RAMSize
   info.ChipType = self.ChipType
   info.Memory = {}
-
+  
   for address = 0,self.RAMSize-1 do
     if self.Memory[address] and (self.Memory[address] ~= 0) then info.Memory[address] = self.Memory[address] end
   end
@@ -195,7 +195,7 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
   for address = 0,self.RAMSize-1 do
     if info.Memory[address] then self.Memory[address] = tonumber(info.Memory[address]) or 0 end
   end
-
+  
   self:SetMemoryModel()
   self:ResendCache(nil)
 end
@@ -273,16 +273,16 @@ function ENT:Think()
     -- Flush updated data
     if DataUpdated then self.Cache:Flush() end
   end
-
+  
   -- Flush any data in cache
   self.Cache:Flush()
-
+  
   -- Update video output, and send any changes to client
   if self.Inputs.SoundOut.Src then
     self.QueryRecurseCounter = 0
     self.QueryResult = { }
     self:QuerySoundEmitters(self.Inputs.SoundOut.Src)
-
+    
     -- Check if sound emitters setup has changed
     local soundEmittersChanged = false
     for k,v in pairs(self.QueryResult) do
@@ -291,7 +291,7 @@ function ENT:Think()
         break
       end
     end
-
+    
     if not soundEmittersChanged then
       for k,v in pairs(self.SoundEmitters) do
         if self.QueryResult[k] ~= v then
@@ -300,13 +300,13 @@ function ENT:Think()
         end
       end
     end
-
+    
     if #self.QueryResult ~= #self.SoundEmitters then soundEmittersChanged = true end
-
+    
     if soundEmittersChanged then
       self.SoundEmitters = self.QueryResult
     end
-
+    
     -- Send update to all clients
     if soundEmittersChanged then
       umsg.Start("wire_spu_soundstate")

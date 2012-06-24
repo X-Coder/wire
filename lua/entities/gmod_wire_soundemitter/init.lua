@@ -11,7 +11,7 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	self.Inputs = Wire_CreateInputs(self, { "A", "Toggle", "Volume", "Play", "Stop",
 		"PitchRelative", "LFOType", "LFORate", "LFOModPitch", "LFOModVolume", "Sample" })
 	self.Outputs = Wire_CreateOutputs(self, { "Memory" })
@@ -34,7 +34,7 @@ function ENT:Initialize()
 	// 3 - saw
 	// 4 - sine
 	// 5 - random noise
-
+	
 	self.LFOType = 0
 	self.LFORate = 0
 	self.LFOModPitch = 0
@@ -81,7 +81,7 @@ function ENT:WriteCell(Address, value)
 	else
 		return false
 	end
-	return true
+	return true	
 end
 
 function ENT:TriggerInput(iname, value)
@@ -198,7 +198,7 @@ function ENT:Think()
 			end
 		end
 	end
-
+	
 	self:NextThink(CurTime()+0.01)
 	return true
 end
@@ -233,6 +233,6 @@ function MakeWireEmitter( pl, Pos, Ang, model, sound, nocollide, frozen )
 	pl:AddCount( "wire_emitters", wire_emitter )
 
 	return wire_emitter
-
+	
 end
 duplicator.RegisterEntityClass("gmod_wire_soundemitter", MakeWireEmitter, "Pos", "Ang", "Model", "sound", "nocollide", "frozen")

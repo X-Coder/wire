@@ -17,7 +17,7 @@
 	yd  - yard
 	mi  - mile
 	nmi - nautical mile
-
+	
 	g   - gram
 	kg  - kilogram
 	t   - tonne
@@ -40,7 +40,7 @@ local speed = {
 	["yd/s"]  = 1 / 36,
 	["mi/s"]  = 1 / 63360,
 	["nmi/s"] = 127 / 9260000,
-
+	
 	["mm/m"]  = 60 * 25.4,
 	["cm/m"]  = 60 * 2.54,
 	["dm/m"]  = 60 * 0.254,
@@ -51,7 +51,7 @@ local speed = {
 	["yd/m"]  = 60 / 36,
 	["mi/m"]  = 60 / 63360,
 	["nmi/m"] = 60 * 127 / 9260000,
-
+	
 	["mm/h"]  = 3600 * 25.4,
 	["cm/h"]  = 3600 * 2.54,
 	["dm/h"]  = 3600 * 0.254,
@@ -62,7 +62,7 @@ local speed = {
 	["yd/h"]  = 3600 / 36,
 	["mi/h"]  = 3600 / 63360,
 	["nmi/h"] = 3600 * 127 / 9260000,
-
+	
 	["mph"]   = 3600 / 63360,
 	["knots"] = 3600 * 127 / 9260000,
 	["mach"]  = 0.0254 / 295,
@@ -94,7 +94,7 @@ local weight = {
 __e2setcost(2) -- approximated
 
 e2function number toUnit(string rv1, rv2)
-
+	
 	if speed[rv1] then
 		return (rv2 * 0.75) * speed[rv1]
 	elseif length[rv1] then
@@ -102,12 +102,12 @@ e2function number toUnit(string rv1, rv2)
 	elseif weight[rv1] then
 		return rv2 * weight[rv1]
 	end
-
+	
 	return -1
 end
 
 e2function number fromUnit(string rv1, rv2)
-
+	
 	if speed[rv1] then
 		return (rv2 / 0.75) / speed[rv1]
 	elseif length[rv1] then
@@ -115,12 +115,12 @@ e2function number fromUnit(string rv1, rv2)
 	elseif weight[rv1] then
 		return rv2 / weight[rv1]
 	end
-
+	
 	return -1
 end
 
 e2function number convertUnit(string rv1, string rv2, rv3)
-
+	
 	if speed[rv1] and speed[rv2] then
 		return rv3 * (speed[rv2] / speed[rv1])
 	elseif length[rv1] and length[rv2] then
@@ -128,7 +128,7 @@ e2function number convertUnit(string rv1, string rv2, rv3)
 	elseif weight[rv1] and weight[rv2] then
 		return rv3 * (weight[rv2] / weight[rv1])
 	end
-
+	
 	return -1
 end
 

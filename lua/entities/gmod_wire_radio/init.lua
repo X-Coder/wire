@@ -15,7 +15,7 @@ function ENT:Initialize()
 
 	self.Inputs = Wire_CreateInputs(self, { "Channel"})
 	self.Outputs = Wire_CreateOutputs(self, { "ERRORS!!!" })
-
+	
 	self.Channel = 0
 	self.Values = 4
 	self.RecievedData = {}
@@ -28,7 +28,7 @@ function ENT:Initialize()
 	for i=0,31 do
 		self.SentData[i] = 0
 	end
-
+	
 	Radio_Register(self)
 	Radio_RecieveData(self)
 end

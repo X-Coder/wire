@@ -11,7 +11,7 @@ PreProcessor.__index = PreProcessor
 function PreProcessor.Execute(...)
 	-- instantiate PreProcessor
 	local instance = setmetatable({}, PreProcessor)
-
+	
 	-- and pcall the new instance's Process method.
 	return pcall(instance.Process, instance, ...)
 end
@@ -75,7 +75,7 @@ function PreProcessor:FindComments( line )
 					pos = found + 1
 				end
 			end
-		end
+		end			
 	until(!found)
 	return ret, count
 end
@@ -87,9 +87,9 @@ function PreProcessor:RemoveComments(line)
 	if (num == 0 and self.blockcomment) then
 		return ""
 	end
-
+	
 	local prev_disabled, ret, lastpos = self.disabled, "", 1
-
+	
 	for i=1, num do
 		local type = comments[i].type
 		if (type == "string" and !self.blockcomment) then -- Is it a string?
@@ -130,10 +130,10 @@ end
 
 function PreProcessor:ParseDirectives(line)
 	if (self.multilinestring) then return line end
-
+	
 	-- parse directive
 	local directive, value = line:match("^@([^ ]*) ?(.*)$")
-
+	
 	-- not a directive?
 	if not directive then
 		-- flag as "in code", if that is the case
@@ -143,11 +143,11 @@ function PreProcessor:ParseDirectives(line)
 		-- don't handle as a directive.
 		return line
 	end
-
+	
 	local col = directive:find("[A-Z]")
 	if col then self:Error("Directive (@" .. E2Lib.limitString(directive, 10) .. ") must be lowercase", col+1) end
 	if self.incode then self:Error("Directive (@" .. E2Lib.limitString(directive, 10) .. ") must appear before code") end
-
+	
 	-- evaluate directive
 	if directive == "name" then
 		if self.directives.name == nil then
@@ -163,7 +163,7 @@ function PreProcessor:ParseDirectives(line)
 		end
 	elseif directive == "inputs" then
 		local retval, columns = self:ParsePorts(value,#directive+2)
-
+		
 		for i,key in ipairs(retval[1]) do
 			if self.directives.inputs[3][key] then
 				self:Error("Directive (@input) contains multiple definitions of the same variable", columns[i])
@@ -176,7 +176,7 @@ function PreProcessor:ParseDirectives(line)
 		end
 	elseif directive == "outputs" then
 		local retval, columns = self:ParsePorts(value,#directive+2)
-
+		
 		for i,key in ipairs(retval[1]) do
 			if self.directives.outputs[3][key] then
 				self:Error("Directive (@output) contains multiple definitions of the same variable", columns[i])
@@ -189,7 +189,7 @@ function PreProcessor:ParseDirectives(line)
 		end
 	elseif directive == "persist" then
 		local retval, columns = self:ParsePorts(value,#directive+2)
-
+		
 		for i,key in ipairs(retval[1]) do
 			if self.directives.persist[3][key] then
 				self:Error("Directive (@persist) contains multiple definitions of the same variable", columns[i])
@@ -217,10 +217,10 @@ function PreProcessor:ParseDirectives(line)
 			if self.directives.trigger[1] != nil and #self.directives.trigger[2] == 0 then
 				self:Error("Directive (@trigger) conflicts with previous directives")
 			end
-
+			
 			self.directives.trigger[1] = false
 			local retval, columns = self:ParsePorts(value,#directive+2)
-
+			
 			for i,key in ipairs(retval[1]) do
 				if self.directives.trigger[key] then
 					self:Error("Directive (@trigger) contains multiple definitions of the same variable", columns[i])
@@ -232,14 +232,14 @@ function PreProcessor:ParseDirectives(line)
 	else
 		self:Error("Unknown directive found (@" .. E2Lib.limitString(directive, 10) .. ")", 2)
 	end
-
+	
 	-- remove line from output
 	return ""
 end
 
 function PreProcessor:Process(buffer, params)
 	local lines = string.Explode("\n", buffer)
-
+	
 	self.directives = {
 		name = nil,
 		model = nil,
@@ -249,20 +249,20 @@ function PreProcessor:Process(buffer, params)
 		delta = { {}, {}, {} },
 		trigger = { nil, {} },
 	}
-
+	
 	for i,line in ipairs(lines) do
 		self.readline = i
 		line = string.TrimRight(line)
-
+		
 		line = self:RemoveComments(line)
 		line = self:ParseDirectives(line)
-
+		
 		lines[i] = line
 	end
-
+	
 	if self.directives.trigger[1] == nil then self.directives.trigger[1] = true end
 	if !self.directives.name then self.directives.name = "" end
-
+	
 	return self.directives, string.Implode("\n", lines)
 end
 
@@ -273,16 +273,16 @@ function PreProcessor:ParsePorts(ports, startoffset)
 	ports = ports:gsub("%[.-%]", function(s)
 		return s:gsub(" ",",")
 	end) -- preprocess multi-variable definitions.
-
+	
 	for column,key in ports:gmatch("()([^ ]+)") do
 		column = startoffset+column
 		key = key:Trim()
-
+		
 		-------------------------------- variable names --------------------------------
-
+		
 		-- single-variable definition?
 		local _,i,namestring = key:find("^([A-Z][A-Za-z0-9_]*)")
-		if i then
+		if i then 
 			-- yes -> add the variable
 			names[#names + 1] = namestring
 		else
@@ -307,21 +307,21 @@ function PreProcessor:ParsePorts(ports, startoffset)
 				end
 			end
 		end
-
+		
 		-------------------------------- variable types --------------------------------
-
+		
 		local vtype
 		local character = key:sub(i+1, i+1)
 		if character == ":" then
 			-- type is specified -> check for validity
 			vtype = key:sub(i + 2)
-
+			
 			if vtype ~= vtype:lower() then
 				self:Error("Variable type [" .. E2Lib.limitString(vtype, 10) .. "] must be lowercase", column+i+1)
 			end
-
+			
 			if vtype == "number" then vtype = "normal" end
-
+			
 			if not wire_expression_types[vtype:upper()] then
 				self:Error("Unknown variable type [" .. E2Lib.limitString(vtype, 10) .. "] specified for variable(s) (" .. E2Lib.limitString(namestring, 10) .. ")", column+i+1)
 			end
@@ -332,14 +332,14 @@ function PreProcessor:ParsePorts(ports, startoffset)
 			-- invalid -> raise an error
 			self:Error("Variable declaration (" .. E2Lib.limitString(key, 10) .. ") contains invalid characters", column+i)
 		end
-
+		
 		-- fill in the missing types
 		for i = #types+1,#names do
 			types[i] = vtype:upper()
 			columns[i] = column
 		end
 	end
-
+	
 	return { names, types }, columns
 end
 
@@ -347,9 +347,9 @@ function PreProcessor:PP_ifdef(args)
 	if self.disabled ~= nil then self:Error("Found nested #ifdef") end
 	local thistype,colon,name,argtypes = args:match("([^:]-)(:?)([^:(]+)%(([^)]*)%)")
 	if not thistype or (thistype ~= "") ~= (colon ~= "") then self:Error("Malformed #ifdef argument "..args) end
-
+	
 	thistype = gettype(thistype)
-
+	
 	local tps = { thistype..colon }
 	for i,argtype in ipairs(string.Explode(",", argtypes)) do
 		argtype = gettype(argtype)
@@ -357,7 +357,7 @@ function PreProcessor:PP_ifdef(args)
 	end
 	local pars = table.concat(tps)
 	local a = wire_expression2_funcs[name .. "(" .. pars .. ")"]
-
+	
 	self.disabled = not a
 end
 

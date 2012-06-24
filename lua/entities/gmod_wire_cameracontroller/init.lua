@@ -11,7 +11,7 @@ function ENT:Initialize()
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
 	self.Outputs = WireLib.CreateOutputs( self, { "On", "X", "Y", "Z", "XYZ [VECTOR]" } )
-
+	
 	self.Activated = 0 -- User defined
 	self.Active = false -- Actual status
 	self.ZoomAmount = 0
@@ -34,14 +34,14 @@ function ENT:MakeDynamicCam(oldcam)
 		cam:SetPos( self:GetPos() )
 	end
 	cam:SetModel( Model("models/props_junk/PopCan01a.mdl") )
-	cam:SetColor(0, 0, 0, 0)
+	cam:SetColor(Color(0, 0, 0, 0))
 	cam:Spawn()
-
+	
 	cam:CallOnRemove("wire_cam_restore", function(oldcam) self:MakeDynamicCam(oldcam) end)
-
+	
 	self.CamEnt = cam
-
-	if oldcam then
+	
+	if oldcam then 
 		self:TriggerInput("Activated", self.Activated)
 	end
 	return cam
@@ -53,22 +53,22 @@ function ENT:Setup(Player, Static)
 		self.OriginalOwner = Player
 		self.OriginalFOV = self.CamPlayer:GetFOV()
 	end
-
+	
 	if Static == 0 then
 		if not self:MakeDynamicCam() then return false end
-		self.Inputs = WireLib.CreateInputs( self, { "Activated", "Zoom", "X", "Y", "Z", "Pitch", "Yaw", "Roll",
+		self.Inputs = WireLib.CreateInputs( self, { "Activated", "Zoom", "X", "Y", "Z", "Pitch", "Yaw", "Roll", 
 													"Angle [ANGLE]", "Position [VECTOR]", "Direction [VECTOR]", "Velocity [VECTOR]", "Parent [ENTITY]", "FLIR" } )
 	else
 		local cam = ents.Create("prop_physics")
 		if (!cam:IsValid()) then return false end
-
+		
 		cam:SetAngles( Angle(0,0,0) )
 		cam:SetPos( self:GetPos()+Vector(0,0,64) )
 		cam:SetModel( Model("models/dav0r/camera.mdl") )
 		cam:Spawn()
-
+		
 		self.CamEnt = cam
-
+		
 		self.Inputs = WireLib.CreateInputs( self, { "Activated", "Zoom", "FLIR" } )
 		self.Static = 1
 	end
@@ -76,18 +76,18 @@ end
 
 function ENT:Think()
 	self.BaseClass.Think(self)
-
+	
 	if (!self.CamEnt or !self.CamEnt:IsValid()) then return end
-
+	
 	local vStart = self.CamEnt:GetPos()
 	local vForward = self.CamEnt:GetForward()
-
+	
 	local trace = {}
 	trace.start = vStart
 	trace.endpos = vStart + (vForward * 100000)
 	trace.filter = { self.CamEnt }
 	local trace = util.TraceLine( trace )
-
+	
 	if trace.HitPos then
 		WireLib.TriggerOutput( self, "XYZ", trace.HitPos )
 		WireLib.TriggerOutput(self, "X", trace.HitPos.x)
@@ -99,7 +99,7 @@ function ENT:Think()
 		WireLib.TriggerOutput(self, "Y", 0)
 		WireLib.TriggerOutput(self, "Z", 0)
 	end
-
+	
 	self:NextThink(CurTime()+0.1)
 	return true
 end
@@ -203,12 +203,12 @@ local antispam = {}
 concommand.Add( "wire_cameracontroller_leave", function( ply, cmd, args )
 	if (!ply or !ply:IsValid()) then return end
 	if (!antispam[ply]) then antispam[ply] = 0 end
-	if (antispam[ply] > CurTime()) then
+	if (antispam[ply] > CurTime()) then 
 		ply:ChatPrint( "This command has a 5 second anti spam protection. Try again in " .. math.Round(antispam[ply] - CurTime()) .. " seconds.")
-		return
+		return 
 	end
 	antispam[ply] = CurTime() + 5
-
+	
 	local found = false
 	for k,v in pairs( ents.FindByClass( "gmod_wire_cameracontroller" ) ) do
 		if (v.CamPlayer and v.CamPlayer:IsValid() and v.CamPlayer == ply) then
@@ -223,7 +223,7 @@ concommand.Add( "wire_cameracontroller_leave", function( ply, cmd, args )
 		umsg.Start( "toggle_flir", ply )
 			umsg.Bool( false )
 		umsg.End()
-	end
+	end	
 end)
 
 function ENT:BuildDupeInfo()

@@ -8,25 +8,25 @@ include('shared.lua')
    Name: Initialize
 ---------------------------------------------------------]]
 function ENT:Initialize()
-
+		
 	//self:SetModel( "models/weapons/w_smg1.mdl" )
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	self:DrawShadow( false )
 	self:SetCollisionGroup( COLLISION_GROUP_WEAPON )
-
+	
 	local phys = self:GetPhysicsObject()
 	if (phys:IsValid()) then
 		phys:Wake()
 	end
-
+	
 	self.Firing 	= false
 	self.NextShot 	= 0
-
+	
 	self.Inputs = Wire_CreateInputs(self, { "Fire" })
-
+	
 end
 
 -- Damage
@@ -87,7 +87,7 @@ local ValidTracers={ -- Valid table...
 }
 function ENT:SetTracer( trcer )
 	self.Tracer = trcer
-
+	
 	if !ValidTracers[string.Trim(trcer)] and !ValidTracers[trcer] then
 		self.Tracer = ""
 	end
@@ -106,24 +106,24 @@ end
 
 
 function ENT:FireShot()
-
+	
 	if ( self.NextShot > CurTime() ) then return end
-
+	
 	self.NextShot = CurTime() + self.Delay
-
+	
 	-- Make a sound if you want to.
 	if ( self:GetSound() ) then
 		self:EmitSound( self:GetSound() )
 	end
-
+	
 	-- Get the muzzle attachment (this is pretty much always 1)
 	local Attachment = self:GetAttachment( 1 )
-
+	
 	-- Get the shot angles and stuff.
 	local shootOrigin = Attachment.Pos
 	local shootAngles = self:GetAngles()
 	local shootDir = shootAngles:Forward()
-
+	
 	-- Shoot a bullet
 	local bullet = {}
 		bullet.Num 			= self:GetNumBullets()
@@ -136,14 +136,14 @@ function ENT:FireShot()
 		bullet.Damage		= self:GetDamage()
 		bullet.Attacker 	= self:GetPlayer()
 	self:FireBullets( bullet )
-
+	
 	-- Make a muzzle flash
 	local effectdata = EffectData()
 		effectdata:SetOrigin( shootOrigin )
 		effectdata:SetAngle( shootAngles )
 		effectdata:SetScale( 1 )
 	util.Effect( "MuzzleEffect", effectdata )
-
+	
 end
 
 --[[---------------------------------------------------------
@@ -159,7 +159,7 @@ function ENT:Think()
 	if( self.Firing ) then
 		self:FireShot()
 	end
-
+	
 	self:NextThink(CurTime())
 	return true
 end
@@ -175,23 +175,23 @@ function ENT:TriggerInput(iname, value)
 end
 
 function MakeWireTurret( ply, Pos, Ang, model, delay, damage, force, sound, numbullets, spread, tracer, tracernum, nocollide )
-
+	
 	if not ply:CheckLimit( "wire_turrets" ) then return nil end
-
+	
 	local turret = ents.Create( "gmod_wire_turret" )
 	if not turret:IsValid() then return false end
-
+	
 	turret:SetPos( Pos )
 	if Ang then turret:SetAngles( Ang ) end
-
+	
 	function CorrectModel()
-		local TurretModels = {
+		local TurretModels = { 
 		"models/weapons/w_smg1.mdl",
-		"models/weapons/w_smg_mp5.mdl",
-		"models/weapons/w_smg_mac10.mdl",
-		"models/weapons/w_rif_m4a1.mdl",
-		"models/weapons/w_357.mdl",
-		"models/weapons/w_shot_m3super90.mdl"
+		"models/weapons/w_smg_mp5.mdl", 
+		"models/weapons/w_smg_mac10.mdl", 
+		"models/weapons/w_rif_m4a1.mdl", 
+		"models/weapons/w_357.mdl", 
+		"models/weapons/w_shot_m3super90.mdl"		
 		}
 		local found = false
 		for k, v in pairs(TurretModels) do
@@ -206,7 +206,7 @@ function MakeWireTurret( ply, Pos, Ang, model, delay, damage, force, sound, numb
 		turret:SetModel( "models/weapons/w_smg1.mdl" )
 	end
 	turret:Spawn()
-
+	
 	-- Clamp stuff in multiplayer.. because people are idiots
 	if not SinglePlayer() then
 		delay		= math.Clamp( delay, 0.05, 3600 )
@@ -216,20 +216,20 @@ function MakeWireTurret( ply, Pos, Ang, model, delay, damage, force, sound, numb
 		damage		= math.Clamp( damage, 0, 500 )
 		tracernum	= 1
 	end
-
+	
 	turret:SetDamage( damage )
 	turret:SetPlayer( ply )
-
+	
 	turret:SetSpread( spread )
 	turret:SetForce( force )
 	turret:SetSound( sound )
 	turret:SetTracer( tracer )
 	turret:SetTracerNum( tracernum or 1 )
-
+	
 	turret:SetNumBullets( numbullets )
-
+	
 	turret:SetDelay( delay )
-
+	
 	if nocollide == true then turret:GetPhysicsObject():EnableCollisions( false ) end
 
 	local ttable = {
@@ -244,10 +244,10 @@ function MakeWireTurret( ply, Pos, Ang, model, delay, damage, force, sound, numb
 		tracer		= tracer
 	}
 	table.Merge( turret:GetTable(), ttable )
-
+	
 	ply:AddCount( "wire_turrets", turret )
 	ply:AddCleanup( "wire_turrets", turret )
-
+	
 	return turret
 end
 

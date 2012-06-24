@@ -23,7 +23,7 @@ local optable = {
 	["operator/" ] = "div",
 	["operator%" ] = "mod",
 	["operator^" ] = "exp",
-
+	
 	["operator=" ] = {"ass", OPTYPE_ASSIGN},
 	["operator=="] = "eq",
 	["operator!" ] = "not",
@@ -32,19 +32,19 @@ local optable = {
 	["operator>="] = "geq",
 	["operator<" ] = "lth",
 	["operator<="] = "leq",
-
+	
 	["operator&" ] = "and",
 	["operator&&"] = "and",
 	["operator|" ] = "or",
 	["operator||"] = "or",
-
+	
 	["operator[]"] = "idx", -- typeless op[]
 	["operator[T]"] = {"idx", OPTYPE_APPEND_RET}, -- typed op[]
 	["operator$" ] = {"dlt", OPTYPE_DONT_FETCH_FIRST}, -- mostly superfluous now
-
+	
 	["operator_is" ] = "is",
 	["operator_neg"] = "neg",
-
+	
 	["operator_band"] = "band",
 	["operator_bor"] = "bor",
 	["operator_bxor"] = "bxor",
@@ -63,13 +63,13 @@ end
 -- Returns the typeid associated with the given typename
 function e2_get_typeid(typename)
 	local n = string.upper(typename)
-
+	
 	-- was the type registered with E-2?
 	if wire_expression_types[n] then return wire_expression_types[n][1] end
-
+	
 	-- was the name found when looking for registerType lines?
 	if preparsed_types[n] then return preparsed_types[n] end
-
+	
 	-- is the type name a valid typeid? use the type name as the typeid
 	if is_valid_typeid(typename) then return typename end
 	return nil
@@ -89,24 +89,24 @@ function e2_parse_args(args)
 			ellipses = true
 			return false
 		end
-
+		
 		-- assume a type name was given and split up the argument into type name and argument name.
 		local typename,argname = string.match(arg, "^%s*("..p_typename..")%s+("..p_argname..")%s*$")
-
+		
 		-- the assumption failed
 		if not typename then
 			-- try looking for a argument name only and defaulting the type name to "number"
 			argname = string.match(arg, "^%s*("..p_argname..")%s*$")
 			typename = "number"
 		end
-
+		
 		-- this failed as well? give up and print an error
 		if not argname then error("PP syntax error: Invalid function parameter syntax.",0) end
-
+		
 		local typeid = e2_get_typeid(typename)
-
+		
 		if not typeid then error("PP syntax error: Invalid parameter type '"..typename.."' for argument '"..argname.."'.",0) end
-
+		
 		table.insert(argtable.typeids, typeid)
 		table.insert(argtable.argnames, argname)
 		return false
@@ -116,7 +116,7 @@ function e2_parse_args(args)
 	firstarg = args:sub(1, firstarg-1)
 	-- handle it
 	handle_arg(firstarg)
-
+	
 	-- find and handle the remaining arguments.
 	args:gsub(",([^,]*)",handle_arg)
 	return argtable, ellipses
@@ -143,13 +143,13 @@ end
 -- also optionally returns a flag signaling how to treat the operator in question.
 local function handleop(name)
 	local operator = optable[name]
-
+	
 	if operator then
 		local op_type = OPTYPE_NORMAL
-
+		
 		-- special treatment is needed for some operators.
 		if type(operator) == "table" then operator, op_type = unpack(operator) end
-
+		
 		-- return everything.
 		return operator, "registerOperator", op_type
 	elseif name:find("^"..p_funcname.."$") then
@@ -165,15 +165,15 @@ local function makestringtable(tbl, i, j)
 	elseif i < 0 then i = #tbl + i + 1
 	elseif i < 1 then i = 1
 	elseif i > #tbl then i = #tbl end
-
+	
 	if not j then j = #tbl
 	elseif j < 0 then j = #tbl + j + 1
 	elseif j < 1 then j = 1
 	elseif j > #tbl then j = #tbl end
-
+	
 	--return string.format("{"..string.rep("%q,", math.max(0,j-i+1)).."}", unpack(tbl, i, j))
 	local ok, ret = pcall(string.format, "{"..string.rep("%q,", math.max(0,j-i+1)).."}", unpack(tbl, i, j))
-	if not ok then
+	if not ok then 
 		print(i,j,#tbl,"{"..string.rep("%q,", math.max(0,j-i+1)).."}")
 		error(ret)
 	end
@@ -190,7 +190,7 @@ end
 function e2_extpp_pass2(contents)
 	-- We add some stuff to both ends of the string so we can look for %W (non-word characters) at the ends of the patterns.
 	contents = "\nlocal tempcosts={}"..contents.."\n     "
-
+	
 	-- this is a list of pieces that make up the final code
 	local output = {}
 	-- this is a list of registerFunction lines that will be put at the end of the file.
@@ -199,14 +199,14 @@ function e2_extpp_pass2(contents)
 	local locals = {}
 	-- We start from position 2, since char #1 is always the \n we added earlier
 	local lastpos = 2
-
+	
 	local aliaspos,aliasdata = nil,nil
-
+	
 	-- This flag helps determine whether the preprocessor changed, so we can tell the environment about it.
 	local changed = false
 	for h_begin, ret, thistype, colon, name, args, whitespace, equals, h_end in contents:gmatch("()e2function%s+("..p_typename..")%s+([a-z0-9]-)%s*(:?)%s*("..p_func_operator..")%(([^)]*)%)(%s*)(=?)()") do
 		changed = true
-
+		
 		local function handle_function()
 			if contents:sub(h_begin-1,h_begin-1):match("%w") then return end
 			local aliasflag = nil
@@ -223,37 +223,37 @@ function e2_extpp_pass2(contents)
 				aliasflag = 1
 				aliaspos = h_end
 			end
-
+			
 			-- check for some obvious errors
 			if thistype~="" and colon=="" then error("PP syntax error: Function names may not start with a number.",0) end
 			if thistype=="" and colon~="" then error("PP syntax error: No type for 'this' given.",0) end
 			if thistype:sub(1,1):find("[0-9]") then error("PP syntax error: Type names may not start with a number.",0) end
-
+			
 			-- append everything since the last function to the output.
 			table.insert(output, contents:sub(lastpos,h_begin-1))
 			-- advance lastpos to the end of the function header
 			lastpos = h_end
-
+			
 			-- this table contains the arguments in the following form:
 			-- argtable.argname[n] = "<argument #n name>"
 			-- argtable.typeids[n] = "<argument #n typeid>"
 			local argtable, ellipses = e2_parse_args(args)
-
+			
 			-- take care of operators: give them a different name and register function
 			-- op_type is nil if we register a function and a number if it as operator
 			local name, regfn, op_type = handleop(name)
-
+			
 			-- return type (void means "returns nothing", i.e. "" in registerFunctionese)
 			local ret_typeid = (ret == "void") and "" or e2_get_typeid(ret) -- ret_typeid = (ret == "void") ? "" : e2_get_typeid(ret)
-
+			
 			-- return type not found => throw an error
 			if not ret_typeid then error("PP syntax error: Invalid return type: '"..ret.."'",0) end
-
+			
 			-- if "typename:" was found in front of the function name
 			if thistype ~= "" then
 				-- evaluate the type name
 				local this_typeid = e2_get_typeid(thistype)
-
+				
 				-- the type was not found?
 				if this_typeid == nil then
 					-- is the type name a valid typeid?
@@ -265,7 +265,7 @@ function e2_extpp_pass2(contents)
 						error("PP syntax error: Invalid type for 'this': '"..thistype.."'",0)
 					end
 				end
-
+				
 				-- prepend a "this" argument to the list, with the parsed type
 				if op_type then
 					-- allow pseudo-member-operators. example: e2function matrix:operator*(factor)
@@ -275,18 +275,18 @@ function e2_extpp_pass2(contents)
 				end
 				table.insert(argtable.argnames, 1, "this")
 			end -- if thistype ~= ""
-
+			
 			-- add a sub-table for flagging arguments as "no opfetch"
 			argtable.no_opfetch = {}
-
+			
 			if op_type == OPTYPE_ASSIGN then -- assignment
 				-- the assignment operator is registered with only argument typeid, hence we need a special case.
 				-- we need to make sure the two types match:
 				if argtable.typeids[1] ~= argtable.typeids[2] then error("PP syntax error: operator= needs two arguments of the same type.", 0) end
-
+				
 				-- remove the typeid of one of the arguments from the list
 				argtable.typeids[1] = ""
-
+				
 				-- mark the argument as "no opfetch"
 				argtable.no_opfetch[1] = true
 			elseif op_type == OPTYPE_DONT_FETCH_FIRST then -- delta/increment/decrement
@@ -295,15 +295,15 @@ function e2_extpp_pass2(contents)
 			elseif op_type == OPTYPE_APPEND_RET then
 				table.insert(argtable.typeids, 1, ret_typeid.."=")
 			end
-
+			
 			-- -- prepare some variables needed to generate the function header and the registerFunction line -- --
-
+			
 			-- concatenated typeids. example: "s:nn"
 			local arg_typeids = table.concat(argtable.typeids)
-
+			
 			-- generate a mangled name, which serves as the function's Lua name
 			local mangled_name = mangle(name, arg_typeids, op_type)
-
+			
 			if aliasflag then
 				if aliasflag == 1 then
 					-- left hand side of an alias definition
@@ -320,7 +320,7 @@ function e2_extpp_pass2(contents)
 				if ellipses then
 					-- generate a registerFunction line
 					table.insert(function_register, string.format('if %s then %s(%q, %q, %q, %s) end\n', mangled_name, regfn, name, arg_typeids.."...", ret_typeid, mangled_name))
-
+					
 					-- generate a new function header and append it to the output
 					table.insert(output, 'function '..mangled_name..'(self, args, typeids, ...)')
 					table.insert(output, " if not typeids then")
@@ -340,11 +340,11 @@ function e2_extpp_pass2(contents)
 				else
 					-- generate a registerFunction line
 					table.insert(function_register, string.format('if %s then %s(%q, %q, %q, %s, tempcosts[%q], %s) end\n', mangled_name, regfn, name, arg_typeids, ret_typeid, mangled_name, mangled_name, makestringtable(argtable.argnames,(thistype~="") and 2 or 1)))
-
+					
 					-- generate a new function header and append it to the output
 					table.insert(output, 'function '..mangled_name..'(self, args)')
 				end
-
+			
 				-- if the function has arguments, insert argument fetch code
 				if #argtable.argnames ~= 0 then
 					local argfetch, opfetch_l, opfetch_r = '', '', ''
@@ -371,7 +371,7 @@ function e2_extpp_pass2(contents)
 			end -- if aliasflag
 			table.insert(output, whitespace)
 		end -- function handle_function()
-
+		
 		-- use pcall, so we can add line numbers to all errors
 		local ok, msg = pcall(handle_function)
 		if not ok then
@@ -382,8 +382,8 @@ function e2_extpp_pass2(contents)
 			end
 		end
 	end -- for contents:gmatch(e2function)
-
-
+	
+	
 	-- did the preprocessor change anything?
 	if changed then
 		-- yes => sweep everything together into a neat pile of hopefully valid lua code
@@ -395,7 +395,7 @@ function e2_extpp_pass2(contents)
 				locals_str = locals_str .. "," .. loc
 			end
 		end
-		return locals_str.." "..table.concat(output)..contents:sub(lastpos,-6)..table.concat(function_register)
+		return locals_str.." "..table.concat(output)..contents:sub(lastpos, -6)..table.concat(function_register)
 	else
 		-- no => tell the environment about it, so it can include() the source file instead.
 		return false

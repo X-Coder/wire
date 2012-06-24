@@ -34,7 +34,7 @@ function ENT:Use(ply)
 	end
 	if (self:IsOn()) then
 		if (self.toggle) then self:Switch(false) end
-
+		
 		return
 	end
 
@@ -53,7 +53,7 @@ function ENT:Think()
 		    if (not self.toggle) then
 				self:Switch(false)
 			end
-
+			
 			self.PrevUser = nil
 			self.podpress = nil
 		end
@@ -81,10 +81,10 @@ function ENT:Setup(toggle, value_off, value_on, entityout, material_on, material
 
 	self:ShowOutput(self.value_off)
 	Wire_TriggerOutput(self, "Out", self.value_off)
-
+    
     self:SetMaterial(self.material_off)
-    self:SetColor( self.off_r, self.off_g, self.off_b, 255)
-
+    self:SetColor( Color(self.off_r, self.off_g, self.off_b, 255) )
+    
 	if entityout then
 		WireLib.AdjustSpecialOutputs(self, { "Out", "EntID" , "Entity" }, { "NORMAL", "NORMAL" , "ENTITY" })
 		Wire_TriggerOutput(self, "EntID", 0)
@@ -94,7 +94,7 @@ function ENT:Setup(toggle, value_off, value_on, entityout, material_on, material
 		Wire_AdjustOutputs(self, { "Out" })
 		self.OutputEntID=false
 	end
-
+	
 	if toggle then
 		Wire_AdjustInputs(self, { "Set" })
 	else
@@ -111,14 +111,14 @@ function ENT:Switch(on)
 		self:ShowOutput(self.value_on)
 		self.Value = self.value_on
         self:SetMaterial(self.material_on)
-		self:SetColor( self.on_r, self.on_g, self.on_b, 255)
+		self:SetColor( Color(self.on_r, self.on_g, self.on_b, 255) ) 
 
 	else
 		self:ShowOutput(self.value_off)
 		self.Value = self.value_off
 		self:SetMaterial(self.material_off)
-        self:SetColor( self.off_r, self.off_g, self.off_b, 255)
-
+        self:SetColor( Color(self.off_r, self.off_g, self.off_b, 255) ) 
+             
 		if self.OutputEntID then self.EntToOutput = NULL end
 	end
 
@@ -154,7 +154,7 @@ function MakeWireDynamicButton( pl, Pos, Ang, model, toggle, value_off, value_on
 	wire_dynamic_button:Setup(toggle, value_off, value_on, entityout, material_on, material_off, on_r, on_g, on_b, off_r, off_g, off_b )
 	wire_dynamic_button:SetPlayer(pl)
 	wire_dynamic_button.pl = pl
-
+	
 	pl:AddCount( "wire_dynamic_buttons", wire_dynamic_button )
 
 	return wire_dynamic_button

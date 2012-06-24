@@ -46,7 +46,7 @@ function ENT:Setup(maxrange, players, npcs, npcname, beacons, hoverballs, thrust
 	self.PaintTarget         = painttarget
 	self.MaxTargets          = math.floor(math.Clamp((maxtargets or 1), 1, server_settings.Int("wire_target_finders_maxtargets", 10)))
 	self.MaxBogeys           = math.floor(math.Clamp((maxbogeys or 1), self.MaxTargets , server_settings.Int("wire_target_finders_maxbogeys", 30)))
-
+	
 	if (self.SelectedTargets) then --unpaint before clearing
 		for _,ent in pairs(self.SelectedTargets) do
 			self:TargetPainter(ent, false)
@@ -54,7 +54,7 @@ function ENT:Setup(maxrange, players, npcs, npcname, beacons, hoverballs, thrust
 	end
 	self.SelectedTargets = {}
 	self.SelectedTargetsSel = {}
-
+	
 	local AdjOutputs = {}
 	local AdjOutputsT = {}
 	for i = 1, self.MaxTargets do
@@ -64,8 +64,8 @@ function ENT:Setup(maxrange, players, npcs, npcname, beacons, hoverballs, thrust
 		table.insert(AdjOutputsT, "ENTITY")
 	end
 	WireLib.AdjustSpecialOutputs(self, AdjOutputs, AdjOutputsT)
-
-
+	
+	
 	self.Selector = {}
 	self.Selector.Next = {}
 	self.Selector.Prev = {}
@@ -84,8 +84,8 @@ function ENT:Setup(maxrange, players, npcs, npcname, beacons, hoverballs, thrust
 	end
 	table.insert(AdjInputs, "Hold")
 	Wire_AdjustInputs(self, AdjInputs)
-
-
+	
+	
 	self:ShowOutput(false)
 end
 
@@ -113,7 +113,7 @@ function ENT:GetBeaconPos(sensor)
 			Wire_TriggerOutput(self, tostring(ch), 0)
 			return sensor:GetPos()
 		end
-
+	
 		return self.SelectedTargets[ch]:GetPos()
 	end
 
@@ -140,24 +140,24 @@ end
 function ENT:SelectorNext(ch)
 	if (self.Bogeys) and (#self.Bogeys > 0) then
 		if (!self.SelectedTargetsSel[ch]) then self.SelectedTargetsSel[ch] = 1 end
-
+		
 		local sel = self.SelectedTargetsSel[ch]
 		if (sel > #self.Bogeys) then sel = 1 end
-
+		
 		if (self.SelectedTargets[ch]) and (self.SelectedTargets[ch]:IsValid()) then
-
+			
 			if (self.PaintTarget) then self:TargetPainter(self.SelectedTargets[ch], false) end
 			table.insert(self.Bogeys, self.SelectedTargets[ch]) //put old target back
 			self.SelectedTargets[ch] = table.remove(self.Bogeys, sel) //pull next target
 			if (self.PaintTarget) then self:TargetPainter(self.SelectedTargets[ch], true) end
-
+			
 		else
-
+			
 			self.SelectedTargets[ch] = table.remove(self.Bogeys, sel) //pull next target
 			if (self.PaintTarget) then self:TargetPainter(self.SelectedTargets[ch], true) end
-
+			
 		end
-
+		
 		self.SelectedTargetsSel[ch] = sel + 1
 		self.Inputs[ch.."-HoldTarget"].Value = 1 //put the channel on hold so it wont change in the next scan
 		Wire_TriggerOutput(self, tostring(ch), 1)
@@ -184,14 +184,14 @@ function ENT:FindColor(contact)
 	if (col.r == self.PcolR) and (col.g == self.PcolG) and (col.b == self.PcolB) and (col.a == self.PcolA) then
 		return self.ColorTarget
 	else
-		return !self.ColorTarget
+		return !self.ColorTarget	
 	end
 end
 
 //Prop Protection Buddy List Support (EXPERIMENTAL!!!)
 function ENT:CheckTheBuddyList(Ami)
 	if (!self.CheckBuddyList) then return true end
-
+	
 	local info = Ami:GetInfo( "propprotection_ami"..self:GetPlayer():EntIndex() ) --am I on their list
 	if ( info == "0" ) then
 		return !self.OnBuddyList
@@ -201,7 +201,7 @@ end
 
 /*function ENT:BelongsToBuddy(contact)
 	if (!self.CheckBuddyList) then return true end
-
+	
 	local info = self:GetOwner():GetInfo( "propprotection_ami"..contact:GetPlayer():EntIndex() )
 	if ( info == "0" ) then
 		return false
@@ -219,7 +219,7 @@ function ENT:Think()
 	else
 		if (self.NextTargetTime) and (CurTime() < self.NextTargetTime) then return end
 		self.NextTargetTime = CurTime()+1
-
+		
 		// Find targets that meet requirements
 		local mypos = self:GetPos()
 		local bogeys,dists = {},{}
@@ -253,7 +253,7 @@ function ENT:Think()
 				end
 			end
 		end
-
+		
 		//sort the list of bogeys by key (distance)
 		self.Bogeys = {}
 		self.InRange = {}
@@ -266,14 +266,14 @@ function ENT:Think()
 				if (k > self.MaxBogeys) then break end
 			end
 		end
-
-
+		
+		
 		//check that the selected targets are valid
 		for i = 1, self.MaxTargets do
 			if (self:IsOnHold(i)) then
 				self.InRange[i] = true
 			end
-
+			
 			if (!self.InRange[i]) or (!self.SelectedTargets[i]) or (self.SelectedTargets[i] == nil) or (!self.SelectedTargets[i]:IsValid()) then
 				if (self.PaintTarget) then self:TargetPainter(self.SelectedTargets[i], false) end
 				if (#self.Bogeys > 0) then
@@ -288,9 +288,9 @@ function ENT:Think()
 				end
 			end
 		end
-
+		
 	end
-
+	
 	//temp hack
 	if self.SelectedTargets[1] then
 		self:ShowOutput(true)
@@ -307,14 +307,14 @@ function ENT:IsTargeted(bogey, bogeynum)
 				self.InRange[i] = true
 				return true
 			end
-
+			
 			//this bogey is not as close as others, untarget it and let it be add back to the list
 			if (bogeynum > self.MaxTargets) then
 				self.SelectedTargets[i] = nil
 				if (self.PaintTarget) then self:TargetPainter(bogey, false) end
 				return false
 			end
-
+			
 			self.InRange[i] = true
 			return true
 		end
@@ -332,7 +332,7 @@ end
 
 function ENT:OnRemove()
 	self.BaseClass.OnRemove(self)
-
+	
 	--unpaint all our targets
 	if (self.PaintTarget) then
 		for _,ent in pairs(self.SelectedTargets) do
@@ -343,7 +343,7 @@ end
 
 function ENT:OnRestore()
 	self.BaseClass.OnRestore(self)
-
+	
 	self.MaxTargets = self.MaxTargets or 1
 end
 
@@ -355,19 +355,19 @@ function ENT:TargetPainter( tt, targeted )
 	then
 		if (targeted) then
 			self.OldColor = { tt.Entity:GetColor() }
-			tt.Entity:SetColor(255, 0, 0, 255)
+			tt.Entity:SetColor(Color(255, 0, 0, 255))
 		else
 			if not self.OldColor then self.OldColor = { 255, 255, 255, 255 } end
-
-			local r,g,b,a = tt.Entity:GetColor()
-
+			
+			local c = tt.Entity:GetColor()
+			
 			-- do not change color back if the target color changed in the meantime
-			if r != 255 or g != 0 or b != 0 then self.OldColor = { r, g, b, self.OldColor[4] } end
-
+			if c.r != 255 or c.g != 0 or c.b != 0 then self.OldColor = { c.r, c.g, c.b, self.OldColor[4] } end
+			
 			-- do not change alpha back if the target color changed in the meantime
-			if a != 255 then self.OldColor[4] = a end
-
-			tt.Entity:SetColor(unpack(self.OldColor))
+			if c.a != 255 then self.OldColor[4] = c.a end
+			
+			tt.Entity:SetColor(Color(unpack(self.OldColor)))
 		end
 	end
 end
@@ -380,7 +380,7 @@ function ENT:ShowOutput(value)
 	else
 		txt = txt .. "No Target"
 	end
-
+	
 	if (self.Inputs.Hold) and (self.Inputs.Hold.Value > 0) then txt = txt .. " - Locked" end
 
 	self:SetOverlayText(txt)
@@ -391,7 +391,7 @@ end
 //
 //	PropProtection support
 //
-//	Uses code from uclip for checking ownership
+//	Uses code from uclip for checking ownership	
 //
 -- Written by Team Ulysses, http://ulyssesmod.net/
 local hasPropProtection = false -- Chaussette's Prop Protection (preferred over PropSecure)
@@ -415,11 +415,11 @@ local function init()
 			fn = t.CanTool.PropProtection
 		end
 	end
-
+	
 	hasPropProtection = type( fn ) == "function"
-
+	
 	if hasPropProtection then
-		-- We're going to get the function we need now. It's local so this is a bit dirty
+		-- We're going to get the function we need now. It's local so this is a bit dirty			
 		local gi = debug.getinfo( fn )
 		for i=1,gi.nups do
 			if debug.getupvalue( fn, i ) == "Appartient" then
@@ -429,21 +429,21 @@ local function init()
 			end
 		end
 	end
-
+	
 	hasPropSecure = type( PropSecure ) == "table"
 	hasProtector = type( Protector ) == "table"
-
+	
 	if not hasPropProtection and not hasPropSecure and not hasProtector then
 		noProtection = true
 	end
 end
 hook.Add( "Initialize", "WireTargetFinderInitialize", init )
 
--- This function checks the protector to see if ownership has changed from what we think it is. Notifies player too.
+-- This function checks the protector to see if ownership has changed from what we think it is. Notifies player too.	
 local function updateOwnership( ply, ent )
-	if noProtection then return end -- No point on going on
+	if noProtection then return end -- No point on going on	
 	if not ent.WireTargetFinder then ent.WireTargetFinder = {} end -- Initialize table
-
+	
 	local owns
 	if hasPropProtection then -- Chaussette's Prop Protection (preferred over PropSecure)
 		owns = propProtectionFn( ply, ent )
@@ -452,11 +452,11 @@ local function updateOwnership( ply, ent )
 	elseif hasProtector then -- Protector
 		owns = Protector.Owner( ent ) == ply:UniqueID()
 	end
-
+	
 	if owns == false then -- More convienent to store as nil, takes less memory!
 		owns = nil
 	end
-
+	
 	if ent.WireTargetFinder[ ply ] ~= owns then
 		ent.WireTargetFinder[ ply ] = owns
 	end
@@ -465,7 +465,7 @@ end
 function ENT:checkOwnership( ent )
 	if noProtection then return true end -- No protection, they own everything.
 	if (!self.CheckBuddyList) then return true end
-
+	
 	updateOwnership( self:GetPlayer(), ent )	-- Make sure server and the client are current
 	return ent.WireTargetFinder[ self:GetPlayer() ]
 end

@@ -43,25 +43,25 @@ function HUDIndicator_GetCurrentRegistered()
 			end
 		end
 	end
-
+	
 	return registered
 end
 
 local function DrawHUDIndicators()
 	if (!LocalPlayer():Alive()) then return end
-
+	
 	local currenty = hudy
-
+	
 	// Now draw HUD Indicators
-	for _, index in ipairs(table.MakeSortedKeys(hudindicators)) do
+	for _, index in ipairs(table.SortByKey(hudindicators)) do
 		if (hudindicators[index]) then // Is this necessary?
 			local ent = ents.GetByIndex(index)
-
+		
 			if (ent && ent:IsValid()) then
 				local indinfo = hudindicators[index]
 				if (!indinfo.HideHUD && indinfo.Ready) then
 					local txt = indinfo.FullText or ""
-
+					
 					if (indinfo.Style == 0) then // Basic
 						draw.WordBox(8, hudx, currenty, txt, "Default", Color(50, 50, 75, 192), Color(255, 255, 255, 255))
 					elseif (indinfo.Style == 1) then // Gradient
@@ -71,14 +71,14 @@ local function DrawHUDIndicators()
 							// Draw dark text for very bright Indicator colors
 							textcolor = Color(32, 32, 32, 255)
 						end*/
-
+						
 						draw.WordBox(8, hudx, currenty, txt, "Default", indinfo.DisplayColor, indinfo.TextColor)
 					elseif (indinfo.Style == 2) then // Percent Bar
 						//surface.SetFont("Default")
 						//local pbarwidth, h = surface.GetTextSize(txt)
 						//pbarwidth = math.max(pbarwidth + 16, 100) // The extra 16 pixels is a "buffer" to make it look better
 						local startx = hudx
-						//local w1 = math.floor(indinfo.Factor * pbarwidth)
+						//local w1 = math.floor(indinfo.Factor * pbarwidth)						
 						//local w2 = math.ceil(pbarwidth - w1)
 						local pbarwidth = indinfo.BoxWidth
 						local w1 = indinfo.W1
@@ -89,43 +89,43 @@ local function DrawHUDIndicators()
 							surface.DrawRect(startx, currenty, w1, pbarheight)
 							startx = w1 + hudx
 						end
-
+						
 						if (indinfo.Factor < 1) then
 							local AColor = indinfo.AColor
 							surface.SetDrawColor(AColor.r, AColor.g, AColor.b, 160)
 							surface.DrawRect(startx, currenty, w2, pbarheight)
 						end
-
+						
 						// Center the description (+ value if applicable) on the percent bar
 						draw.SimpleText(txt, "Default", hudx + (pbarwidth / 2), currenty + (pbarheight / 2), Color(255, 255, 255, 255), 1, 1)
 					elseif (indinfo.Style == 3) then // Full Circle Gauge
 						draw.RoundedBox(8, hudx, currenty, indinfo.BoxWidth, 88 + dtextheight, Color(50, 50, 75, 192))
-
+						
 						surface.SetTexture(fullcircletexid)
 						surface.DrawTexturedRect(hudx + 8, currenty + 8, 64, 64)
-
+						
 						local startx = hudx + 40
 						local starty = currenty + 40
 						surface.SetDrawColor(0, 0, 0, 255)
 						surface.DrawLine(startx, starty, startx + indinfo.LineX, starty + indinfo.LineY)
-
+						
 						// Now the text
 						draw.SimpleText(txt, "Default", hudx + (indinfo.BoxWidth / 2), currenty + 72 + (pbarheight / 2), Color(255, 255, 255, 255), 1, 1)
 					elseif (indinfo.Style == 4) then // Semi-Circle Gauge
 						draw.RoundedBox(8, hudx, currenty, indinfo.BoxWidth, 56 + dtextheight, Color(50, 50, 75, 192))
-
+						
 						surface.SetTexture(semicircletexid)
 						surface.DrawTexturedRect(hudx + 8, currenty + 8, 64, 32)
-
+						
 						local startx = hudx + 40
 						local starty = currenty + 39
 						surface.SetDrawColor(0, 0, 0, 255)
 						surface.DrawLine(startx, starty, startx + indinfo.LineX, starty + indinfo.LineY)
-
+						
 						// Now the text
 						draw.SimpleText(txt, "Default", hudx + (indinfo.BoxWidth / 2), currenty + 40 + (pbarheight / 2), Color(255, 255, 255, 255), 1, 1)
 					end
-
+					
 					// Go to next "line"
 					currenty = currenty + offsety[indinfo.Style + 1]
 				end
@@ -150,24 +150,24 @@ local function HUDFormatDescription( eindex )
 		// Round to up to 2 places
 		hudindicators[eindex].FullText = indinfo.Description.." ("..string.format("%g", math.Round((indinfo.Value or 0) * 100) / 100)..")"
 	end
-
+	
 	// Do any extra processing for certain HUD styles
 	// so we aren't calculating this every frame
 	surface.SetFont("Default")
 	local textwidth, _ = surface.GetTextSize(hudindicators[eindex].FullText or "")
-
+	
 	if (indinfo.Style == 1) then // Gradient
 		local ent = ents.GetByIndex(eindex)
 		if (ent && ent:IsValid()) then
-			local r, g, b, _ = ent:GetColor()
-			hudindicators[eindex].DisplayColor = Color(r, g, b, 160)
-
+			local c = ent:GetColor()
+			hudindicators[eindex].DisplayColor = Color(c.r, c.g, c.b, 160)
+			
 			local textcolor = Color(255, 255, 255, 255)
-			if (r >= 192 && g >= 192 && b >= 192) then
+			if (c.r >= 192 && c.g >= 192 && c.b >= 192) then
 				// Draw dark text for very bright Indicator colors
 				textcolor = Color(32, 32, 32, 255)
 			end
-
+			
 			hudindicators[eindex].TextColor = textcolor
 		end
 	elseif (indinfo.Style == 2) then // Percent Bar
@@ -201,7 +201,7 @@ end
 local function HUDIndicatorRegister( um )
 	local eindex = um:ReadShort()
 	CheckHITableElement(eindex)
-
+	
 	hudindicators[eindex].Description = um:ReadString()
 	hudindicators[eindex].ShowValue = um:ReadShort()
 	local tempstyle = um:ReadShort()
@@ -209,7 +209,7 @@ local function HUDIndicatorRegister( um )
 		hudindicators[eindex].Ready = false // Make sure that everything's ready first before drawing
 	end
 	hudindicators[eindex].Style = tempstyle
-
+	
 	if (!hudindicators[eindex].Factor) then // First-time register
 		hudindicators[eindex].Factor = 0
 		hudindicators[eindex].Value = 0
@@ -229,7 +229,7 @@ usermessage.Hook("HUDIndicatorUnRegister", HUDIndicatorUnRegister)
 local function HUDIndicatorFactor( um )
 	local eindex = um:ReadShort()
 	CheckHITableElement(eindex)
-
+	
 	hudindicators[eindex].Factor = um:ReadFloat()
 	hudindicators[eindex].Value = um:ReadFloat()
 	HUDFormatDescription( eindex )
@@ -239,7 +239,7 @@ usermessage.Hook("HUDIndicatorFactor", HUDIndicatorFactor)
 local function HUDIndicatorHideHUD( um )
 	local eindex = um:ReadShort()
 	CheckHITableElement(eindex)
-
+	
 	hudindicators[eindex].HideHUD = um:ReadBool()
 end
 usermessage.Hook("HUDIndicatorHideHUD", HUDIndicatorHideHUD)
@@ -249,7 +249,7 @@ local function HUDIndicatorStylePercent( um )
 	local ainfo = string.Explode("|", um:ReadString())
 	local binfo = string.Explode("|", um:ReadString())
 	CheckHITableElement(eindex)
-
+	
 	hudindicators[eindex].AColor = { r = ainfo[1], g = ainfo[2], b = ainfo[3]}
 	hudindicators[eindex].BColor = { r = binfo[1], g = binfo[2], b = binfo[3]}
 end
@@ -258,7 +258,7 @@ usermessage.Hook("HUDIndicatorStylePercent", HUDIndicatorStylePercent)
 local function HUDIndicatorStyleFullCircle( um )
 	local eindex = um:ReadShort()
 	CheckHITableElement(eindex)
-
+	
 	hudindicators[eindex].FullCircleAngle = um:ReadFloat()
 	HUDFormatDescription( eindex ) // So the gauge updates with FullCircleAngle factored in
 end
@@ -267,12 +267,12 @@ usermessage.Hook("HUDIndicatorStyleFullCircle", HUDIndicatorStyleFullCircle)
 // Check for updates every 1/5 seconds
 local function HUDIndicatorCheck()
 	if (CurTime() < nextupdate) then return end
-
+	
 	nextupdate = CurTime() + 0.20
 	// Keep x/y within range (the 50 and 100 are arbitrary and may change)
 	hudx = math.Clamp(GetConVarNumber("wire_hudindicator_hudx") or 22, 0, ScrW() - 50)
 	hudy = math.Clamp(GetConVarNumber("wire_hudindicator_hudy") or 200, 0, ScrH() - 100)
-
+	
 	// Now check readiness
 	for eindex,indinfo in pairs(hudindicators) do
 		if (!indinfo.Ready) then

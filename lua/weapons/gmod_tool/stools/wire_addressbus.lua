@@ -229,7 +229,7 @@ function TOOL.BuildCPanel(panel)
 			[7] = "wire_addressbus_addrspace4sz",
 		}
 	})
-
+	
         local modelPanel = WireDermaExts.ModelSelect(panel, "wire_addressbus_model", list.Get("Wire_gate_Models"), 2)
 
 	panel:AddControl("Slider", {

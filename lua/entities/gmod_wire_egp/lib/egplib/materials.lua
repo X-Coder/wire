@@ -34,7 +34,7 @@ function EGP:CacheMaterial( Mat )
 	if (!Mat or #Mat == 0) then return end
 	if (!self.Materials[Mat]) then
 		local temp
-		if (#file.Find("materials/"..Mat..".*",true) > 0) then
+		if (#file.Find("materials/"..Mat..".*","GAME") > 0) then
 			 temp = surface.GetTextureID(Mat)
 		end
 		self.Materials[Mat] = temp
@@ -55,7 +55,7 @@ function EGP:SetMaterial( Mat )
 		return OldTex
  	end
  end
-
+ 
 function EGP:FixMaterial( OldTex )
 	if (!OldTex) then return end
 	WireGPU_matScreen:SetMaterialTexture("$basetexture", OldTex)
@@ -80,7 +80,7 @@ function EGP:SetMaterial( Mat )
 		return OldTex
  	end
  end
-
+ 
 function EGP:FixMaterial( OldTex )
 	if (!OldTex) then return end
 	EGP.FakeMat:SetMaterialTexture("$basetexture", OldTex)

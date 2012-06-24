@@ -12,19 +12,19 @@ function ENT:Initialize( )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
 	self:DrawShadow( false )
-
+	
 	self:SetNWBool( "Clear", false )
 	self:SetNWBool( "Active", true )
-
+	
 	self.bools = {}
 	self.bools.Local = true
 	self.bools.LineBeam = true
 	self.bools.GroundBeam = true
-
+	
 	self.Inputs = WireLib.CreateInputs( self, { "Pos [VECTOR]", "X" , "Y", "Z", "Local", "Color [VECTOR]", "FadeTime", "LineBeam", "GroundBeam", "Size", "Clear", "Active" } )
-
+	
 	self.Points = {}
-
+	
 	self.Data = {}
 	self.Data.Pos = Vector(0,0,0)
 	self.Data.Local = false
@@ -52,18 +52,18 @@ end
 
 function ENT:AddPoint()
 	if (self.UmsgSize >= 250) then return end -- Check umsg size
-
+	
 	local IsDifferent = self:CompareData( self.Previous, self.Data )
 	if (IsDifferent) then
 		self.UmsgSize = self.UmsgSize + 23
 	else
 		self.UmsgSize = self.UmsgSize + 13
 	end
-
+	
 	if (self.UmsgSize >= 250) then return end -- Check umsg size again
-
+	
 	self.Previous = table.Copy( self.Data )
-
+	
 	self.Points[#self.Points+1] = {
 		Pos = Vector(self.Data.Pos.x,self.Data.Pos.y,self.Data.Pos.z),
 		Local = self.Data.Local,
@@ -251,7 +251,7 @@ function ENT:Think()
 				umsg.Bool( false ) -- We're not sending lots of data, only a position. -- 1
 			end
 		end
-
+		
 		-- Total umsg size (if 1 point is sent): 3 + 11 + 11 + 1 = 27
 		-- Umsg size of "different" part: 12 + 11 = 23
 		-- Umsg size of "same" part: 12 + 1 = 13
@@ -264,23 +264,23 @@ end
 
 function MakeWireHoloemitter( ply, Pos, Ang, model, frozen )
 	if (!ply:CheckLimit( "wire_holoemitters" )) then return end
-
+	
 	local emitter = ents.Create( "gmod_wire_holoemitter" )
 	emitter:SetPos( Pos )
 	emitter:SetAngles( Ang )
 	emitter:SetModel( model )
 	emitter:Spawn()
 	emitter:Activate()
-
+	
 	local phys = emitter:GetPhysicsObject()
 	if (phys) then
 		phys:EnableMotion(!frozen)
 	end
 
 	emitter:SetPlayer( ply )
-
+	
 	ply:AddCount( "wire_holoemitters", emitter )
-
+	
 	return emitter
 end
 
@@ -292,18 +292,18 @@ end
 
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
-
+	
 	local link = self:GetNWEntity("Link",false)
 	if (link) then
 		info.holoemitter_link = link:EntIndex()
 	end
-
+	
 	return info
 end
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
-
+	
 	local link = info.holoemitter_link
 	if (link) then
 		link = GetEntByID(link)

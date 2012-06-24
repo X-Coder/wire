@@ -11,7 +11,7 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	self.Outputs = Wire_CreateOutputs(self, { "Out" })
 end
 
@@ -24,7 +24,7 @@ function ENT:Setup(keygroup, keygroup2, toggle, value_off, value_on, value_on2)
 	self.value_on2 = value_on2
 	self.Value = value_off
 	self.Select = 0
-
+	
 	self:ShowOutput(self.value_off)
 	Wire_TriggerOutput(self, "Out", self.value_off)
 end
@@ -33,22 +33,22 @@ function ENT:InputActivate( mul )
 	if ( self.toggle && self.Select == mul ) then
 		return self:Switch( !self.On, mul )
 	end
-
+	
 	return self:Switch( true, mul )
 end
 
 function ENT:InputDeactivate( mul )
 	if ( self.toggle ) then return true end
-
+	
 	return self:Switch( false, mul )
 end
 
 function ENT:Switch( on, mul )
 	if (!self:IsValid()) then return false end
-
+	
 	self.On = on
 	self.Select = mul
-
+	
 	if (on && mul == 1) then
 		self:ShowOutput(self.value_on)
 		self.Value = self.value_on
@@ -59,9 +59,9 @@ function ENT:Switch( on, mul )
 		self:ShowOutput(self.value_off)
 		self.Value = self.value_off
 	end
-
+	
 	Wire_TriggerOutput(self, "Out", self.Value)
-
+	
 	return true
 end
 
@@ -107,7 +107,7 @@ function MakeWireDualInput( pl, Pos, Ang, model, keygroup, keygroup2, toggle, va
 
 	numpad.OnDown( pl, keygroup2, "WireDualInput_On", wire_dual_input, -1 )
 	numpad.OnUp( pl, keygroup2, "WireDualInput_Off", wire_dual_input, -1 )
-
+	
 	pl:AddCount( "wire_dual_inputs", wire_dual_input )
 
 	return wire_dual_input

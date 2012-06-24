@@ -161,7 +161,7 @@ end
 
 /******************************************************************************/
 
-__e2setcost(3)
+__e2setcost(3) 
 
 registerFunction("length", "xv2:", "n", function(self, args)
 	local op1 = args[2]
@@ -216,7 +216,7 @@ end)
 registerFunction("outerProduct", "xv2:xv2", "xm2", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	return { rv1[1] * rv1[1], rv1[1] * rv2[2],
+	return { rv1[1] * rv1[1], rv1[1] * rv2[2], 
 			 rv1[2] * rv1[1], rv1[2] * rv2[2] }
 end)
 
@@ -238,13 +238,13 @@ registerFunction("positive", "xv2", "xv2", function(self, args)
 	return { x, y }
 end)
 
-__e2setcost(2)
+__e2setcost(2) 
 
 // Convert the magnitude of the vector to radians
 e2function vector2 toRad(vector2 xv2)
 	return {xv2[1] * pi / 180, xv2[2] * pi / 180}
 end
-
+ 
 // Convert the magnitude of the vector to degrees
 e2function vector2 toDeg(vector2 xv2)
 	return {xv2[1] * 180 / pi, xv2[2] * 180 / pi}
@@ -252,9 +252,9 @@ end
 
 /******************************************************************************/
 
-__e2setcost(3)
+__e2setcost(3) 
 
---- Returns a vector in the same direction as <Input>, with a length clamped between <Min> (min) and <Max> (max)
+--- Returns a vector in the same direction as <Input>, with a length clamped between <Min> (min) and <Max> (max) 
 e2function vector2 clamp(vector2 Input, Min, Max)
 	if Min < 0 then Min = 0 end
 	local x,y = Input[1], Input[2]
@@ -266,13 +266,13 @@ e2function vector2 clamp(vector2 Input, Min, Max)
 	else
 		return Input
 	end
-
+	
 	return { x*length, y*length }
 end
 
 /******************************************************************************/
 
-__e2setcost(1)
+__e2setcost(1) 
 
 registerFunction("x", "xv2:", "n", function(self, args)
 	local op1 = args[2]
@@ -302,7 +302,7 @@ end)
 
 /******************************************************************************/
 
-__e2setcost(5)
+__e2setcost(5) 
 
 registerFunction("round", "xv2", "xv2", function(self, args)
 	local op1 = args[2]
@@ -315,10 +315,10 @@ end)
 registerFunction("round", "xv2n", "xv2", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-
+	
 	local shf = 10 ^ rv2
 	local x,y = unpack(rv1)
-
+	
 	return {
 		floor(x*shf+0.5)/shf,
 		floor(y*shf+0.5)/shf,
@@ -383,7 +383,7 @@ registerFunction("maxVec", "xv2xv2", "xv2", function(self, args)
     local x, y
 	if rv1[1] > rv2[1] then x = rv1[1] else x = rv2[1] end
     if rv1[2] > rv2[2] then y = rv1[2] else y = rv2[2] end
-    return {x, y}
+    return {x, y}    
 end)
 
 registerFunction("minVec", "xv2xv2", "xv2", function(self, args)
@@ -392,7 +392,7 @@ registerFunction("minVec", "xv2xv2", "xv2", function(self, args)
     local x, y
 	if rv1[1] < rv2[1] then x = rv1[1] else x = rv2[1] end
     if rv1[2] < rv2[2] then y = rv1[2] else y = rv2[2] end
-    return {x, y}
+    return {x, y}    
 end)
 
 // Performs modulo on x,y separately
@@ -400,15 +400,15 @@ registerFunction("mod", "xv2n", "xv2", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	local x, y
-
+	
 	if rv1[1] >= 0 then
 		x = rv1[1] % rv2
 	else x = rv1[1] % -rv2 end
-
+	
 	if rv1[2] >= 0 then
 		y = rv1[2] % rv2
 	else y = rv1[2] % -rv2 end
-
+	
 	return { x, y }
 end)
 
@@ -417,15 +417,15 @@ registerFunction("mod", "xv2xv2", "xv2", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	local x, y
-
+	
 	if rv1[1] >= 0 then
 		x = rv1[1] % rv2[1]
 	else x = rv1[1] % -rv2[1] end
-
+	
 	if rv1[2] >= 0 then
 		y = rv1[2] % rv2[2]
 	else y = rv1[2] % -rv2[2] end
-
+	
 	return { x, y }
 end)
 
@@ -434,7 +434,7 @@ registerFunction("clamp", "xv2xv2xv2", "xv2", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	local x, y
-
+	
 	if rv1[1] < rv2[1] then x = rv2[1]
 	elseif rv1[1] > rv3[1] then x = rv3[1]
 	else x = rv1[1] end
@@ -450,13 +450,13 @@ end)
 registerFunction("mix", "xv2xv2n", "xv2", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
-
+	
 	local x = rv1[1] * rv3 + rv2[1] * (1-rv3)
 	local y = rv1[2] * rv3 + rv2[2] * (1-rv3)
 	return { x, y }
 end)
 
-__e2setcost(2)
+__e2setcost(2) 
 
 // swap x/y
 registerFunction("shift", "xv2", "xv2", function(self, args)
@@ -469,12 +469,12 @@ end)
 registerFunction("inrange", "xv2xv2xv2", "n", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
-
+	
 	if rv1[1] < rv2[1] then return 0 end
 	if rv1[2] < rv2[2] then return 0 end
 	if rv1[1] > rv3[1] then return 0 end
 	if rv1[2] > rv3[2] then return 0 end
-
+	
 	return 1
 end)
 
@@ -488,7 +488,7 @@ registerFunction("toAngle", "xv2:", "n", function(self, args)
 	return angle
 end)
 
-__e2setcost(5)
+__e2setcost(5) 
 
 e2function string toString(vector2 v)
 	return ("[%s,%s]"):format(v[1],v[2])
@@ -549,7 +549,7 @@ registerFunction("vec4", "", "xv4", function(self, args)
 	return { 0, 0, 0, 0 }
 end)
 
-__e2setcost(4)
+__e2setcost(4) 
 
 registerFunction("vec4", "n", "xv4", function(self, args)
 	local op1 = args[2]
@@ -704,7 +704,7 @@ end
 
 /******************************************************************************/
 
-__e2setcost(7)
+__e2setcost(7) 
 
 registerFunction("length", "xv4:", "n", function(self, args)
 	local op1 = args[2]
@@ -763,7 +763,7 @@ registerFunction("normalized", "xv4:", "xv4", function(self, args)
 	end
 end)
 
-__e2setcost(3)
+__e2setcost(3) 
 
 registerFunction("dehomogenized", "xv4:", "v", function(self, args)
 	local op1 = args[2]
@@ -773,7 +773,7 @@ registerFunction("dehomogenized", "xv4:", "v", function(self, args)
 	return { rv1[1]/w, rv1[2]/w, rv1[3]/w }
 end)
 
-__e2setcost(4)
+__e2setcost(4) 
 
 registerFunction("positive", "xv4", "xv4", function(self, args)
 	local op1 = args[2]
@@ -788,7 +788,7 @@ end)
 
 /******************************************************************************/
 
-__e2setcost(2)
+__e2setcost(2) 
 
 registerFunction("x", "xv4:", "n", function(self, args)
 	local op1 = args[2]
@@ -814,7 +814,7 @@ registerFunction("w", "xv4:", "n", function(self, args)
 	return rv1[4]
 end)
 
-__e2setcost(3)
+__e2setcost(3) 
 
 // SET methods that returns vectors
 // NOTE: does not change the original vector!
@@ -844,7 +844,7 @@ end)
 
 /******************************************************************************/
 
-__e2setcost(9)
+__e2setcost(9) 
 
 registerFunction("round", "xv4", "xv4", function(self, args)
 	local op1 = args[2]
@@ -852,7 +852,7 @@ registerFunction("round", "xv4", "xv4", function(self, args)
 
 	local shf = 10 ^ rv2
 	local x,y,z,w = unpack(rv1)
-
+	
 	return {
 		floor(x*shf+0.5)/shf,
 		floor(y*shf+0.5)/shf,
@@ -914,7 +914,7 @@ registerFunction("floor", "xv4n", "xv4", function(self, args)
 	return {x, y, z, w}
 end)
 
-__e2setcost(13)
+__e2setcost(13) 
 
 // min/max based on vector length - returns shortest/longest vector
 registerFunction("min", "xv4xv4", "xv4", function(self, args)
@@ -942,7 +942,7 @@ registerFunction("maxVec", "xv4xv4", "xv4", function(self, args)
     if rv1[2] > rv2[2] then y = rv1[2] else y = rv2[2] end
 	if rv1[3] > rv2[3] then z = rv1[3] else z = rv2[3] end
     if rv1[4] > rv2[4] then w = rv1[4] else w = rv2[4] end
-    return {x, y, z, w}
+    return {x, y, z, w}    
 end)
 
 registerFunction("minVec", "xv4xv4", "xv4", function(self, args)
@@ -953,7 +953,7 @@ registerFunction("minVec", "xv4xv4", "xv4", function(self, args)
     if rv1[2] < rv2[2] then y = rv1[2] else y = rv2[2] end
 	if rv1[3] < rv2[3] then z = rv1[3] else z = rv2[3] end
     if rv1[4] < rv2[4] then w = rv1[4] else w = rv2[4] end
-    return {x, y, z, w}
+    return {x, y, z, w}    
 end)
 
 // Performs modulo on x,y,z separately
@@ -1001,7 +1001,7 @@ registerFunction("clamp", "xv4xv4xv4", "xv4", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	local x,y,z,w
-
+	
 	if rv1[1] < rv2[1] then x = rv2[1]
 	elseif rv1[1] > rv3[1] then x = rv3[1]
 	else x = rv1[1] end
@@ -1017,11 +1017,11 @@ registerFunction("clamp", "xv4xv4xv4", "xv4", function(self, args)
 	if rv1[4] < rv2[4] then w = rv2[4]
 	elseif rv1[4] > rv3[4] then w = rv3[4]
 	else w = rv1[4] end
-
+	
 	return {x, y, z, w}
 end)
 
---- Returns a vector in the same direction as <Input>, with a length clamped between <Min> (min) and <Max> (max)
+--- Returns a vector in the same direction as <Input>, with a length clamped between <Min> (min) and <Max> (max) 
 e2function vector4 clamp(vector4 Input, Min, Max)
 	if Min < 0 then Min = 0 end
 	local x,y,z,w = Input[1], Input[2], Input[3], Input[4]
@@ -1033,7 +1033,7 @@ e2function vector4 clamp(vector4 Input, Min, Max)
 	else
 		return Input
 	end
-
+	
 	return { x*length, y*length, z*length, w*length }
 end
 
@@ -1041,7 +1041,7 @@ end
 registerFunction("mix", "xv4xv4n", "xv4", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
-
+	
 	local x = rv1[1] * rv3 + rv2[1] * (1-rv3)
 	local y = rv1[2] * rv3 + rv2[2] * (1-rv3)
 	local z = rv1[3] * rv3 + rv2[3] * (1-rv3)
@@ -1049,7 +1049,7 @@ registerFunction("mix", "xv4xv4n", "xv4", function(self, args)
 	return {x, y, z, w}
 end)
 
-__e2setcost(4)
+__e2setcost(4) 
 
 // Circular shift function: shiftR( x,y,z,w ) = ( w,x,y,z )
 registerFunction("shiftR", "xv4", "xv4", function(self, args)
@@ -1068,21 +1068,21 @@ end)
 registerFunction("inrange", "xv4xv4xv4", "n", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
-
+	
 	if rv1[1] < rv2[1] then return 0 end
 	if rv1[2] < rv2[2] then return 0 end
 	if rv1[3] < rv2[3] then return 0 end
 	if rv1[4] < rv2[4] then return 0 end
-
+	
 	if rv1[1] > rv3[1] then return 0 end
 	if rv1[2] > rv3[2] then return 0 end
 	if rv1[3] > rv3[3] then return 0 end
 	if rv1[4] > rv3[4] then return 0 end
-
+	
 	return 1
 end)
 
-__e2setcost(5)
+__e2setcost(5) 
 
 // Convert the magnitude of the vector to radians
 e2function vector4 toRad(vector4 xv4)

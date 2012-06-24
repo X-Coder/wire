@@ -115,13 +115,13 @@ end
 
 local function SendNetworkUpdate( VarType, Index, Key, Value, Player )
 	if(Player and not (Player:IsValid() and Player:IsPlayer())) then return end // Be sure, Player is not a NULL-Entity, or the server will crash!
-
+	
 	umsg.Start( "RcvEntityVarBeam_"..VarType, Player )
 		umsg.Short( Index )
 		umsg.String( Key )
 		umsg[ NetworkFunction[VarType].SetFunction ]( Value )
 	umsg.End()
-
+	
 
 end
 
@@ -133,7 +133,7 @@ local function AddDelayedNetworkUpdate( VarType, Ent, Key, Value )
 		DelayedUpdates[Ent][ VarType ]		= DelayedUpdates[Ent][ VarType ] or {}
 		DelayedUpdates[Ent][ VarType ][Key]	= Value
 		DelayedUpdatesNum					= DelayedUpdatesNum + 1
-
+		
 		if (ExtraDelayedUpdates[Ent])
 		and (ExtraDelayedUpdates[Ent][VarType])
 		and (ExtraDelayedUpdates[Ent][VarType][Key]) then
@@ -165,61 +165,61 @@ local function AddNetworkFunctions( name, SetFunction, GetFunction, Default )
 	NetworkFunction[ name ] = {}
 	NetworkFunction[ name ].SetFunction = SetFunction
 	NetworkFunction[ name ].GetFunction = GetFunction
-
+	
 	// SetNetworkedBlah
 	meta[ "SetNetworkedBeam" .. name ] = function ( self, key, value, urgent )
-
+	
 		key = tostring(key)
-
+	
 		// The same - don't waste our time.
 		if ( value == GetNetworkTable( self, name )[ key ] ) then return end
-
+		
 		// Clients can set this too, but they should only really be setting it
 		// when they expect the exact same result coming over the wire (ie prediction)
 		GetNetworkTable( self, name )[key] = value
-
+			
 		if ( SERVER ) then
-
+		
 			local Index = self:EntIndex()
 			if (Index <= 0) then return end
-
+		
 			if ( urgent ) then
 				SendNetworkUpdate( name, Index, key, value )
 			else
 				AddDelayedNetworkUpdate( name, Index, key, value )
 			end
-
+			
 		end
-
+		
 	end
-
+	
 	meta[ "SetNWB" .. name ] = meta[ "SetNetworkedBeam" .. name ]
-
+	
 	// GetNetworkedBlah
 	meta[ "GetNetworkedBeam" .. name ] = function ( self, key, default )
-
+	
 		key = tostring(key)
-
+	
 		local out = GetNetworkTable( self, name )[ key ]
 		if ( out != nil ) then return out end
 		if ( default == nil ) then return Default end
 		//default = default or Default -- not a good idea for booleans :)
 
 		return default
-
+		
 	end
-
+	
 	meta[ "GetNWB" .. name ] = meta[ "GetNetworkedBeam" .. name ]
-
-
+	
+	
 	// SetGlobalBlah
 	_G[ "SetGlobalBeam"..name ] = function ( key, value, urgent )
 
 		key = tostring(key)
-
+	
 		if ( value == GetNetworkTable( "G", name )[key] ) then return end
 		GetNetworkTable( "G", name )[key] = value
-
+			
 		if ( SERVER ) then
 			if ( urgent ) then
 				SendNetworkUpdate( name, -1, key, value )
@@ -227,38 +227,38 @@ local function AddNetworkFunctions( name, SetFunction, GetFunction, Default )
 				AddDelayedNetworkUpdate( name, -1, key, value )
 			end
 		end
-
+		
 	end
-
-
+	
+	
 	// GetGlobalBlah
 	_G[ "GetGlobalBeam"..name ] = function ( key )
 
 		key = tostring(key)
-
+	
 		local out = GetNetworkTable( "G", name )[key]
 		if ( out != nil ) then return out end
-
+		
 		return Default
-
+		
 	end
-
-
+	
+	
 	if ( SERVER ) then
 		// Pool the name of the function.
 		// Makes it send a number representing the string rather than the string itself.
 		// Only do this with strings that you send quite a bit and always stay the same.
 		umsg.PoolString( "RcvEntityBeamVar_"..name )
 	end
-
+	
 	// Client Receive Function
 	if ( CLIENT ) then
-
+		
 		local function RecvFunc( m )
 			local EntIndex 	= m:ReadShort()
 			local Key		= m:ReadString()
 			local Value		= m[GetFunction]( m )
-
+			
 			local IndexKey
 			if ( EntIndex <= 0 ) then
 				IndexKey = "G"
@@ -267,12 +267,12 @@ local function AddNetworkFunctions( name, SetFunction, GetFunction, Default )
 				// No entity yet - store using entindex
 				if ( IndexKey == NULL ) then IndexKey = EntIndex end
 			end
-			GetNetworkTable( IndexKey, name )[Key] = Value
+			GetNetworkTable( IndexKey, name )[Key] = Value	
 		end
 		usermessage.Hook( "RcvEntityVarBeam_"..name, RecvFunc )
-
+		
 	end
-
+	
 end
 
 AddNetworkFunctions( "Vector", 	"Vector", 	"ReadVector", 	Vector_Default )
@@ -315,7 +315,7 @@ local NextBeamVarsDelayedSendTime = 0
 local NormalOpMode = true
 local function NetworkVarsSend()
 	if (CurTime() >= NextBeamVarsDelayedSendTime) then
-
+		
 		if (NormalOpMode) and (DelayedUpdatesNum > 75) then
 			--Msg("========BeamVars leaving NormalOpMode | "..DelayedUpdatesNum.."\n")
 			NormalOpMode = false
@@ -323,8 +323,8 @@ local function NetworkVarsSend()
 			--Msg("========BeamVars returning NormalOpMode | "..DelayedUpdatesNum.."\n")
 			NormalOpMode = true
 		end
-
-
+		
+		
 		if (DelayedUpdatesNum > 0) then
 			for Index, a in pairs(DelayedUpdates) do
 				for VarType, b in pairs(a) do
@@ -336,7 +336,7 @@ local function NetworkVarsSend()
 			DelayedUpdatesNum = 0
 			DelayedUpdates = {}
 		end
-
+		
 		//we send one entity's ExtraDelayedUpdates each tick
 		local i = 0
 		for Index, a in pairs(ExtraDelayedUpdates) do
@@ -351,13 +351,13 @@ local function NetworkVarsSend()
 				break
 			end
 		end
-
+		
 		if (!NormalOpMode) then
 			NextBeamVarsDelayedSendTime = CurTime() +  .25
 		else
 			NextBeamVarsDelayedSendTime = CurTime() +  .1
 		end
-
+		
 	end
 end
 hook.Add("Think", "NetBeamLib_Think", NetworkVarsSend)

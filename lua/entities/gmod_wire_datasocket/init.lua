@@ -25,7 +25,7 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	self.MyPlug = nil
 	self.Memory = nil
 	self.OwnMemory = nil
@@ -49,7 +49,7 @@ function ENT:Setup(a,ar,ag,ab,aa)
 	self.AB = ab or 0
 	self.AA = aa or 255
 
-	self:SetColor(ar, ag, ab, aa)
+	self:SetColor(Color(ar, ag, ab, aa))
 end
 
 function ENT:ReadCell( Address )
@@ -94,10 +94,10 @@ function ENT:Think()
 		self:NextThink( CurTime() + NEW_PLUG_WAIT_TIME ) //Give time before next grabbing a plug.
 		return true
 	end
-
+	
 	// If we have no plug in us
 	if (not self.MyPlug) or (not self.MyPlug:IsValid()) then
-
+		
 		// Find entities near us
 		local sockCenter = self:GetOffset( Vector(-1.75, 0, 0) )
 		local local_ents = ents.FindInSphere( sockCenter, PLUG_IN_ATTACH_RANGE )
@@ -105,7 +105,7 @@ function ENT:Think()
 
 			// If we find a plug, try to attach it to us
 			if ( plug:IsValid() && plug:GetClass() == "gmod_wire_dataplug" ) then
-
+				
 				// If no other sockets are using it
 				if plug.MySocket == nil then
 					local plugpos = plug:GetPos()
@@ -125,7 +125,7 @@ function ENT:AttachPlug( plug )
 	// Set references between them
 	plug:SetSocket(self)
 	self.MyPlug = plug
-
+	
 	// Position plug
 	local newpos = self:GetOffset( Vector(-1.75, 0, 0) )
 	if self:GetModel() == "models/props_lab/tpplugholder_single.mdl" then newpos = self:GetOffset( Vector( 8, -13, -5) )
@@ -138,7 +138,7 @@ function ENT:AttachPlug( plug )
 	local socketAng = self:GetAngles()
 	plug:SetPos( newpos )
 	plug:SetAngles( socketAng )
-
+	
 	self.NoCollideConst = constraint.NoCollide(self, plug, 0, 0)
 	if (not self.NoCollideConst) then
 		self.MyPlug = nil

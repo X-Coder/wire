@@ -21,14 +21,14 @@ function ENT:Initialize()
 	end
 	self.OutPorts = {}
 	self:SetOverlayText("Data port")
-
+	
 	self.Entity:NextThink(CurTime())
 end
 
 function ENT:Think()
 	self.BaseClass.Think(self)
 	self.Entity:NextThink(CurTime())
-
+	
 	for i = 0,7 do
 		if self.OutPorts[i] then
 			Wire_TriggerOutput(self, "Port"..i, self.OutPorts[i])

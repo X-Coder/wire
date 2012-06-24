@@ -12,7 +12,7 @@ function ENT:Initialize()
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
 	Add_EntityMarker(self)
-
+	
 	self.Outputs = WireLib.CreateSpecialOutputs(self, { "Entity" }, { "ENTITY" })
 	self:SetOverlayText( "No Mark selected" )
 end

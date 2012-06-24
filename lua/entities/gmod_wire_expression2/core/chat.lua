@@ -20,7 +20,7 @@ hook.Add("PlayerSay","Exp2TextReceiving", function(ply, text, toall)
 	local entry = { text, CurTime(), ply, toall }
 	TextList[ply:EntIndex()] = entry
 	TextList.last = entry
-
+	
 	runByChat = 1
 	chipHideChat = false
 	local hideCurrent = false
@@ -37,7 +37,7 @@ hook.Add("PlayerSay","Exp2TextReceiving", function(ply, text, toall)
 		end
 	end
 	runByChat = 0
-
+	
 	if hideCurrent then return "" end
 end)
 
@@ -79,11 +79,11 @@ end
 e2function entity lastSpoke()
 	local entry = TextList.last
 	if not entry then return nil end
-
+	
 	local ply = entry[3]
 	if not validEntity(ply) then return nil end
 	if not ply:IsPlayer() then return nil end
-
+	
 	return ply
 end
 
@@ -91,7 +91,7 @@ end
 e2function string lastSaid()
 	local entry = TextList.last
 	if not entry then return "" end
-
+	
 	return entry[1]
 end
 
@@ -99,7 +99,7 @@ end
 e2function number lastSaidWhen()
 	local entry = TextList.last
 	if not entry then return 0 end
-
+	
 	return entry[2]
 end
 
@@ -107,7 +107,7 @@ end
 e2function number lastSaidTeam()
 	local entry = TextList.last
 	if not entry then return 0 end
-
+	
 	return entry[4] and 0 or 1
 end
 
@@ -115,10 +115,10 @@ end
 e2function string entity:lastSaid()
 	if not validEntity(this) then return "" end
 	if not this:IsPlayer() then return "" end
-
+	
 	local entry = TextList[this:EntIndex()]
 	if not entry then return "" end
-
+	
 	return entry[1]
 end
 
@@ -126,10 +126,10 @@ end
 e2function number entity:lastSaidWhen()
 	if not validEntity(this) then return 0 end
 	if not this:IsPlayer() then return 0 end
-
+	
 	local entry = TextList[this:EntIndex()]
 	if not entry then return 0 end
-
+	
 	return entry[2]
 end
 
@@ -137,9 +137,11 @@ end
 e2function number entity:lastSaidTeam()
 	if not validEntity(this) then return 0 end
 	if not this:IsPlayer() then return 0 end
-
+	
 	local entry = TextList[this:EntIndex()]
 	if not entry then return 0 end
-
+	
 	return entry[4] and 0 or 1
 end
+
+-- Derp

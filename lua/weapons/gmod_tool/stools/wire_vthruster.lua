@@ -384,7 +384,7 @@ function TOOL.BuildCPanel(panel)
 		CateGoryUW:SetContents( ctrlUW )
 
 		panel:AddItem(CateGoryUW)
-
+		
 	local lst = {}
 	for k,v in pairs( list.Get("ThrusterSounds") ) do
 		lst[k] = {}

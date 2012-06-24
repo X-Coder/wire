@@ -10,7 +10,7 @@ ENT.OverlayDelay = 0
 local MODEL = Model( "models/props_lab/powerbox02d.mdl" )
 
 function ENT:Initialize()
-	self:SetModel( MODEL )
+	self:SetModel( MODEL )	
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
@@ -21,5 +21,5 @@ function ENT:GetBeaconPos(sensor)
 end
 
 function ENT:Setup()
-
+	
 end

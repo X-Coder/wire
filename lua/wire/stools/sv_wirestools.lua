@@ -19,10 +19,10 @@ function WireToolMakeGate( self, trace, ply )
 	end
 
 	if not util.IsValidModel(model) and not util.IsValidProp(model) then return false end
-
+	
 	-- Check common limit
 	if (!ply:CheckLimit( "wire_gates" )) then return false end
-
+	
 	-- Check individual limit
 	if (!ply:CheckLimit( "wire_gate_" .. string.lower( GateActions[action].group ) .. "s" )) then return false end
 
@@ -32,7 +32,7 @@ function WireToolMakeGate( self, trace, ply )
 
 	local min = wire_gate:OBBMins()
 	wire_gate:SetPos( trace.HitPos - trace.HitNormal * min.z )
-
+	
 	return wire_gate
 end
 

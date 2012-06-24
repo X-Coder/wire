@@ -10,10 +10,10 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	self.MySocket = nil
 	self.Memory = nil
-
+	
 	self.Inputs = Wire_CreateInputs(self, { "Memory" })
 	self.Outputs = Wire_CreateOutputs(self, { "Connected" })
 	self:SetOverlayText( "Data plug" )
@@ -58,7 +58,7 @@ function ENT:Setup(a,ar,ag,ab,aa)
 	self.AG = ag or 0
 	self.AB = ab or 0
 	self.AA = aa or 255
-	self:SetColor(ar, ag, ab, aa)
+	self:SetColor(Color(ar, ag, ab, aa))
 end
 
 function ENT:TriggerInput(iname, value, iter)

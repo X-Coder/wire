@@ -133,9 +133,9 @@ function HCOMP:WriteByte(byte,block)
   if self.WriteByteCallback then
     self.WriteByteCallback(self.WriteByteCaller,self.WritePointer,byte)
   end
-
+  
   if not byte then error("[global 1:1] Internal error 108") end
-
+  
   -- Remember debug data
   if block.CurrentPosition then
     local currentPositionKey = block.CurrentPosition.Line..":"..block.CurrentPosition.File
@@ -148,7 +148,7 @@ function HCOMP:WriteByte(byte,block)
   else
     self.DebugInfo.PositionByPointer[self.WritePointer] = { Line = 0, Col = 0, File = "undefined" }
   end
-
+  
   -- Output binary listing
   if self.Settings.OutputBinaryListing then
     if not self.CurrentBinaryListingLine then
@@ -174,7 +174,7 @@ function HCOMP:StartCompile(sourceCode,fileName,writeByteCallback,writeByteCalle
   -- Remember callbacks for the writing functions
   self.WriteByteCallback = writeByteCallback
   self.WriteByteCaller = writeByteCaller
-
+  
   -- Set the working directory
   self.FileName = string.sub(fileName,string.find(fileName,"\\$") or 1)
   if string.GetPathFromFilename then
@@ -186,7 +186,7 @@ function HCOMP:StartCompile(sourceCode,fileName,writeByteCallback,writeByteCalle
 
   -- Initialize compiler settings
   self.Settings = {}
-
+  
   -- Internal settings
   self.Settings.CurrentLanguage = "HLZASM" -- C, ZASM2, PASCAL
   self.Settings.CurrentPlatform = "CPU"
@@ -204,7 +204,7 @@ function HCOMP:StartCompile(sourceCode,fileName,writeByteCallback,writeByteCalle
   self.Settings.OutputOffsetsInListing = true -- Output binary offsets in listings
   self.Settings.OutputLabelsInListing = true -- Output labels in final listing
   self.Settings.GenerateComments = true -- Generates comments in output listing
-
+  
   -- Code generation settings
   self.Settings.FixedSizeOutput = false -- Output fixed-size instructions
   self.Settings.SeparateDataSegment = false -- Puts all variables into separate data segment
@@ -212,18 +212,18 @@ function HCOMP:StartCompile(sourceCode,fileName,writeByteCallback,writeByteCalle
   self.Settings.AlwaysEnterLeave = false -- Always generate the enter/leave blocks
   self.Settings.NoUnreferencedLeaves = true -- Dont generate functions, variables that are not referenced
   self.Settings.DataSegmentOffset = 0 -- Data segment offset for separate data segment
-
+  
   -- Search paths
   self.SearchPaths = {
     "lib",
     "inc"
   }
-
+  
   -- Prepare parser
   self.Stage = 1
   self.Tokens = {}
   self.Code = {{ Text = sourceCode, Line = 1, Col = 1, File = self.FileName }}
-
+  
   -- Structs
   self.Structs = {}
   self.StructSize = {}
@@ -233,21 +233,21 @@ function HCOMP:StartCompile(sourceCode,fileName,writeByteCallback,writeByteCalle
   self.DebugInfo.Labels = {}
   self.DebugInfo.PositionByPointer = {}
   self.DebugInfo.PointersByLine = {}
-
+  
   -- Exported function list (library generation)
   self.ExportedSymbols = {}
   self.LabelLookup = {}
   self.LabelLookupCounter = 0
-
+  
   -- All functions defined so far
   self.Functions = {}
-
+  
   -- All macros defined so far
   self.Defines = {}
   self.Defines["__LINE__"] = 0
   self.Defines["__FILE__"] = ""
   self.IFDEFLevel = {}
-
+  
   -- Output text
   self.OutputText = {}
 end
@@ -277,7 +277,7 @@ function HCOMP:UnprotectedCompile()
     -- Tokenize stage
     --
     -- At this stage sourcecode is converted to list of tokens
-
+    
     local stageResult = self:Tokenize()
     if not stageResult then
       -- Output tokens if required
@@ -291,10 +291,10 @@ function HCOMP:UnprotectedCompile()
       self.Code = nil
       self.SourceCode = nil
       self.Defines = nil
-
+      
       -- Go to the first token
       self.CurrentToken = 1
-
+      
       -- Sest up variables for code parsing
       self.CodeTree = {} -- Code tree that will be built (see hc_codetree.lua)
       self.GlobalLabels = {} -- Table of globally defined labels
@@ -302,7 +302,7 @@ function HCOMP:UnprotectedCompile()
       self.UserRegisters = {} -- Registers used by user in global scope
       self.BlockDepth = 0 -- Nesting depth of the {..} block
       self.GlobalStringTable = {} -- Global table for string leaves
-
+      
       -- Reset parsing the blocks
       self.SpecialLeaf = nil
       self.LocalLabels = nil
@@ -311,7 +311,7 @@ function HCOMP:UnprotectedCompile()
       self.StringsTable = nil
       self.ParameterPointer = nil
       self.BlockType = nil
-
+      
       -- Set special labels
       self:SetSpecialLabels()
 
@@ -322,12 +322,12 @@ function HCOMP:UnprotectedCompile()
     -- Parse code stage
     --
     -- At this stage code is parsed, and code tree is built
-
+    
     local stageResult = self:Statement()
     if not stageResult then
       -- Index for code tree leaves
       self.CurrentLeafIndex = 1
-
+      
       -- Create storage for generated code
       self.GeneratedCode = {}
       self.Stage = 3
@@ -343,7 +343,7 @@ function HCOMP:UnprotectedCompile()
     if self.CodeTree[self.CurrentLeafIndex] and self:StageGenerateLeaf(self.CodeTree[self.CurrentLeafIndex]) then
       stageResult = true
     end
-
+    
     if not stageResult then
       self.CurrentLeafIndex = self.CurrentLeafIndex + 1
       if not self.CodeTree[self.CurrentLeafIndex] then
@@ -355,9 +355,9 @@ function HCOMP:UnprotectedCompile()
     -- Code optimize stage
     --
     -- At this stage code is optimized for the known patterns
-
+    
     local stageResult
-
+    
     -- Do not perform this stage if optimization is set to 0
     if self.Settings.OptimizeLevel == 0 then
       stageResult = false
@@ -368,7 +368,7 @@ function HCOMP:UnprotectedCompile()
       -- Initialize iteration through generated code
       self.CurrentBlockIndex = 1
       self.Stage = 5
-
+      
       -- Set write pointers
       self.PointerOffset = 0
       self.WritePointer = 0
@@ -380,7 +380,7 @@ function HCOMP:UnprotectedCompile()
     --
     -- This will attempt to output the code without actually writing it.
     -- All the labels will be resolved at this stage
-
+    
     local stageResult = false
     if self.GeneratedCode[self.CurrentBlockIndex] and self:Resolve(self.GeneratedCode[self.CurrentBlockIndex]) then
       stageResult = true
@@ -394,14 +394,14 @@ function HCOMP:UnprotectedCompile()
         -- Initialize iteration through generated code
         self.CurrentBlockIndex = 1
         self.Stage = 6
-
+        
         -- Set write pointers
         self.PointerOffset = 0
         self.WritePointer = 0
         self.DataPointer = 0
       end
     end
-
+    
     return true
   elseif self.Stage == 6 then
     -- Output stage
@@ -416,7 +416,7 @@ function HCOMP:UnprotectedCompile()
       self.CurrentBlockIndex = self.CurrentBlockIndex + 1
       if not self.GeneratedCode[self.CurrentBlockIndex] then
         self.Stage = 7
-
+        
         -- Generate labels for the debugger
         for labelName,labelData in pairs(self.GlobalLabels) do
           if string.sub(labelName,1,2) ~= "__" then
@@ -436,7 +436,7 @@ function HCOMP:UnprotectedCompile()
             end
           end
         end
-
+        
         -- Write binary output
         if self.Settings.OutputBinaryListing then
           if self.CurrentBinaryListingLine then
@@ -444,7 +444,7 @@ function HCOMP:UnprotectedCompile()
             self.CurrentBinaryListingLine = nil
           end
         end
-
+        
         -- Write the debug data
         if self.Settings.OutputDebugListing then
           self:PrintLine("dbglist","Labels:")
@@ -455,35 +455,35 @@ function HCOMP:UnprotectedCompile()
             elseif v.StackOffset then self:PrintLine("dbglist",k,v.StackOffset,"STACK")
             end
           end
-
+          
           self:PrintLine("dbglist","Position by pointer:")
           self:PrintLine("dbglist","Pointer","Line","Column","File")
           for k,v in pairs(self.DebugInfo.PositionByPointer) do
             self:PrintLine("dbglist",k,v.Line,v.Col,v.File)
           end
-
+          
           self:PrintLine("dbglist","Pointers by line:")
           self:PrintLine("dbglist","Line","Start","End")
           for k,v in pairs(self.DebugInfo.PointersByLine) do
             self:PrintLine("dbglist",k,v[1],v[2])
           end
         end
-
+        
         -- Write header file for library
         if self.Settings.GenerateLibrary then
           if self.DBString then
             self:PrintLine("lib",self.DBString)
             self.DBString = nil
           end
-
+          
           self:PrintLine("lib","")
-
+      
           for symName,symData in pairs(self.ExportedSymbols) do
             local printText = "#pragma export "
             if symData.FunctionName then
               printText = printText .. string.lower(self.TOKEN_TEXT["TYPE"][2][symData.ReturnType])
               printText = printText .. string.rep("*",symData.ReturnPtrLevel)
-
+              
               printText = printText .. " " .. symData.FunctionName .. "("
               for varIdx,varData in pairs(symData.Parameters) do
                 printText = printText .. string.lower(self.TOKEN_TEXT["TYPE"][2][varData.Type])
@@ -498,16 +498,16 @@ function HCOMP:UnprotectedCompile()
             self:PrintLine("lib",printText)
           end
         end
-
+        
         -- Clean up
         self.LabelLookup = nil
         self.LabelLookupCounter = nil
-
+        
         -- Close all output files
         for k,v in pairs(self.OutputText) do self:SaveFile(self.WorkingDir..k..".txt",v) end
       end
     end
-
+    
     return true
   else
     return false
@@ -522,7 +522,7 @@ end
 -- Third result returns if label was referenced before
 function HCOMP:GetLabel(name,declareLocalVariable)
   local trueName = string.upper(name)
-
+  
   -- Should we treat unknown variables as local label definition
   -- This assumes self.LocalLabel is defined at this point
   if declareLocalVariable then
@@ -569,7 +569,7 @@ function HCOMP:DefineLabel(name,declareLocalVariable)
       self:Error("Variable redefined: \""..name.."\"")
     end
   end
-
+  
   -- Clear referenced flag if required
   label.Referenced = false or wasReferenced
   return label
@@ -581,7 +581,7 @@ end
 function HCOMP:RedefineLabel(oldName,newName)
   local label = self:GetLabel(oldName)
   self.GlobalLabels[string.upper(label.Name)] = nil
-
+  
   label.Name = newName
   local prevLabel = self.GlobalLabels[string.upper(label.Name)]
   if prevLabel then
@@ -606,7 +606,7 @@ function HCOMP:GetTempLabel()
     Type = "Unknown",
     Name = labelName,
   }
-
+  
   self.LabelCounter = self.LabelCounter + 1
   return self.GlobalLabels[labelName]
 end
@@ -649,7 +649,7 @@ function HCOMP:SetSpecialLabels()
     self:SetLabel("regAsyncClk",      65528)
     self:SetLabel("regAsyncFreq",     65527)
     self:SetLabel("regIndex",         65526)
-
+    
     self:SetLabel("regHScale",        65525)
     self:SetLabel("regVScale",        65524)
     self:SetLabel("regHWScale",       65523)
@@ -660,17 +660,17 @@ function HCOMP:SetSpecialLabels()
     self:SetLabel("regRasterQ",       65518)
     self:SetLabel("regTexBuffer",     65517)
 
-
+  
     self:SetLabel("regWidth",         65515)
     self:SetLabel("regHeight",        65514)
     self:SetLabel("regRatio",         65513)
     self:SetLabel("regParamList",     65512)
-
+  
     self:SetLabel("regCursorX",       65505)
     self:SetLabel("regCursorY",       65504)
     self:SetLabel("regCursor",        65503)
     self:SetLabel("regCursorButtons", 65502)
-
+  
     self:SetLabel("regBrightnessW",   65495)
     self:SetLabel("regBrightnessR",   65494)
     self:SetLabel("regBrightnessG",   65493)
@@ -679,7 +679,7 @@ function HCOMP:SetSpecialLabels()
     self:SetLabel("regContrastR",     65490)
     self:SetLabel("regContrastG",     65489)
     self:SetLabel("regContrastB",     65488)
-
+  
     self:SetLabel("regCircleQuality", 65485)
     self:SetLabel("regOffsetX",       65484)
     self:SetLabel("regOffsetY",       65483)

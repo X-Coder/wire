@@ -27,7 +27,7 @@ function ENT:Initialize()
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
 	self:SetUseType( SIMPLE_USE )
-
+	
 	self.Inputs = WireLib.CreateInputs( self, { "Kick the bastard out of keyboard" } )
 	self.Outputs = WireLib.CreateOutputs( self, { "Memory", "User [ENTITY]", "InUse" } )
 
@@ -35,7 +35,7 @@ function ENT:Initialize()
 	self.ActiveKeys = {} -- table indexed by ascii values, value is the key enum for that key
 	self.Buffer = {} -- array containing all currently active keys, value is ascii
 	self.Buffer[0] = 0
-
+	
 	self:SetOverlayText( "Keyboard - Not in use" )
 	WireLib.TriggerOutput( self, "InUse", 0 )
 end
@@ -59,10 +59,10 @@ function ENT:ReadCell( Address )
 	elseif Address >= 32 and Address < 256 then
 		local enum = All_Enums[Address - 32]
 		if not enum then return 0 end -- Either this key is invalid, or it has never been pressed
-
+		
 		return self.ActiveKeys[enum] and 1 or 0
 	end
-
+	
 	return 0
 end
 
@@ -75,7 +75,7 @@ function ENT:WriteCell( Address, value )
 	else
 		self:Switch( value, nil )
 	end
-
+	
 	return false
 end
 
@@ -85,41 +85,41 @@ end
 function ENT:PlayerAttach( ply )
 	if not ply or not ply:IsValid() then return end -- Invalid player
 	if self.ply and self.ply:IsValid() then return end -- If the keyboard is already in use, don't attach the player
-
+	
 	if ply.WireKeyboard and ply.WireKeyboard:IsValid() then -- If the player is already using a different keyboard
 		if ply.WireKeyboard == self then return end -- If the keyboard is this keyboard, don't re-attach the player
 		ply.WireKeyboard:PlayerDetach() -- If it's another keyboard, detach the player from that keyboard first
 	end
-
+	
 	-- If the keyboard is locked (Kick input is wired to something other than 0), don't attach the player
 	if self.Locked then return end
-
+	
 	-- Store player
 	self.ply = ply
-
+	
 	-- Update wire outputs
 	WireLib.TriggerOutput( self, "User", ply )
 	WireLib.TriggerOutput( self, "InUse", 1 )
-
+	
 	-- Update status text
 	self:SetOverlayText("Keyboard - In use by " .. ply:Nick())
-
+	
 	-- Block keyboard input
 	umsg.Start( "wire_keyboard_blockinput", ply ) umsg.End()
-
+	
 	-- Check for pod
 	if self.Pod and self.Pod:IsValid() then
 		ply:ChatPrint( "This pod is linked to a keyboard - press ALT to leave." )
 	else
 		ply:ChatPrint( "Keyboard turned on - press ALT to leave." )
 	end
-
+	
 	-- Set the wire keyboard value on the player
 	ply.WireKeyboard = self
 
 	-- Ignore the first key (the "Use" key - default "e" - pressed when entering the keyboard)
 	self.IgnoreFirstKey = true
-
+	
 	-- Reset tables
 	self.ActiveKeyEnums = {}
 	self.ActiveKeys = {}
@@ -132,7 +132,7 @@ function ENT:Use( ply )
 		ply:ChatPrint( "This keyboard is linked to a pod. Please use the pod instead." )
 		return
 	end
-
+	
 	self:PlayerAttach( ply )
 end
 
@@ -146,18 +146,18 @@ end
 ------------------------------------------------------------------------------------------
 function ENT:PlayerDetach()
 	if not self.ply or not self.ply:IsValid() then return end -- If the keyboard isn't linked to a player
-
+	
 	-- Clear values
 	self.ply.WireKeyboard = nil
 	self.ply = nil
-
+	
 	-- Clear wire outputs
 	WireLib.TriggerOutput( self, "User", nil )
 	WireLib.TriggerOutput( self, "InUse", 0 )
-
+	
 	-- Update status text
 	self:SetOverlayText("Keyboard - Not in use." )
-
+	
 	-- Kick player out of vehicle, if in one
 	if self.Pod and self.Pod:IsValid() and self.Pod:GetDriver() and self.Pod:GetDriver():IsValid() then
 		self.Pod:GetDriver():ExitVehicle()
@@ -175,7 +175,7 @@ function ENT:LinkPod( pod, silent )
 		end
 	else
 		if self.Pod and self.Pod:IsValid() and self.Pod == pod then return end
-
+		
 		pod.WireKeyboard = self
 		self.Pod = pod
 	end
@@ -199,48 +199,48 @@ end)
 function ENT:Switch( key, key_enum, on )
 	if not key then return false end -- Invalid key
 	if key and key_enum then All_Enums[key] = key_enum end -- Add to list of keys
-
+	
 	local remove_from_buffer = self.AutoBuffer
-
+	
 	if key == -1 then -- User wants to remove the first key in the buffer
 		key = self.Buffer[1]
 		remove_from_buffer = true
 	end
-
+	
 	if not key_enum then -- User wants to remove the specified key manually
 		key_enum = All_Enums[key]
 		if not key_enum then return false end -- That key is invalid
 		remove_from_buffer = true
 	end
-
+	
 	if on == true then
 		-- Increase buffer count
 		self.Buffer[0] = self.Buffer[0] + 1
-
+		
 		-- Save buffer position for this key
 		local keyenums = self.ActiveKeyEnums[key_enum] or {}
 		keyenums[#keyenums+1] = self.Buffer[0]
 		self.ActiveKeyEnums[key_enum] = keyenums
-
+		
 		-- Save on/off state
 		self.ActiveKeys[key_enum] = true
-
+		
 		-- Save to buffer
 		self.Buffer[self.Buffer[0]] = key
-
+		
 		-- Trigger output
 		WireLib.TriggerOutput( self, "Memory", key )
 	else
 		if remove_from_buffer then
 			if not self.ActiveKeyEnums[key_enum] then return end -- error; this shouldn't happen
-
+			
 			-- Get buffer index from the lookup table
 			local bufferindex = table.remove( self.ActiveKeyEnums[key_enum], 1 )
 			if not bufferindex then return false end -- This key isn't in the buffer
-
+			
 			-- Remove key
 			table.remove( self.Buffer, bufferindex )
-
+			
 			-- Move all remaining keys down one step
 			for _, keyenum in pairs( self.ActiveKeyEnums ) do
 				for k,v in pairs( keyenum ) do
@@ -249,13 +249,13 @@ function ENT:Switch( key, key_enum, on )
 					end
 				end
 			end
-
+			
 			self.Buffer[0] = self.Buffer[0] - 1
 		end
-
+		
 		-- Set active state to 'off'
 		self.ActiveKeys[key_enum] = nil
-
+		
 		WireLib.TriggerOutput( self, "Memory", 0 )
 	end
 end
@@ -263,26 +263,26 @@ end
 concommand.Add("wire_keyboard_press", function(ply, cmd, args)
 	if 	not ply.WireKeyboard or not ply.WireKeyboard:IsValid() or -- If the player isn't using a keyboard
 		not ply.WireKeyboard.ply or not ply.WireKeyboard.ply:IsValid() or ply.WireKeyboard.ply ~= ply then -- If the attached player does not match this player
-
+		
 		umsg.Start( "wire_keyboard_releaseinput", ply ) umsg.End() -- Release their input in case they got stuck or something
-		return
+		return 
 	end
-
+	
 	local keyboard = ply.WireKeyboard
-
+	
 	if keyboard.IgnoreFirstKey then
 		keyboard.IgnoreFirstKey = nil
 		return
 	end
-
+	
 	local ascii = tonumber(args[2])
 	local key_enum = tonumber(args[3])
-
+	
 	if (key_enum == KEY_LALT and args[1] == "p" and not keyboard.ActiveKeys[KEY_LCONTROL]) then -- if LCONTROL is being pressed, then the player is trying to use the "ALT GR" key which is available for some languages
 		keyboard:PlayerDetach()
 		return
 	end
-
+	
 	keyboard:Switch( ascii, key_enum, args[1] == "p" )
 end)
 
@@ -307,7 +307,7 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 		end
 		self:LinkPod(LinkedPod, true)
 	end
-
+	
 	if info.autobuffer ~= nil then
 		self.AutoBuffer = info.autobuffer
 	else

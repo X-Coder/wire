@@ -1,6 +1,6 @@
 
 function WireToolMakeSpeedometer( self, trace, ply )
-
+	
 	local xyz_mode = util.tobool(self:GetClientNumber("xyz_mode"))
 	local AngVel = util.tobool(self:GetClientNumber("angvel"))
 
@@ -18,6 +18,6 @@ function WireToolMakeSpeedometer( self, trace, ply )
 
 	local min = wire_speedometer:OBBMins()
 	wire_speedometer:SetPos(trace.HitPos - trace.HitNormal * min.z)
-
+	
 	return wire_speedometer
 end

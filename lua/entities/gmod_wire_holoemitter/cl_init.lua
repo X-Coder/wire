@@ -16,7 +16,7 @@ end
 
 function ENT:AddPoint( Pos, Local, Color, DieTime, LineBeam, GroundBeam, Size )
 	local point = {}
-
+	
 	if Local ~= nil and Color ~= nil and DieTime ~= nil and LineBeam ~= nil and GroundBeam ~= nil and Size ~= nil then
 
 		point.Pos = Pos
@@ -25,24 +25,24 @@ function ENT:AddPoint( Pos, Local, Color, DieTime, LineBeam, GroundBeam, Size )
 		point.LineBeam = LineBeam
 		point.GroundBeam = GroundBeam
 		point.Size = Size
-
+		
 		if DieTime ~= 0 then
 			point.DieTime = CurTime() + DieTime
 		else
 			point.DieTime = nil
 		end
-
+		
 		point.SpawnTime = CurTime()
-
+	
 	else
-
+		
 		point = self.Previous
 		point.Pos = Pos
-
+		
 	end
-
+	
 	self.Points[#self.Points+1] = point
-
+	
 	self.Previous = table.Copy( point )
 end
 
@@ -50,9 +50,9 @@ usermessage.Hook("hed",function( um )
 	local ent = um:ReadEntity()
 	if (!ent or !ent:IsValid()) then return end
 	local n = um:ReadChar()
-
+	
 	local old = {}
-
+	
 	for i=1,n do
 		local pos = Vector(um:ReadFloat(),um:ReadFloat(),um:ReadFloat())
 		local IsDifferent = um:ReadBool()
@@ -66,54 +66,54 @@ end)
 
 function ENT:Think()
 	self:NextThink( CurTime() )
-
+	
 	if (self:GetNWBool( "Clear", false ) == true) then
 		self.Points = {}
 		return true
 	end
-
+	
 	local n = #self.Points
-
+	
 	if (n == 0) then return true end
-
+	
 	-- To make it visible across the entire map
 	local p = LocalPlayer():GetPos()
 	self:SetRenderBoundsWS( p - self.RBound, p + self.RBound )
-
+	
 	local cvarnum = cvar:GetFloat()
-
+	
 	for k=#self.Points,1,-1 do
 		local v = self.Points[k]
-
+		
 		if k == #self.Points and keeplatest:GetBool() then continue end -- Check keep latest convar
-
+		
 		if v.DieTime then
 			v.Color.a = 255-(CurTime()-v.SpawnTime)/(v.DieTime-v.SpawnTime)*255 -- Set alpha
-
+			
 			if v.DieTime < CurTime() then -- If the point's time has passed, remove it
 				table.remove( self.Points, k )
-
+				
 				if self.Points[k-1] then self.Points[k-1].LineBeam = false end -- Don't draw a line to this point anymore
 			end
 		end
-
+		
 		if cvarnum ~= 0 and v.SpawnTime + cvarnum < CurTime() then -- If the clientside time limit is shorter than the DieTime
 			table.remove( self.Points, k )
-
+			
 			if self.Points[k-1] then self.Points[k-1].LineBeam = false end -- Don't draw a line to this point anymore
 		end
 	end
-
+	
 	return true
 end
 
 function ENT:Draw()
 	self:DrawModel()
 	Wire_Render( self )
-
+	
 	local ent = self:GetNWEntity( "Link", false )
 	if (!ent or !ValidEntity(ent)) then ent = self end
-
+	
 	local forcelocal = false
 	if ent:GetClass() == "gmod_wire_hologrid" then
 		local temp = ent:GetNWEntity( "reference", false )
@@ -122,24 +122,24 @@ function ENT:Draw()
 			forcelocal = true
 		end
 	end
-
+	
 	local selfpos = ent:GetPos()
-
+	
 	local n = #self.Points
-
+	
 	if (n == 0 or self:GetNWBool("Active",true) == false) then return end
-
+	
 	for k=1, n do
 		local v = self.Points[k]
 		local Pos = v.Pos
-
+		
 		if (v.Local or forcelocal) then
 			Pos = ent:LocalToWorld( Pos )
 		end
-
+		
 		if (v.GroundBeam) then
 			render.SetMaterial( matbeam )
-			render.DrawBeam(
+			render.DrawBeam( 
 				selfpos,
 				Pos,
 				v.Size,
@@ -147,16 +147,16 @@ function ENT:Draw()
 				v.Color
 			)
 		end
-
+		
 		if (v.LineBeam and k < n) then
 			render.SetMaterial( matbeam )
-
+		
 			local NextPoint = self.Points[k+1]
 			local NextPos = NextPoint.Pos
 			if (NextPoint.Local or forcelocal) then
 				NextPos = ent:LocalToWorld( NextPos )
 			end
-
+		
 			render.DrawBeam(
 				NextPos,
 				Pos,
@@ -165,7 +165,7 @@ function ENT:Draw()
 				v.Color
 			)
 		end
-
+		
 		render.SetMaterial( matpoint )
 		render.DrawSprite(
 			Pos,

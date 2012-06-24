@@ -125,7 +125,7 @@ function ENT:WriteCell(Address, Value, Player)
     if (Address ~= 65535) and (Address ~= 65534) and (Address ~= 65502) then
       -- Write to internal memory
       self.Memory[Address] = Value
-
+      
       -- Add address to cache if cache is not big enough yet
       self.Cache:Write(Address,Value,Player)
       return true
@@ -156,7 +156,7 @@ function ENT:BuildDupeInfo()
   info.RAMSize = self.RAMSize
   info.ChipType = self.ChipType
   info.Memory = {}
-
+  
   for address = 0,self.RAMSize-1 do
     if self.Memory[address] and (self.Memory[address] ~= 0) then info.Memory[address] = self.Memory[address] end
   end
@@ -179,7 +179,7 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
   for address = 0,self.RAMSize-1 do
     if info.Memory[address] then self.Memory[address] = tonumber(info.Memory[address]) or 0 end
   end
-
+  
   self:SetMemoryModel()
   self:ResendCache(nil)
 end
@@ -257,7 +257,7 @@ function ENT:Think()
     -- Flush updated data
     if DataUpdated then self.Cache:Flush() end
   end
-
+  
   -- Update MemBus
   if self.Inputs.MemBus.Src then
     for address=self.MemBusScanAddress,self.MemBusScanAddress+1023 do
@@ -273,16 +273,16 @@ function ENT:Think()
       self.MemBusScanAddress = 65536
     end
   end
-
+  
   -- Flush any data in cache
   self.Cache:Flush()
-
+  
   -- Update video output, and send any changes to client
   if self.Inputs.VideoOut.Src then
     self.QueryRecurseCounter = 0
     self.QueryResult = { }
     self:QueryMonitors(self.Inputs.VideoOut.Src)
-
+    
     -- Check if monitors setup has changed
     local monitorsChanged = false
     for k,v in pairs(self.QueryResult) do
@@ -291,7 +291,7 @@ function ENT:Think()
         break
       end
     end
-
+    
     if not monitorsChanged then
       for k,v in pairs(self.Monitors) do
         if self.QueryResult[k] ~= v then
@@ -300,19 +300,19 @@ function ENT:Think()
         end
       end
     end
-
+    
     if #self.QueryResult ~= #self.Monitors then monitorsChanged = true end
-
+    
     if monitorsChanged then
       self.Monitors = self.QueryResult
     end
-
+    
     -- Send update to all clients
     if monitorsChanged then
       self:UpdateClientMonitorState()
     end
   end
-
+  
   -- Update serverside cursor
   local model = self:GetModel()
   local monitor = WireGPU_Monitors[model]
@@ -333,13 +333,13 @@ function ENT:Think()
         local cpos = WorldToLocal(trace.HitPos, Angle(), pos, ang)
         local cx = 0.5+cpos.x/(monitor.RS*(512/monitor.RatioX))
         local cy = 0.5-cpos.y/(monitor.RS*(512))
-
+        
         self.Memory[65505] = cx
         self.Memory[65504] = cy
       end
     end
   end
-
+  
   self:NextThink(CurTime()+0.05)
   return true
 end
@@ -356,11 +356,11 @@ concommand.Add("wgm", function(player, command, args)
 
   -- Must be a valid GPU, and belong to the caller
 --  if GPU.player ~= player then return end
-
+  
   -- Write on membus
   local Address = tonumber(args[2]) or 0
   local Value = tonumber(args[3]) or 0
-
+  
   -- Perform external write
   if GPU.Inputs.MemBus.Src then
     GPU.Inputs.MemBus.Src:WriteCell(Address-65536,Value)

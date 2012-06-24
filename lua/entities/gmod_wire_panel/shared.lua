@@ -34,7 +34,7 @@ end
 if SERVER then
 	function ENT:SetChannelValue(channel_number, value)
 		if self.channels[channel_number] == value then return end
-
+		
 		self.channels[channel_number] = value
 		self:umsg()
 			self.umsg.Char(channel_number)
@@ -42,30 +42,30 @@ if SERVER then
 			self.umsg.Char(0)
 		self.umsg.End()
 	end
-
+	
 	function ENT:SetChannelNumber(channel_number)
 		if self.chan == channel_number then return end
-
+		
 		self.chan = channel_number
 		Wire_TriggerOutput(self, "Out", self.channels[self.chan])
-
+		
 		self:umsg()
 			self.umsg.Char(-1)
 			self.umsg.Char(self.chan)
 			self.umsg.Char(0)
 		self.umsg.End()
 	end
-
+	
 	concommand.Add("wire_panel_setchannel", function(ply, cmd, args)
 		local self = Entity(tonumber(args[1]))
 		if not self:IsValid() then return end
-
+		
 		-- set current channel
 		if not gamemode.Call("PlayerUse", ply, self) then return end
-
+		
 		self:SetChannelNumber(math.Clamp(tonumber(args[2]) or 1, 1, #self.channels))
 	end)
-
+	
 	function ENT:Retransmit(ply)
 		self:umsg(ply)
 			for channel_number,value in ipairs(self.channels) do
@@ -87,11 +87,11 @@ else
 			elseif channel_number == -1 then
 				self.chan = um:ReadChar()
 			end
-
+			
 			channel_number = um:ReadChar()
 		end
 	end
-
+	
 	function ENT:ChangeChannelNumber(channel_number)
 		RunConsoleCommand("wire_panel_setchannel", self:EntIndex(), channel_number)
 	end

@@ -42,23 +42,23 @@ local util_CRC = util.CRC
 local tonumber = tonumber
 function E2Lib.getHash(self, data)
 		--[[ Thanks to emspike for this code
-
+		
 		self.prf = self.prf + #data
-
+		
 		local a, b = 1, 0
-
+ 
 		for i = 1, #data do
 				a = (a + str_byte(str_sub(data,i,i))) % 65521
 				b = (b + a) % 65521
 		end
-
+ 
 		return b << 16 | a
-
+		
 		... but we're going to use Garry's function, since it's most likely done in C++, so it's probably faster
 		For some reason, Garry's util.CRC returns a string... but it's always a number, so tonumbering it should work.
 		I'm making it default to "[ERROR]" if it for some reason throws a letter in there, breaking tonumber.
 		]]
-
+		
 		self.prf = self.prf + #data / 10
 		return tonumber(util_CRC( data )) or "[ERROR]"
 end
@@ -316,7 +316,7 @@ E2Lib.optable_inv = {
 	geq  = ">=",
 	leq  = "<=",
 	gth  = ">",
-
+	
 	band = "&&",
 	bor = "||",
 	bxor = "^^",
@@ -481,9 +481,9 @@ do
 			end
 			return
 		end
-
+			
 		extensions.SetStatus(args[1], true)
-
+		
 		if extensions.GetStatus( args[1] ) then
 			if ply:IsValid() then
 				ply:PrintMessage( 2, "Extension '" .. args[1] .. "' enabled. Now reload Expression 2 using the console command 'wire_expression2_reload'." )
@@ -512,9 +512,9 @@ do
 			end
 			return
 		end
-
+		
 		extensions.SetStatus(args[1], false)
-
+		
 		if extensions.GetStatus( args[1] ) then
 			if ply:IsValid() then
 				ply:PrintMessage( 2, "Failed to disable extension '" .. args[1] .. "'." )

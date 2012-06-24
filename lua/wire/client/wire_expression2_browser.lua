@@ -20,6 +20,7 @@ local function GetFileName(name)
 end
 
 local function InternalDoClick(self)
+	if (!self) then return end
 	self:GetRoot():SetSelectedItem(self)
 	if (self:DoClick()) then return end
 	if (self:GetRoot():DoClick(self)) then return end
@@ -54,12 +55,12 @@ local function setTree(dir, parent)
 
 	parent:Clear(true)
 	parent.ChildNodes = nil
-
+	
 	local timername = {} // Timer names must be unique and can be an empty table!
-	local files = file.FindDir(dir .. "/*")
+	local files = file.FindDir(dir .. "/*", "DATA")
 	--table.sort(files)
 	sort( files, dir )
-	local pFiles = file.Find(dir .. "/*.txt")
+	local pFiles = file.Find(dir .. "/*.txt", "DATA")
 	--table.sort(pFiles)
 	sort( pFiles, dir )
 	table.Add(files, pFiles)
@@ -96,8 +97,8 @@ local function setTree(dir, parent)
 
 						if (type(v) == "string") then
 							local Filepath = (dir .. "/" .. v)
-							local IsFile = !file.IsDir(Filepath)
-							local FileExists = file.Exists(Filepath)
+							local IsFile = !file.IsDir(Filepath, "DATA")
+							local FileExists = file.Exists(Filepath, "DATA")
 
 							if (!string.match(v, "%.%.") and !AddedItems[Filepath]) then // No allow double foders and folder with ".." in thay names to be shown and check if the folder is a real folder, this prevents some errors.
 								if (!IsFile) then
@@ -187,7 +188,7 @@ function PANEL:Init()
 	self.panelmenu = {}
 	self.filemenu = {}
 	self.foldermenu = {}
-
+	
 	self:AddRightClick(self.filemenu,nil,"Open",function()
 		self:GetParent():Open( self.File.FileDir )
 	end)
@@ -204,7 +205,8 @@ function PANEL:Init()
 			-- The rename function appears to be broken. Using file.Read, file.Delete, and file.Write instead.
 			--file.Rename("data/" .. self.File.FileDir, "data/" .. string.GetPathFromFilename(self.File.FileDir) .. "/" .. strTextOut .. ".txt")
 
-			local contents = file.Read( self.File.FileDir )
+			local contents = file.Read( self.File.FileDir, "DATA" )
+			contents = string.gsub(contents, "%z", "")
 			file.Delete( self.File.FileDir )
 			file.Write( string.GetPathFromFilename(self.File.FileDir) .. "/" .. strTextOut .. ".txt", contents )
 
@@ -215,7 +217,7 @@ function PANEL:Init()
 		Derma_StringRequestNoBlur("Copy File \"" .. self.File.Name .. "\"", "Copy File to...", self.File.Name,
  		function(strTextOut)
 			strTextOut = string.gsub(strTextOut, ".", invalid_filename_chars)
-			file.Write(string.GetPathFromFilename(self.File.FileDir) .. "/" .. strTextOut .. ".txt", file.Read(self.File.FileDir))
+			file.Write(string.GetPathFromFilename(self.File.FileDir) .. "/" .. strTextOut .. ".txt", string.gsub(file.Read(self.File.FileDir, "DATA"), "%z", ""))
 			self:UpdateFolders()
 		end)
 	end)
@@ -232,8 +234,8 @@ function PANEL:Init()
 		Derma_Query(
 			"Delete this file?", "Delete",
 			"Delete", function()
-				if(file.Exists(self.File.FileDir)) then
-					file.Delete(self.File.FileDir)
+				if(file.Exists(self.File.FileDir)) then 
+					file.Delete(self.File.FileDir) 
 					self:UpdateFolders()
 				end
 			end,
@@ -406,9 +408,9 @@ end
 function PANEL:AddRightClick(menu, pos, name, option)
 	if(!menu) then menu = {} end
 	if (!pos) then pos = #menu + 1 end
-	if(menu[pos]) then
+	if(menu[pos]) then 
 		table.insert(menu,pos,{name,option})
-		return
+		return 
 	end
 	menu[pos] = {name,option}
 end

@@ -128,7 +128,7 @@ function ENT:WriteCell(Address,value)
   -- 2039 - Hardware Clear Row (Writing clears row)
   -- 2040 - Hardware Clear Column (Writing clears column)
   -- 2041 - Hardware Clear Screen
-
+  
   if (Address == 2025) or
      (Address == 2026) or
      (Address == 2027) or
@@ -389,7 +389,7 @@ function ENT:Draw()
             elseif c1 < 2097152 then
               utf8 = string.format("%c%c%c%c", 240 + math.floor (c1 / 262144), 128 + (math.floor (c1 / 4096) & 63), 128 + (math.floor (c1 / 64) & 63), 128 + (c1 & 63))
             end
-
+            
             if specialCharacters[c1] then
               self:DrawSpecialCharacter(
                 c1, (tx+0.5)*szx, (ty+0.5)*szy, szx, szy,

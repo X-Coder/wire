@@ -10,15 +10,15 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	local phys = self:GetPhysicsObject()
 	if (phys:IsValid()) then
 		phys:Wake()
 	end
-
+	
 	local max = self:OBBMaxs()
 	local min = self:OBBMins()
-
+	
 	self.X = 0
 	self.Y = 0
 	self.Z = 0
@@ -26,28 +26,28 @@ function ENT:Initialize()
 	self.yaw = 0
 	self.pitch = 0
 	self.mul = 0
-
+	
 	self.ThrustOffset 	= Vector( 0, 0, 0 )
 	self.ForceAngle		= self.ThrustOffset:GetNormalized() * -1
-
+	
 	self:SetForce( 2000 )
-
+	
 	self.OWEffect = "fire"
 	self.UWEffect = "same"
-
+	
 	self:SetOffset( self.ThrustOffset )
 	self:StartMotionController()
-
+	
 	self:Switch( false )
-
+	
 	self.Inputs = Wire_CreateInputs(self, { "Mul" })
-
+	
 	self.SoundName = Sound( "PhysicsCannister.ThrusterLoop" )
 end
 
 function ENT:OnRemove()
 	self.BaseClass.OnRemove(self)
-
+	
 	if (self.SoundName) then
 		self:StopSound(self.SoundName)
 	end
@@ -59,13 +59,13 @@ function ENT:SetForce( force, mul )
 		self:NetSetForce( force )
 	end
 	mul = mul or 1
-
+	
 	local phys = self:GetPhysicsObject()
 	if (!phys:IsValid()) then
 		Msg("Warning: [",self,"] Physics object isn't valid!\n")
 		return
 	end
-
+	
 	local ThrusterWorldPos
 	local ThrusterWorldForce
 	if (self.Mode == 1) then
@@ -79,23 +79,23 @@ function ENT:SetForce( force, mul )
 		ThrusterWorldPos.z = ThrusterWorldPos.z + self.Z
 		ThrusterWorldForce.z = ThrusterWorldForce.z - self.Z
 	end
-
+	
 	// Calculate the velocity
 	ThrusterWorldForce = ThrusterWorldForce * self.force * mul * 50
 	self.ForceLinear, self.ForceAngle = phys:CalculateVelocityOffset( ThrusterWorldForce, ThrusterWorldPos );
-
+	
 	self.ForceLinear = phys:WorldToLocalVector( self.ForceLinear )
 end
 
 /*function ENT:Think()
 	self.BaseClass.Think(self)
-
+	
 	if (self.Mode > 0 and self:IsOn()) then
 		self:Switch( self:IsOn(), self.mul )
-
+		
 		local phys = self:GetPhysicsObject()
 		if (!phys:IsValid()) then return end
-
+		
 		local ThrusterWorldPos
 		local ThrusterWorldForce
 		if (self.Mode == 1) then
@@ -107,11 +107,11 @@ end
 			ThrusterWorldPos.z = ThrusterWorldPos.z + self.Z
 			ThrusterWorldForce.z = ThrusterWorldForce.z - self.Z
 		end
-
+		
 		ThrusterWorldForce = ThrusterWorldForce * self.force * mul * 10
 		self.ForceLinear, self.ForceAngle = phys:CalculateVelocityOffset( ThrusterWorldForce, ThrusterWorldPos );
 		self.ForceLinear = phys:WorldToLocalVector( self.ForceLinear )
-
+		
 		self:NextThink(CurTime()+0.04)
 		return true
 	end
@@ -119,7 +119,7 @@ end*/
 
 function ENT:Setup(force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, soundname, mode, angleinputs)
 	self:SetForce(force)
-
+	
 	self.OWEffect = oweffect
 	self.UWEffect = uweffect
 	self.ForceMin = force_min
@@ -127,24 +127,24 @@ function ENT:Setup(force, force_min, force_max, oweffect, uweffect, owater, uwat
 	self.BiDir = bidir
 	self.OWater = owater
 	self.UWater = uwater
-
+	
 	if (soundname and soundname == "" and self.SoundName and self.SoundName != "") then
 		self:StopSound(self.SoundName)
 	end
-
+	
 	if (soundname) then
 		self.SoundName = Sound(soundname)
 	end
-
+	
 	self.Mode = mode
 	self:SetMode( self.Mode )
-
+	
 	if (angleinputs) then
 		WireLib.AdjustInputs(self, {"Mul", "Pitch", "Yaw"})
 	else
 		WireLib.AdjustSpecialInputs(self, {"Mul", "X", "Y", "Z", "Vector"}, { "NORMAL", "NORMAL", "NORMAL", "NORMAL", "VECTOR"})
 	end
-
+	
 	--self:ShowOutput( self.mul )
 end
 
@@ -175,13 +175,13 @@ function ENT:TriggerInput(iname, value)
 		self.Y = math.sin(self.pitch)
 		self.Z = math.cos(self.pitch) * math.sin(self.yaw)
 	end
-
+	
 	self.ThrustOffset = Vector( self.X, self.Y, self.Z ):GetNormalized()
 	self:SetOffset( self.ThrustOffset )
 	if (self.Mode == 2) then
 		self.ThrustOffset = Vector( self.X, self.Y, 0 ):GetNormalized()
 	end
-
+	
 	if (self.ThrustOffset == Vector(0,0,0)) then self:SetOn( false ) elseif (self.mul != 0) then self:SetOn( true ) end
 	self:Switch( self:IsOn(), self.mul )
 end
@@ -189,13 +189,13 @@ end
 function ENT:PhysicsSimulate( phys, deltatime )
 	if (!self:IsOn()) then return SIM_NOTHING end
 	if (self:IsPlayerHolding()) then return SIM_NOTHING end
-
+	
 	if (self:WaterLevel() > 0) then
 		if (not self.UWater) then
 			self:SetEffect("none")
 			return SIM_NOTHING
 		end
-
+		
 		if (self.UWEffect == "same") then
 			self:SetEffect(self.OWEffect)
 		else
@@ -206,58 +206,58 @@ function ENT:PhysicsSimulate( phys, deltatime )
 			self:SetEffect("none")
 			return SIM_NOTHING
 		end
-
+		
 		self:SetEffect(self.OWEffect)
 	end
-
+	
 	if (self.Mode > 0 and self:IsOn()) then
 		self:Switch( self:IsOn(), self.mul )
 	end
-
+	
 	local ForceAngle, ForceLinear = self.ForceAngle, self.ForceLinear
-
+	
 	return ForceAngle, ForceLinear, SIM_LOCAL_ACCELERATION
 end
 
 function ENT:Switch( on, mul )
 	if (!self:IsValid()) then return false end
 	self.mul = mul
-
+	
 	local changed = (self:IsOn() ~= on)
 	self:SetOn( on )
-
+	
 	if (on) then
 		if (changed) and (self.SoundName and self.SoundName != "") then
 			self:StopSound( self.SoundName )
 			self:EmitSound( self.SoundName )
 		end
-
+		
 		self:NetSetMul( mul )
-
+		
 		if (mul ~= self.PrevOutput) then
 			--self:SetOverlayText( "Thrust = " .. math.Round(self.force*mul*1000)/1000 .. "\nMul: " .. math.Round(self.force*1000)/1000 )
 			--self:ShowOutput( true )
 			self.PrevOutput = mul
 		end
-
+		
 		self:SetForce( nil, mul )
 	else
 		if (self.SoundName and self.SoundName != "") then
 			self:StopSound( self.SoundName )
 		end
-
+		
 		if (self.PrevOutput) then
 			--self:SetOverlayText( "Thrust = Off".."\nMul: "..math.Round(self.force*1000)/1000 )
 			--self:ShowOutput( false )
 			self.PrevOutput = nil
 		end
 	end
-
+	
 	local phys = self:GetPhysicsObject()
 	if (phys:IsValid()) then
 		phys:Wake()
 	end
-
+	
 	return true
 end
 
@@ -277,44 +277,44 @@ end
 
 function ENT:OnRestore()
 	local phys = self:GetPhysicsObject()
-
+	
 	if (phys:IsValid()) then
 		phys:Wake()
 	end
-
+	
 	local max = self:OBBMaxs()
 	local min = self:OBBMins()
-
+	
 	self.ThrustOffset 	= Vector( 0, 0, 1)
 	self.ForceAngle		= self.ThrustOffset:GetNormalized() * -1
-
+	
 	self:SetOffset( self.ThrustOffset )
 	self:StartMotionController()
-
+	
 	if (self.PrevOutput) then
 		self:Switch(true, self.PrevOutput)
 	else
 		self:Switch(false)
 	end
-
+	
 	self.BaseClass.OnRestore(self)
 end
 
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
-
+	
 	if (self.PrevOutput) and (self:IsOn()) then
 		info.PrevOutput = self.PrevOutput
 	end
-
+	
 	return info
 end
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
-
+	
 	if (info.PrevOutput) then
 		self:Switch(true, info.PrevOutput)
 	end
-
+	
 end

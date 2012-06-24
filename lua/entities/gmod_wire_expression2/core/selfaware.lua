@@ -128,9 +128,9 @@ __e2setcost(1)
 -- This is the prototype for everything that can be compared using the == operator
 e2function number changed(value)
 	local chg = self.data.changed
-
+	
 	if value == chg[args] then return 0 end
-
+	
 	chg[args] = value
 	return 1
 end
@@ -138,9 +138,9 @@ end
 -- vectors can be of gmod type Vector, so we need to treat them separately
 e2function number changed(vector value)
 	local chg = self.data.changed
-
+	
 	local this_chg = chg[args]
-	if not this_chg then
+	if not this_chg then 
 		chg[args] = value
 		return 1
 	end
@@ -149,7 +149,7 @@ e2function number changed(vector value)
 	and value[2] == this_chg[2]
 	and value[3] == this_chg[3]
 	then return 0 end
-
+	
 	chg[args] = value
 	return 1
 end
@@ -157,9 +157,9 @@ end
 -- This is the prototype for all table types.
 e2function number changed(angle value)
 	local chg = self.data.changed
-
+	
 	local this_chg = chg[args]
-	if not this_chg then
+	if not this_chg then 
 		chg[args] = value
 		return 1
 	end
@@ -176,7 +176,7 @@ local excluded_types = {
 	n = true,
 	v = true,
 	a = true,
-
+	
 	r = true,
 	t = true,
 }
@@ -216,3 +216,5 @@ end
 e2function number hash( string str )
 	return getHash( self, str )
 end
+
+-- CLOSE

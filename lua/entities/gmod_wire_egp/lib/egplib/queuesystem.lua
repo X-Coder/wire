@@ -16,7 +16,7 @@ function EGP:AddQueueObject( Ent, ply, Function, Object )
 				if (v.index == Object.index) then
 					found = true
 					--self:EditObject( v, Object )
-
+					
 					if (Object.remove) then -- The object has been removed
 						table.remove( LastItem.Args[1], k )
 					elseif (v.ID != Object.ID) then -- Not the same kind of object, create new
@@ -29,7 +29,7 @@ function EGP:AddQueueObject( Ent, ply, Function, Object )
 					else -- Edit
 						self:EditObject( v, Object:DataStreamInfo() )
 					end
-
+					
 					break
 				end
 			end
@@ -90,8 +90,8 @@ local AlreadyChecking = 0
 function EGP:SendQueueItem( ply )
 	if (!ply or !ply:IsValid()) then self:StopQueueTimer() end
 	local NextAction = self:GetNextItem( ply )
-	if (NextAction == false) then
-		self:StopQueueTimer( ply )
+	if (NextAction == false) then 
+		self:StopQueueTimer( ply ) 
 	else
 		local Func = NextAction.Function
 		local Ent = NextAction.Ent
@@ -101,10 +101,10 @@ function EGP:SendQueueItem( ply )
 		else
 			Func( Ent, ply )
 		end
-
+		
 		if (CurTime() != AlreadyChecking) then -- Had to use this hacky way of checking, because the E2 triggered 4 times for some strange reason. If anyone can figure out why, go ahead and tell me.
 			AlreadyChecking = CurTime()
-
+			
 			-- Check if the queue has no more items for this screen
 			local Items = self:GetQueueItemsForScreen( ply, Ent )
 			if (Items and #Items == 0) then
@@ -113,7 +113,7 @@ function EGP:SendQueueItem( ply )
 				EGP.RunByEGPQueue_ply = ply
 				for k,v in ipairs( ents.FindByClass( "gmod_wire_expression2" ) ) do -- Find all E2s
 					local context = v.context
-					if (context) then
+					if (context) then	
 						local owner = context.player
 						 -- Check if friends, whether or not the E2 is already executing, and if the E2 wants to be triggered by the queue system regarding the screen in question.
 						if (E2Lib.isFriend( ply, owner ) and context.data and context.data.EGP and context.data.EGP.RunOnEGP and context.data.EGP.RunOnEGP[Ent] == true) then
@@ -123,7 +123,7 @@ function EGP:SendQueueItem( ply )
 				end
 				EGP.RunByEGPQueue_ply = nil
 				EGP.RunByEGPQueue_Ent = nil
-				EGP.RunByEGPQueue = nil
+				EGP.RunByEGPQueue = nil	
 			end
 		end
 	end

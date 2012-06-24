@@ -42,7 +42,7 @@ wire_expression2_reset_extensions()
 include("extpp.lua")
 
 local function luaExists(luaname)
-	return #file.FindInLua(luaname) ~= 0
+	return #file.Find(luaname, LUA_PATH) ~= 0
 end
 
 local included_files = {}
@@ -58,7 +58,8 @@ local function e2_include(name)
 	end
 
 	local luaname = "entities/gmod_wire_expression2/core/"..name
-	local contents = file.Read("lua/"..luaname,true) or ""
+	local contents = file.Read("lua/" .. luaname, true) or ""
+	contents = string.gsub(contents, "%z", "")
 	e2_extpp_pass1(contents)
 	table.insert(included_files, {name, luaname, contents})
 end
@@ -83,8 +84,13 @@ local function e2_include_finalize()
 	for _,info in ipairs(included_files) do
 		e2_include_pass2(unpack(info))
 	end
+	
 	included_files = nil
 	e2_include = nil
+end
+
+function printChatFile()
+	file.Write("chat.txt", e2_extpp_pass2(file.Read("lua/entities/gmod_wire_expression2/core/chat.lua", true)))
 end
 
 -- end preprocessor stuff
@@ -132,9 +138,10 @@ e2_include("custom.lua")
 e2_include("datasignal.lua")
 e2_include("egpfunctions.lua")
 e2_include("functions.lua")
+e2_include("halo.lua")
 
 do
-	local list = file.FindInLua("entities/gmod_wire_expression2/core/custom/*.lua")
+	local list = file.Find("entities/gmod_wire_expression2/core/custom/*.lua", LUA_PATH)
 	for _,filename in pairs(list) do
 		if filename:sub(1,3) == "cl_" then
 			-- If the is prefixed with "cl_", send it to the client and load it there.

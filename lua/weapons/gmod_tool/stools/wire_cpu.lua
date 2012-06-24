@@ -64,7 +64,7 @@ if SERVER then
   function TOOL:Reload(trace)
     if trace.Entity:IsPlayer() then return false end
     local player = self:GetOwner()
-
+    
     if player:KeyDown(IN_SPEED) then
       if (trace.Entity:IsValid()) and
          (trace.Entity:GetClass() == "gmod_wire_cpu") and
@@ -167,7 +167,7 @@ if SERVER then
     if not ent then return end
     if not ent:IsValid() then return end
 
-    local tr = utilx.GetPlayerTrace(player, player:GetCursorAimVector())
+    local tr = util.GetPlayerTrace(player, player:GetCursorAimVector())
     local trace = util.TraceLine(tr)
     if not trace.Hit then return end
 
@@ -342,27 +342,27 @@ if CLIENT then
   local consoleHistory = { "", "", "", "", "", "" }
   local stageName = {"Preprocessing","Tokenizing","Parsing","Generating","Optimizing","Resolving","Outputting"}
   local stageNameShort = {"Preproc","Tokenize","Parse","Generate","Optimize","Resolve","Output"}
-
+  
   local function outform(x,y,w,h,title)
     surface.SetDrawColor(255, 255, 255, 255)
     surface.DrawRect(x*28-3,y*32-3,w*28,h*32)
-
+    
     surface.SetDrawColor(0, 0, 0, 255)
     surface.DrawRect(x*28+3,y*32+3,w*28,h*32)
-
+    
     surface.SetDrawColor(192, 220, 192, 255)
     surface.DrawRect(x*28,y*32,w*28-3,h*32-3)
-
+    
     surface.SetDrawColor(192, 192, 192, 255)
     surface.DrawRect(x*28,y*32,w*28,h*32)
-
+    
     if title then
       surface.SetDrawColor(0, 0, 128, 255)
       surface.DrawRect(x*28+4,y*32+4,w*28-4,1*32-4)
       draw.DrawText(title,"ZCPUToolScreenFontSmall",x*28+4,y*32+4,Color(255,255,255,255),0)
     end
   end
-
+  
   function CPULib.RenderCPUTool(screenIndex,toolName)
     if screenIndex == 0 then
       surface.SetDrawColor(0, 0, 128, 255)
@@ -371,7 +371,7 @@ if CLIENT then
       surface.SetDrawColor(240, 240, 0, 255)
       surface.DrawRect(0,0,256,32)
       outc(" ToolOS r"..VERSION.." ",0,Color(0,0,0,255))
-
+  
       if CPULib.Uploading then
         outc("Program size:",2,Color(255,255,255,255))
         outc(string.format("%d bytes",CPULib.TotalUploadData),3,Color(255,255,255,255))
@@ -393,7 +393,7 @@ if CLIENT then
           outc("Flash utility",1,Color(255,255,255,255))
           outc("(C) 2007-2011",2,Color(255,255,255,255))
           outc("Black Phoenix",3,Color(255,255,255,255))
-
+  
           outc(string.format("RAM: %5d KB",collectgarbage("count") or 0),7,Color(255,255,255,255))
         else
           surface.SetDrawColor(0, 0, 0, 255)
@@ -408,12 +408,12 @@ if CLIENT then
       surface.DrawRect(16*(#toolName+1),32*0+14,256,4)
       outc(toolName,0,Color(240, 120,0,255))
       outc(string.format(" RAM %5d KB",collectgarbage("count") or 0),1,Color(255,255,255,255))
-
+      
       surface.SetDrawColor(240, 120, 0, 255)
       surface.DrawRect(16*(5),32*2+14,256,4)
       outc("TASK",2,Color(240, 120,0,255))
       outc("       STATUS",3,Color(255,255,255,255))
-
+      
       surface.SetDrawColor(240, 120, 0, 255)
       surface.DrawRect(16*(4),32*6+14,256,4)
       outc("NET",6,Color(240, 120,0,255))
@@ -435,7 +435,7 @@ if CLIENT then
       surface.DrawRect(0, 0, 256, 256)
 
       outc("TL-UNIX "..(VERSION/100),0,Color(200,200,200,255))
-
+      
       outc(consoleHistory[1],2,Color(200,200,200,255))
       outc(consoleHistory[2],3,Color(200,200,200,255))
       outc(consoleHistory[3],4,Color(200,200,200,255))
@@ -450,10 +450,10 @@ if CLIENT then
           consoleHistory[3] = consoleHistory[4]
           consoleHistory[4] = string.lower(toolName).."@:/# upl"
         end
-
+        
         consoleHistory[5] = string.format("  %3d%%",100-100*CPULib.RemainingUploadData/(CPULib.TotalUploadData+1e-12))
         consoleHistory[6] = string.format("  %d B",CPULib.RemainingUploadData)
-
+        
         prevState = 0
       elseif CPULib.ServerUploading then
         consoleHistory[5] = "  ###"
@@ -485,15 +485,15 @@ if CLIENT then
       surface.DrawRect(0, 0, 256, 256)
 
       outform(0,7,12,1)
-
+      
       outform(0,7,3,1)
       outc("MENU",7,Color(0,0,0,255))
-
+      
       if CPULib.Uploading then
         outform(1,1,7,5,"Upload")
         outc(string.format("  %.3f kb",CPULib.RemainingUploadData/1024),3,Color(0,0,0,255))
         outc(string.format("  %3d%% done",100-100*CPULib.RemainingUploadData/(CPULib.TotalUploadData+1e-12)),4,Color(0,0,0,255))
-
+        
         outform(1,5,7,0.9)
         surface.SetDrawColor(0, 0, 128, 255)
         surface.DrawRect(1*28+4,5*32+4,
@@ -511,7 +511,7 @@ if CLIENT then
       end
     end
   end
-
+  
   function TOOL:RenderToolScreen()
     cam.Start2D()
       local currentTime = os.date("*t")

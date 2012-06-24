@@ -4,6 +4,8 @@ local isOwner      = E2Lib.isOwner
 local Clamp        = math.Clamp
 local seq = table.IsSequential
 
+util.AddNetworkString("wire_expression2_printColor")
+
 /******************************************************************************/
 
 local function checkOwner(self)
@@ -30,16 +32,16 @@ timer.Create("e2_printcolor_delays",print_delay,0,function()
 end)
 
 local function check_delay( ply )
-	if (!print_delays[ply]) then
+	if (!print_delays[ply]) then 
 		print_delays[ply] = print_max - 1
 		return true
 	end
-
+	
 	if (print_delays[ply] > 0) then
 		print_delays[ply] = print_delays[ply] - 1
 		return true
 	end
-
+	
 	return false
 end
 
@@ -85,7 +87,7 @@ e2function void print(...)
 		if (text and #text>0) then
 			self.player:ChatPrint(text)
 		end
-	end
+	end	
 end
 
 --- Posts <text> to the chat area. (deprecated due to print(...))
@@ -99,12 +101,12 @@ e2function number entity:printDriver(string text)
 	if not this:IsVehicle() then return 0 end
 	if not isOwner(self, this) then return 0 end
 	if text:find('"', 1, true) then return 0 end
-
+	
 	local driver = this:GetDriver()
 	if not validEntity(driver) then return 0 end
-
+	
 	if (!check_delay( self.player )) then return 0 end
-
+	
 	driver:ChatPrint(text)
 	return 1
 end
@@ -122,12 +124,12 @@ e2function number entity:hintDriver(string text, duration)
 	if not validEntity(this) then return 0 end
 	if not this:IsVehicle() then return 0 end
 	if not isOwner(self, this) then return 0 end
-
+	
 	local driver = this:GetDriver()
 	if not validEntity(driver) then return 0 end
-
+	
 	if (!check_delay( self.player )) then return 0 end
-
+	
 	WireLib.AddNotify(driver, text, NOTIFY_GENERIC, Clamp(duration,0.7,7))
 	return 1
 end
@@ -145,7 +147,7 @@ end
 e2function void print(print_type, string text)
 	if (not checkOwner(self)) then return; end
 	if not valid_print_types[print_type] then return end
-
+	
 	self.player:PrintMessage(print_type, text)
 end
 
@@ -156,16 +158,16 @@ e2function number entity:printDriver(print_type, string text)
 	if not isOwner(self, this) then return 0 end
 	if not valid_print_types[print_type] then return 0 end
 	if text:find('"', 1, true) then return 0 end
-
+	
 	local driver = this:GetDriver()
 	if not validEntity(driver) then return 0 end
-
+	
 	if (!check_delay( self.player )) then return 0 end
-
+	
 	driver:PrintMessage(print_type, text)
 	return 1
 end
-
+ 
 /******************************************************************************/
 
 -- helper stuff for printTable
@@ -205,7 +207,7 @@ local printColor_typeids = {
 local function printColorVarArg(chip, ply, typeids, ...)
 	if (not validEntity(ply)) then return; end
 	local send_array = { ... }
-
+	
 	for i,tp in ipairs(typeids) do
 		if printColor_typeids[tp] then
 			send_array[i] = printColor_typeids[tp](send_array[i])
@@ -213,9 +215,12 @@ local function printColorVarArg(chip, ply, typeids, ...)
 			send_array[i] = ""
 		end
 	end
-
+	
 	send_array.chip = chip
-	datastream.StreamToClients(ply, "wire_expression2_printColor", send_array)
+	net.Start("wire_expression2_printColor")
+		net.WriteTable(send_array)
+	net.Send(ply)
+	-- datastream.StreamToClients(ply, "wire_expression2_printColor", send_array)
 end
 
 local printColor_types = {
@@ -236,9 +241,9 @@ local printColor_types = {
 local function printColorArray(chip, ply, arr)
 	if (not validEntity(ply)) then return; end
 	if (!check_delay( ply )) then return end
-
+	
 	local send_array = {}
-
+	
 	for i,tp in ipairs_map(arr,type) do
 		if printColor_types[tp] then
 			send_array[i] = printColor_types[tp](arr[i])
@@ -246,7 +251,7 @@ local function printColorArray(chip, ply, arr)
 			send_array[i] = ""
 		end
 	end
-
+	
 	send_array.chip = chip
 	datastream.StreamToClients(ply, "wire_expression2_printColor", send_array)
 end
@@ -267,12 +272,12 @@ e2function void entity:printColorDriver(...)
 	if not validEntity(this) then return end
 	if not this:IsVehicle() then return end
 	if not isOwner(self, this) then return end
-
+	
 	local driver = this:GetDriver()
 	if not validEntity(driver) then return end
-
+	
 	if (!check_delay( self.player )) then return 0 end
-
+	
 	printColorVarArg(self.entity, driver, typeids, ...)
 end
 
@@ -281,11 +286,11 @@ e2function void entity:printColorDriver(array arr)
 	if not validEntity(this) then return end
 	if not this:IsVehicle() then return end
 	if not isOwner(self, this) then return end
-
+	
 	local driver = this:GetDriver()
 	if not validEntity(driver) then return end
-
+	
 	if (!check_delay( self.player )) then return 0 end
-
+	
 	printColorArray(self.entity, driver, arr)
 end

@@ -50,18 +50,18 @@ function ENT:TriggerInput(iname, value)
 		if value ~= 0 then
 			local vStart = self:GetPos()
 			local vForward = self:GetUp()
-
+			
 			local trace = {}
 				trace.start = vStart
 				trace.endpos = vStart + (vForward * self:GetBeamLength())
 				trace.filter = { self }
 			local trace = util.TraceLine( trace )
-
+			
 			if !CheckPP( self.pl, trace.Entity ) then return end
 			if trace.Entity:IsPlayer() then
-				trace.Entity:SetColor( self.InColor.r, self.InColor.g, self.InColor.b, 255 )
+				trace.Entity:SetColor( Color(self.InColor.r, self.InColor.g, self.InColor.b, 255) )
 			else
-				trace.Entity:SetColor( self.InColor.r, self.InColor.g, self.InColor.b, self.InColor.a )
+				trace.Entity:SetColor( Color(self.InColor.r, self.InColor.g, self.InColor.b, self.InColor.a) )
 			end
 		end
 	elseif iname == "R" then
@@ -98,21 +98,21 @@ function ENT:Think()
 	if self.Outputs["R"]then
 		local vStart = self:GetPos()
 		local vForward = self:GetUp()
-
+			
 		local trace = {}
 			trace.start = vStart
 			trace.endpos = vStart + (vForward * self:GetBeamLength())
 			trace.filter = { self }
 		local trace = util.TraceLine( trace )
-
+		
 		if !IsValid( trace.Entity ) then return end
-		local r,g,b,a = trace.Entity:GetColor()
-
-		Wire_TriggerOutput(self,"R", r)
-		Wire_TriggerOutput(self,"G", g)
-		Wire_TriggerOutput(self,"B", b)
-		Wire_TriggerOutput(self,"A", a)
-
+		local c = trace.Entity:GetColor()
+	
+		Wire_TriggerOutput(self,"R", c.r)
+		Wire_TriggerOutput(self,"G", c.g)
+		Wire_TriggerOutput(self,"B", c.b)
+		Wire_TriggerOutput(self,"A", c.a)
+		
 		self:ShowOutput()
 	end
 	self:NextThink(CurTime() + 0.05)

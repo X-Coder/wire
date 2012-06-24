@@ -17,7 +17,7 @@ local atan2 = math.atan2
 
 local function format(value)
 	local dbginfo
-
+	
 	if abs(value[1]) < delta then
 		if abs(value[2]) < delta then
 			dbginfo = "0"
@@ -63,25 +63,25 @@ end
 
 local function clog(x,y)
         local r,i,l
-
+       
         l = x*x+y*y
-
+       
         if l < delta then return {-1e+100, 0} end
-
+       
         r = log(sqrt(l))
-
+       
         local c,s
         c = x/sqrt(l)
-
+       
         i = acos(c)
         if y<0 then i = -i end
-
+       
         return {r, i}
 end
 
 local function cdiv(a,b)
 	local l=b[1]*b[1]+b[2]*b[2]
-
+	
 	return {(a[1]*b[1]+a[2]*b[2])/l, (a[2]*b[1]-a[1]*b[2])/l}
 end
 
@@ -92,7 +92,7 @@ __e2setcost(2)
 registerOperator("ass", "c", "c", function(self, args)
 	local lhs, op2, scope = args[2], args[3], args[4]
 	local      rhs = op2[1](self, op2)
-
+	
 	self.Scopes[scope][lhs] = rhs
 	self.Scopes[scope].vclk[lhs] = true
 	return rhs
@@ -103,44 +103,44 @@ e2function number operator_is(complex z)
 end
 
 e2function number operator==(complex lhs, complex rhs)
-	if abs(lhs[1]-rhs[1])<=delta &&
-		abs(lhs[2]-rhs[2])<=delta then
-			return 1
+	if abs(lhs[1]-rhs[1])<=delta && 
+		abs(lhs[2]-rhs[2])<=delta then 
+			return 1 
 		else return 0 end
 end
 
 e2function number operator==(complex lhs, number rhs)
-	if abs(lhs[1]-rhs)<=delta &&
-		abs(lhs[2])<=delta then
-			return 1
+	if abs(lhs[1]-rhs)<=delta && 
+		abs(lhs[2])<=delta then 
+			return 1 
 		else return 0 end
 end
 
 e2function number operator==(number lhs, complex rhs)
-	if abs(lhs-rhs[1])<=delta &&
-		abs(rhs[2])<=delta then
-			return 1
+	if abs(lhs-rhs[1])<=delta && 
+		abs(rhs[2])<=delta then 
+			return 1 
 		else return 0 end
 end
 
 e2function number operator!=(complex lhs, complex rhs)
-	if abs(lhs[1]-rhs[1])>delta ||
-		abs(lhs[2]-rhs[2])>delta then
-			return 1
+	if abs(lhs[1]-rhs[1])>delta || 
+		abs(lhs[2]-rhs[2])>delta then 
+			return 1 
 		else return 0 end
 end
 
 e2function number operator!=(complex lhs, number rhs)
-	if abs(lhs[1]-rhs)>delta ||
-		abs(lhs[2])>delta then
-			return 1
+	if abs(lhs[1]-rhs)>delta || 
+		abs(lhs[2])>delta then 
+			return 1 
 		else return 0 end
 end
 
 e2function number operator!=(number lhs, complex rhs)
-	if abs(lhs-rhs[1])>delta ||
-		abs(rhs[2])>delta then
-			return 1
+	if abs(lhs-rhs[1])>delta || 
+		abs(rhs[2])>delta then 
+			return 1 
 		else return 0 end
 end
 
@@ -282,12 +282,12 @@ e2function complex log(complex z)
 	return clog(z[1], z[2])
 end
 
---- Calculates the logarithm of <z> to a complex base <base>
+--- Calculates the logarithm of <z> to a complex base <base> 
 e2function complex log(complex base, complex z)
 	return cdiv(clog(z),clog(base))
 end
 
---- Calculates the logarithm of <z> to a real base <base>
+--- Calculates the logarithm of <z> to a real base <base> 
 e2function complex log(number base, complex z)
 	local l=clog(z)
 	return {l[1]/log(base), l[2]/log(base)}
@@ -353,7 +353,7 @@ e2function complex tan(complex z)
         c = {cos(z[1])*cosh(z[2]), -sin(z[1])*sinh(z[2])}
         return cdiv(s,c)
 end
-
+ 
 --- Calculates the cotangent of <z>
 e2function complex cot(complex z)
     local s,c
@@ -361,9 +361,9 @@ e2function complex cot(complex z)
         c = {cos(z[1])*cosh(z[2]), -sin(z[1])*sinh(z[2])}
         return cdiv(c,s)
 end
-
-__e2setcost(5)
-
+ 
+__e2setcost(5) 
+ 
 --- Calculates the inverse sine of <z>
 e2function complex asin(complex z)
         local log1mz2 = clog(1-z[1]*z[1]+z[2]*z[2], 2*z[1]*z[2])
@@ -371,7 +371,7 @@ e2function complex asin(complex z)
         local flog = clog(rt[1]-z[2], z[1]+rt[2])
         return {flog[2], -flog[1]}
 end
-
+ 
 --- Calculates the inverse cosine of <z>
 e2function complex acos(complex z)
         local logz2m1 = clog(z[1]*z[1]-z[2]*z[2]-1, 2*z[1]*z[2])
@@ -379,7 +379,7 @@ e2function complex acos(complex z)
         local flog = clog(z[1]+rt[1], z[2]+rt[2])
         return {flog[2], -flog[1]}
 end
-
+ 
 --- Calculates the inverse tangent of <z>
 e2function complex atan(complex z)
         local frac = cdiv({-z[1],1-z[2]},{z[1],1+z[2]})
@@ -395,11 +395,11 @@ __e2setcost(2)
 e2function number atan2(complex z)
 	return atan2(z[2], z[1])
 end
-
+ 
 -- ******************** hyperbolic functions *********************** --
 
 __e2setcost(4)
-
+ 
 --- Calculates the hyperbolic tangent of <z>
 e2function complex tanh(complex z)
     local s,c
@@ -407,7 +407,7 @@ e2function complex tanh(complex z)
         c = {cosh(z[1])*cos(z[2]), sinh(z[1])*sin(z[2])}
         return cdiv(s,c)
 end
-
+ 
 --- Calculates the hyperbolic cotangent of <z>
 e2function complex coth(complex z)
     local s,c
@@ -424,21 +424,21 @@ e2function complex sec(complex z)
         c = {cos(z[1])*cosh(z[2]), -sin(z[1])*sinh(z[2])}
         return cdiv({1,0},c)
 end
-
+ 
 --- Calculates the cosecant of <z>
 e2function complex csc(complex z)
     local s
         s = {sin(z[1])*cosh(z[2]), sinh(z[2])*cos(z[1])}
         return cdiv({1,0},s)
 end
-
+ 
 --- Calculates the hyperbolic secant of <z>
 e2function complex sech(complex z)
     local c
         c = {cosh(z[1])*cos(z[2]), sinh(z[1])*sin(z[2])}
         return cdiv({1,0},c)
 end
-
+ 
 --- Calculates the hyperbolic cosecant of <z>
 e2function complex csch(complex z)
     local s

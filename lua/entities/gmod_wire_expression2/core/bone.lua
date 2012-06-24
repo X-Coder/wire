@@ -39,10 +39,10 @@ function getBone(entity, index)
 	end
 	if not bone then return nil end
 	if not bone:IsValid() then return nil end
-
+	
 	bone2entity[bone] = entity
 	bone2index[bone] = index
-
+	
 	return bone
 end
 E2Lib.getBone = getBone
@@ -258,9 +258,9 @@ end
 --- Returns the bearing (yaw) from <this> to <pos>.
 e2function number bone:bearing(vector pos)
 	if isInvalidBone(this) then return 0 end
-
+	
 	pos = this:WorldToLocal(Vector(pos[1],pos[2],pos[3]))
-
+	
 	return rad2deg*-atan2(pos.y, pos.x)
 end
 
@@ -268,7 +268,7 @@ end
 e2function number bone:elevation(vector pos)
 	if isInvalidBone(this) then return 0 end
 	pos = this:WorldToLocal(Vector(pos[1],pos[2],pos[3]))
-
+	
 	local len = pos:Length()
 	if len < delta then return 0 end
 	return rad2deg*asin(pos.z / len)
@@ -277,17 +277,17 @@ end
 --- Returns the elevation (pitch) and bearing (yaw) from <this> to <pos>
 e2function angle bone:heading(vector pos)
 	if isInvalidBone(this) then return {0, 0, 0} end
-
+	
 	pos = this:WorldToLocal(Vector(pos[1],pos[2],pos[3]))
-
+	
 	-- bearing
 	local bearing = rad2deg*-atan2(pos.y, pos.x)
-
+	
 	-- elevation
 	local len = pos:Length()--sqrt(x*x + y*y + z*z)
 	if len < delta then return { 0, bearing, 0 } end
 	local elevation = rad2deg*asin(pos.z / len)
-
+	
 	return { elevation, bearing, 0 }
 end
 
@@ -347,29 +347,29 @@ e2function void bone:applyAngForce(angle angForce)
 	local ent = isValidBone(this)
 	if not ent then return end
 	if not isOwner(self, ent) then return end
-
+	
 	if angForce[1] == 0 and angForce[2] == 0 and angForce[3] == 0 then return end
-
+	
 	-- assign vectors
 	local pos     = this:GetPos()
 	local forward = this:LocalToWorld(Vector(1,0,0)) - pos
 	local left    = this:LocalToWorld(Vector(0,1,0)) - pos -- the y coordinate in local coords is left, not right
 	local up      = this:LocalToWorld(Vector(0,0,1)) - pos
-
+	
 	-- apply pitch force
 	if angForce[1] ~= 0 then
 		local pitch = up      * (angForce[1] * 0.5)
 		this:ApplyForceOffset( forward, pitch )
 		this:ApplyForceOffset( forward * -1, pitch * -1 )
 	end
-
+	
 	-- apply yaw force
 	if angForce[2] ~= 0 then
 		local yaw   = forward * (angForce[2] * 0.5)
 		this:ApplyForceOffset( left, yaw )
 		this:ApplyForceOffset( left * -1, yaw * -1 )
 	end
-
+	
 	-- apply roll force
 	if angForce[3] ~= 0 then
 		local roll  = left    * (angForce[3] * 0.5)
@@ -384,15 +384,15 @@ e2function void bone:applyTorque(vector torque)
 	if not ent then return end
 	if not isOwner(self, ent) then return end
 	local phys = this
-
+	
 	if torque[1] == 0 and torque[2] == 0 and torque[3] == 0 then return end
-
+	
 	local tq = Vector(torque[1], torque[2], torque[3])
 	local torqueamount = tq:Length()
-
+	
 	-- Convert torque from local to world axis
 	tq = phys:LocalToWorld( tq ) - phys:GetPos()
-
+	
 	-- Find two vectors perpendicular to the torque axis
 	local off
 	if abs(tq.x) > torqueamount * 0.1 or abs(tq.z) > torqueamount * 0.1 then
@@ -401,9 +401,9 @@ e2function void bone:applyTorque(vector torque)
 		off = Vector(-tq.y, tq.x, 0)
 	end
 	off = off:GetNormal() * torqueamount * 0.5
-
+	
 	local dir = ( tq:Cross(off) ):GetNormal()
-
+	
 	phys:ApplyForceOffset( dir, off )
 	phys:ApplyForceOffset( dir * -1, off * -1 )
 end

@@ -1,23 +1,23 @@
 -- $Rev: 2289 $
 -- $LastChangedDate: 2010-11-13 01:20am +0100 (Sat, 13 Nov 2010) $
 -- $LastChangedBy: Divran $
-
+local v = 2533
 -- Get version
 function WireLib.GetWireVersion()
-	local version = "2288 (OLD VERSION)"
-	local plainversion = 2288
+	local version = "2533 (WORKSHOP)"
+	local plainversion = v
 	local exported = true
-
+	
 	-- Try getting the version using the .svn files:
-	if (file.Exists("lua/wire/client/.svn/entries", true)) then
+	if (file.Exists("wire/client/.svn/entries", LUA_PATH)) then
 		version = string.Explode("\n", file.Read( "lua/wire/client/.svn/entries", true) or "")[4]
 		exported = false
 		plainversion = version
-	elseif (file.Exists("wire_version.txt")) then -- Try getting the version by reading the text file:
-		plainversion = file.Read("wire_version.txt")
-		version = plainversion .. " (EXPORTED)"
+	elseif (file.Exists("wire_version.txt", "DATA")) then -- Try getting the version by reading the text file:
+		-- plainversion = string.sub(file.Read("wire_version.txt"), 0, 4) -- Borked atm
+		-- version = plainversion .. " (EXPORTED)"
 	end
-
+	
 	return version, tonumber(plainversion), exported
 end
 
@@ -25,7 +25,8 @@ end
 function WireLib.GetOnlineWireVersion( callback )
 	http.Get("http://wiremod.svn.sourceforge.net/svnroot/wiremod/trunk/","",function(contents,size)
 		local rev = tonumber(string.match( contents, "Revision ([0-9]+)" ))
-		callback(rev,contents,size)
+		-- callback(rev,contents,size)
+		callback(v, contents, size)
 	end)
 end
 
@@ -35,7 +36,7 @@ if (SERVER) then
 	------------------------------------------------------------------
 	WireLib.Version = WireLib.GetWireVersion()
 	WireVersion = WireLib.Version -- Backwards compatibility
-
+	
 	-- Print the version to the console on load:
 	MsgN("WireMod Installed. Version: "..tostring(WireLib.Version))
 
@@ -55,7 +56,7 @@ if (SERVER) then
 		end)
 	end
 	hook.Add("PlayerInitialSpawn","WirePlayerInitSpawn",recheck)
-
+		
 
 	-- Send the version to the client ON REQUEST
 	local antispam = {}
@@ -68,9 +69,9 @@ if (SERVER) then
 			umsg.End()
 		end
 	end)
-
+	
 	------------------------------------------------------------------
-	-- Wire_PrintVersion
+	-- Wire_PrintVersion 
 	-- prints the server's version on the client
 	-- This doesn't use the above sending-to-client because it's meant to work even if the above code fails.
 	------------------------------------------------------------------
@@ -81,22 +82,22 @@ if (SERVER) then
 			print("Server's Wire Version: " .. WireLib.Version)
 		end
 	end)
-
+	
 	------------------------------------------------------------------
 	-- Tags
 	-- Adds "wireexport####" or "wiresvn####" to tags
 	------------------------------------------------------------------
-
+	
 	local cvar = GetConVar("sv_tags")
-	timer.Create("Wire_Tags",1,0,function()
+	timer.Simple(2,function()
 		local tags = cvar:GetString()
 		if (!tags:find( "wire" )) then
 			local version, plainversion, exported = WireLib.GetWireVersion()
-			local tag = "wire" .. ( exported and "exported" or "svn" ) .. plainversion
+			local tag = "wire" .. plainversion .. "_workshop"
 			RunConsoleCommand( "sv_tags", tags .. "," .. tag )
-		end
+		end	
 	end)
-
+	
 else -- CLIENT
 
 	------------------------------------------------------------------
@@ -104,17 +105,17 @@ else -- CLIENT
 	------------------------------------------------------------------
 	WireLib.LocalVersion = WireLib.GetWireVersion()
 	WireVersionLocal = WireLib.LocalVersion -- Backwards compatibility
-
+	
 	-- Print the version to the console on load:
 	MsgN("WireMod Installed. Version: "..tostring(WireLib.LocalVersion))
 
 	------------------------------------------------------------------
 	-- Receive the version from the server
 	------------------------------------------------------------------
-
+	
 	WireLib.Version = "-unknown-" -- We don't know the server's version yet
 	WireVersion = "-unknown-" -- Backwards compatibility
-
+	
 	usermessage.Hook("wire_rev",function(um)
 		WireLib.Version = um:ReadString()
 		WireVersion = WireLib.Version

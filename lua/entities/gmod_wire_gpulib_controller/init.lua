@@ -7,10 +7,10 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	WireLib.CreateInputs(self, { "Target [ENTITY]" })
 	WireLib.CreateOutputs(self, { "Screen [ENTITY]", "Target [ENTITY]", "LocalPosition [VECTOR]", "LocalAngle [ANGLE]", "Resolution" })
-
+	
 	self:ShowOutput()
 end
 
@@ -31,7 +31,7 @@ function ENT:UpdateTarget()
 	local target = self.screen.GPUEntity
 	if not ValidEntity(target) then target = self.screen end
 	self.target = target
-
+	
 	if ValidEntity(target) then
 		WireLib.TriggerOutput(self, "Target", target)
 		local monitor, pos, ang = GPULib.GPU.GetInfo({ Entity = target }) -- TODO: think of a cleaner way
@@ -81,25 +81,25 @@ end
 
 function MakeGPULibController( pl, Pos, Ang, model, screen )
 	--if ( !pl:CheckLimit( "wire_cams" ) ) then return false end
-
+	
 	local controller = ents.Create( "gmod_wire_gpulib_controller" )
 	if (!controller:IsValid()) then return false end
-
+	
 	controller:SetAngles( Ang )
 	controller:SetPos( Pos )
 	controller:SetModel( Model(model or "models/jaanus/wiretool/wiretool_siren.mdl") )
 	controller:Spawn()
 	controller:Setup(screen)
-
+	
 	controller:SetPlayer( pl )
-
+	
 	local ttable = {
 		pl = pl,
 	}
 	table.Merge(controller:GetTable(), ttable )
-
+	
 	--pl:AddCount( "wire_gpulib_switchers", controller )
-
+	
 	return controller
 end
 

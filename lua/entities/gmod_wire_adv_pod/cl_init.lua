@@ -32,7 +32,7 @@ hook.Add( "HUDShouldDraw", "Wire adv pod HUDShouldDraw", function( name )
 				LocalPlayer():ChatPrint( "The owner of this vehicle has hidden your hud using an adv pod controller. If it gets stuck this way, use the console command 'wire_adv_pod_hud_show' to forcibly enable it again." )
 				firstTime = false
 			end
-
+			
 			if name ~= "CHudCrosshair" and name ~= "CHudChat" then return false end -- Don't return false on crosshairs. Those are toggled using the other input. And we don't want to hide the chat box.
 		elseif not LocalPlayer():InVehicle() then
 			hideHUD = false

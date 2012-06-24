@@ -143,7 +143,7 @@ if SERVER then
     if not ent then return end
     if not ent:IsValid() then return end
 
-    local tr = utilx.GetPlayerTrace(player, player:GetCursorAimVector())
+    local tr = util.GetPlayerTrace(player, player:GetCursorAimVector())
     local trace = util.TraceLine(tr)
     if not trace.Hit then return end
 
@@ -253,7 +253,7 @@ if CLIENT then
     panel:AddPanel(Button)
     Button:SetText("Online ZSPU documentation")
     Button.DoClick = function(button) CPULib.ShowDocumentation("ZSPU") end
-
+    
     local Button = vgui.Create("DButton" , panel)
     panel:AddPanel(Button)
     Button:SetText("Open Sound Browser")
@@ -307,7 +307,7 @@ if CLIENT then
     WireDermaExts.ModelSelect(panel, "wire_spu_model", list.Get("Wire_gate_Models"), 2)
     panel:AddControl("Label", {Text = ""})
   end
-
+  
   ------------------------------------------------------------------------------
   -- Tool screen
   ------------------------------------------------------------------------------

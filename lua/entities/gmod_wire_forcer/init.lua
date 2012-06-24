@@ -9,7 +9,7 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	self.ForceMul = 0
 	self.Force = 0
 	self.OffsetForce = 0
@@ -17,9 +17,9 @@ function ENT:Initialize()
 	self.Length = 100
 	self.Reaction = false
 	self.ShowBeam = true
-
+	
 	self.Inputs = WireLib.CreateInputs( self, { "Force", "OffsetForce", "Velocity", "Length" } )
-
+	
 	self:SetNWBool("ShowBeam",false)
 	self:SetNWBool("ShowForceBeam",false)
 	self:SetBeamLength(100)
@@ -60,7 +60,7 @@ function ENT:Think()
 	if (self.Force != 0 or self.OffsetForce != 0 or self.Velocity != 0) then
 		local Forward = self:GetUp()
 		local StartPos = self:GetPos() + Forward * self:OBBMaxs().z
-
+		
 		local tr = {}
 		tr.start = StartPos
 		tr.endpos = StartPos + self.Length * Forward
@@ -80,7 +80,7 @@ function ENT:Think()
 				end
 			end
 		end
-
+		
 		if (self.Reaction) then
 			local phys = self:GetPhysicsObject()
 			if (phys:IsValid()) then
@@ -118,9 +118,9 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 		info.Wires.Force = info.Wires.A
 		info.Wires.A = nil
 	end
-
+	
 	self:Setup( info.ForceMul, info.Length, info.ShowBeam, info.Reaction )
-
+	
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 end
 
@@ -139,7 +139,7 @@ function MakeWireForcer( pl, Pos, Ang, model, Force, Length, ShowBeam, Reaction 
 	wire_forcer:Setup(Force, Length, ShowBeam, Reaction)
 	wire_forcer:SetPlayer( pl )
 	wire_forcer.pl = pl
-
+	
 	pl:AddCount( "wire_forcers", wire_forcer )
 
 	return wire_forcer

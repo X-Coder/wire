@@ -6,7 +6,7 @@ local VM = {}
 function ENT:OverrideVM()
   -- Store VM calls that will be overriden
   self.VM.BaseReset = self.VM.Reset
-
+  
   -- Add additional VM functionality
   for k,v in pairs(VM) do
     if k == "OpcodeTable" then
@@ -23,7 +23,7 @@ function ENT:OverrideVM()
     self.LADD = interruptParameter
     self.LINT = interruptNo
   end
-
+  
   -- Override ports
   self.VM.WritePort = function(VM,Port,Value)
     VM:WriteCell(63488+Port,Value)
@@ -31,7 +31,7 @@ function ENT:OverrideVM()
   self.VM.ReadPort = function(VM,Port)
     return VM:ReadCell(63488+Port)
   end
-
+  
   -- Override writecell
   self.VM.BaseWriteCell = self.VM.WriteCell
   self.VM.WriteCell = function(VM,Address,Value)
@@ -56,7 +56,7 @@ function ENT:OverrideVM()
   self.VM.InternalRegister[46] = nil --IDLE
   self.VM.InternalRegister[47] = nil --INTR
   self.VM.InternalRegister[52] = nil --NIDT
-
+  
   -- Remove some instructions
   self.VM.OperandCount[16]  = nil --RD
   self.VM.OperandCount[17]  = nil --WD
@@ -89,7 +89,7 @@ function ENT:OverrideVM()
   self.VM.OperandCount[125] = nil --GRL
   self.VM.OperandCount[131] = nil --SMAP
   self.VM.OperandCount[132] = nil --GMAP
-
+  
   self.VM.Entity = self
 end
 
@@ -124,10 +124,10 @@ function VM:Reset()
   self.FS = 0
   self.KS = 0
   self.LS = 0
-
+  
   -- Extended registers
   for reg=0,31 do self["R"..reg] = 0 end
-
+  
   self.ESZ = 32768    -- Stack size register
   self.CMPR = 0       -- Compare register
   self.XEIP = 0       -- Current instruction address register
@@ -139,7 +139,7 @@ function VM:Reset()
   self.INTR = 0       -- Handling an interrupt
   self.BlockStart = 0 -- Start of the block
   self.BlockSize = 0  -- Size of the block
-
+  
   self.EntryPoint0 = 0
   self.EntryPoint1 = 0
 
@@ -148,21 +148,21 @@ function VM:Reset()
   --  [65535] - CLK
   --  [65534] - RESET
   --  [65527] - Async thread frequency
-
+  
   if self.Channel then
     for k,v in pairs(self.Channel) do
       v.Sound:Stop()
     end
   end
-
+  
   self.Waveform = {}
   self.Channel = {}
-
+  
   self.Waveform[0] = WireSPU_GetSound("synth/square.wav")
   self.Waveform[1] = WireSPU_GetSound("synth/saw.wav")
   self.Waveform[2] = WireSPU_GetSound("synth/tri.wav")
   self.Waveform[3] = WireSPU_GetSound("synth/sine.wav")
-
+  
   for chan=0,3 do
     self.Channel[chan] = {
       Sound = CreateSound(self.Entity.SoundSources[chan],self.Waveform[chan]),
@@ -189,7 +189,7 @@ function VM:ReadString(address)
   local charString = ""
   local charCount = 0
   local currentChar = 255
-
+  
   while currentChar ~= 0 do
     currentChar = self:ReadCell(address + charCount)
 
@@ -201,7 +201,7 @@ function VM:ReadString(address)
         return ""
       end
     end
-
+    
     charCount = charCount + 1
     if charCount > 8192 then
       self:Interrupt(23,0)
@@ -226,7 +226,7 @@ end
 --------------------------------------------------------------------------------
 VM.OpcodeTable[320] = function(self)  --CHRESET
   self:Dyn_Emit("$L CHAN = math.floor($1)")
-
+  
   self:Dyn_Emit("if CHAN == -1 then")
     self:Dyn_Emit("for channel=0,WireSPU_MaxChannels-1 do")
       self:Dyn_Emit("if VM.Channel[channel] then")

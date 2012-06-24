@@ -22,9 +22,9 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	self:SetNWBool( "Linked", false )
-
+	
 	self.Memory = {}
 end
 
@@ -33,7 +33,7 @@ end
 ------------------------------------------------------------
 function ENT:SetUp( ArrayInput )
 	self.ArrayInput = ArrayInput or false
-
+	
 	if (!self.Inputs or !self.Outputs or self.ArrayInput != old) then
 		if (self.ArrayInput) then
 			self.Inputs = WireLib.CreateInputs( self, { "In [ARRAY]" } )
@@ -43,7 +43,7 @@ function ENT:SetUp( ArrayInput )
 			self.Outputs = WireLib.CreateOutputs( self, LETTERS )
 		end
 	end
-
+	
 	self:ShowOutput()
 end
 
@@ -122,7 +122,7 @@ end
 ------------------------------------------------------------
 function ENT:Think()
 	self.BaseClass.Think( self )
-	self:SetNWBool( "PlayerHolding", self:IsPlayerHolding() )
+	self:SetNWBool( "PlayerHolding", self:IsPlayerHolding() ) 
 end
 
 ------------------------------------------------------------
@@ -178,26 +178,26 @@ end
 ------------------------------------------------------------
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
-
+	
 	info.Plug = {}
 	info.Plug.ArrayInput = self.ArrayInput
-
+	
 	return info
 end
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
-	if (!ply:CheckLimit("wire_plugs")) then
+	if (!ply:CheckLimit("wire_plugs")) then 
 		ent:Remove()
 		return
 	end
 	ply:AddCount( "wire_plugs", ent )
-
+	
 	if (info.Plug) then
 		ent:SetUp( info.Plug.ArrayInput )
 	else
 		ent:SetUp() -- default values
 	end
-
+	
 	ent:SetPlayer( ply )
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 end

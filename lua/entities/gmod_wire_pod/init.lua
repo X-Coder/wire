@@ -9,7 +9,7 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	-- Output keys. Format: self.Keys["name"] = IN_*
 	self.Keys = { }
 	self.Keys["Attack"] = IN_ATTACK
@@ -23,18 +23,18 @@ function ENT:Initialize()
 	self.Keys["Duck"] = IN_DUCK
 	self.Keys["Sprint"] = IN_SPEED
 	self.Keys["Zoom"] = IN_ZOOM
-
+	
 	-- Invert the table to use it with Wire_CreateOutputs
 	local outputs = { }
 	local n = 1
-
+	
 	for k, v in pairs( self.Keys ) do
 		outputs[n] = k
 		n = n + 1
 	end
-
+	
 	outputs[n] = "Active"
-
+	
 	self.VPos = Vector(0, 0, 0)
 
 	-- Create outputs
@@ -74,7 +74,7 @@ function ENT:Think()
 	-- Check that we have a pod
 	if self.Pod and self.Pod:IsValid() then
 		self.Ply = self.Pod:GetPassenger()
-
+		
 		if self.Ply and self.Ply:IsValid() and self.Keys then
 			-- Loop through all the self.Keys, and check if they was pressed last frame
 			for k, v in pairs(self.Keys)  do

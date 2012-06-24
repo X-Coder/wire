@@ -75,7 +75,7 @@ function HCOMP:OptimizeCode()
             end
             matchOpcode = temporaryOpcodes[matchPattern[1]]
           end
-
+          
           if (matchOpcode) and (self.GeneratedCode[index+i-1].Opcode == matchOpcode) then
             local operand1 = self.GeneratedCode[index+i-1].Operands[1]
             local operand2 = self.GeneratedCode[index+i-1].Operands[2]

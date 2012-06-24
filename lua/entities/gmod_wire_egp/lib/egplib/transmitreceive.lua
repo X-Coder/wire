@@ -5,7 +5,7 @@ local EGP = EGP
 
 if (SERVER) then
 	umsg.PoolString( "EGP_Transmit_Data" ) -- Don't know if this helps, but I'll do it anyway just in case.
-
+	
 	----------------------------
 	-- Umsgs per second check
 	----------------------------
@@ -17,11 +17,11 @@ if (SERVER) then
 
 	function EGP:CheckInterval( ply, bool )
 		if (!self.IntervalCheck[ply]) then self.IntervalCheck[ply] = { umsgs = 0, time = 0 } end
-
+		
 		local maxcount = self.ConVars.MaxPerSec:GetInt()
-
+		
 		local tbl = self.IntervalCheck[ply]
-
+		
 		if (bool==true) then
 			return (tbl.umsgs <= maxcount or tbl.time < CurTime())
 		else
@@ -34,44 +34,44 @@ if (SERVER) then
 					return false
 				end
 			end
-
+			
 		end
-
+		
 		return true
 	end
-
+	
 	----------------------------
 	-- Queue functions
 	----------------------------
-
+	
 	umsg.PoolString( "ClearScreen" )
 	local function ClearScreen( Ent, ply )
 		-- Check interval
-		if (ply and ply:IsValid() and ply:IsPlayer()) then
-			if (EGP:CheckInterval( ply ) == false) then
+		if (ply and ply:IsValid() and ply:IsPlayer()) then 
+			if (EGP:CheckInterval( ply ) == false) then 
 				EGP:InsertQueue( Ent, ply, ClearScreen, "ClearScreen" )
 				return
 			end
 		else return end
-
+		
 		if (!EGP.umsg.Start( "EGP_Transmit_Data" )) then return end
 			EGP.umsg.Entity( Ent )
 			EGP.umsg.String( "ClearScreen" )
 		EGP.umsg.End()
-
+		
 		EGP:SendQueueItem( ply )
 	end
-
+	
 	umsg.PoolString( "SaveFrame" )
 	local function SaveFrame( Ent, ply, FrameName )
 		-- Check interval
-		if (ply and ply:IsValid() and ply:IsPlayer()) then
-			if (EGP:CheckInterval( ply ) == false) then
+		if (ply and ply:IsValid() and ply:IsPlayer()) then 
+			if (EGP:CheckInterval( ply ) == false) then 
 				EGP:InsertQueue( Ent, ply, SaveFrame, "SaveFrame", FrameName )
 				return
 			end
 		else return end
-
+		
 		umsg.PoolString( FrameName )
 		if (!EGP.umsg.Start( "EGP_Transmit_Data" )) then return end
 			EGP.umsg.Entity( Ent )
@@ -79,20 +79,20 @@ if (SERVER) then
 			EGP.umsg.Entity( ply )
 			EGP.umsg.String( FrameName )
 		EGP.umsg.End()
-
+		
 		EGP:SendQueueItem( ply )
 	end
-
+	
 	umsg.PoolString( "LoadFrame" )
 	local function LoadFrame( Ent, ply, FrameName )
 		-- Check interval
-		if (ply and ply:IsValid() and ply:IsPlayer()) then
-			if (EGP:CheckInterval( ply ) == false) then
+		if (ply and ply:IsValid() and ply:IsPlayer()) then 
+			if (EGP:CheckInterval( ply ) == false) then 
 				EGP:InsertQueue( Ent, ply, LoadFrame, "LoadFrame", FrameName )
 				return
 			end
 		else return end
-
+		
 		local bool, _ = EGP:LoadFrame( ply, Ent, FrameName )
 		if (!bool) then return end
 
@@ -102,21 +102,21 @@ if (SERVER) then
 			EGP.umsg.Entity( ply )
 			EGP.umsg.String( FrameName )
 		EGP.umsg.End()
-
+		
 		EGP:SendQueueItem( ply )
 	end
-
+	
 	-- Extra Add Poly queue item, used by poly objects with a lot of vertices in them
 	umsg.PoolString( "AddVertex" )
 	local function AddVertex( Ent, ply, index, vertices )
 		-- Check interval
-		if (ply and ply:IsValid() and ply:IsPlayer()) then
-			if (EGP:CheckInterval( ply ) == false) then
+		if (ply and ply:IsValid() and ply:IsPlayer()) then 
+			if (EGP:CheckInterval( ply ) == false) then 
 				EGP:InsertQueue( Ent, ply, AddVertex, "AddVertex", index, vertices )
 				return
 			end
 		else return end
-
+		
 		local bool, k, v = EGP:HasObject( Ent, index )
 		if (bool) then
 			if (!EGP.umsg.Start("EGP_Transmit_Data")) then return end
@@ -135,21 +135,21 @@ if (SERVER) then
 				end
 			EGP.umsg.End()
 		end
-
+		
 		EGP:SendQueueItem( ply )
 	end
-
+	
 	-- Extra Set Poly queue item, used by poly objects with a lot of vertices in them
 	umsg.PoolString( "SetVertex" )
 	function EGP._SetVertex( Ent, ply, index, vertices, skiptoadd )
 		-- Check interval
-		if (ply and ply:IsValid() and ply:IsPlayer()) then
-			if (EGP:CheckInterval( ply ) == false) then
+		if (ply and ply:IsValid() and ply:IsPlayer()) then 
+			if (EGP:CheckInterval( ply ) == false) then 
 				EGP:InsertQueue( Ent, ply, EGP._SetVertex, "SetVertex", index, vertices, skiptoadd )
 				return
 			end
 		else return end
-
+		
 		local bool, k, v = EGP:HasObject( Ent, index )
 		if (bool) then
 			local limit = 60
@@ -167,7 +167,7 @@ if (SERVER) then
 				if (#temp > 0) then
 					table.insert( DataToSend, 1, {index, table.Copy(temp)} )
 				end
-
+				
 				-- This step is required because otherwise it adds the vertices backwards to the queue.
 				for i=1,#DataToSend do
 					EGP:InsertQueue( Ent, ply, AddVertex, "AddVertex", unpack(DataToSend[i]) )
@@ -190,21 +190,21 @@ if (SERVER) then
 				EGP.umsg.End()
 			end
 		end
-
+		
 		EGP:SendQueueItem( ply )
 	end
-
+	
 	-- Extra Add Text queue item, used by text objects with a lot of text in them
 	umsg.PoolString( "AddText" )
 	local function AddText( Ent, ply, index, text )
 		-- Check interval
-		if (ply and ply:IsValid() and ply:IsPlayer()) then
-			if (EGP:CheckInterval( ply ) == false) then
+		if (ply and ply:IsValid() and ply:IsPlayer()) then 
+			if (EGP:CheckInterval( ply ) == false) then 
 				EGP:InsertQueue( Ent, ply, AddText, "AddText", index, text )
 				return
 			end
 		else return end
-
+		
 		local bool, k, v = EGP:HasObject( Ent, index )
 		if (bool) then
 			if (!EGP.umsg.Start("EGP_Transmit_Data")) then return end
@@ -214,21 +214,21 @@ if (SERVER) then
 				EGP.umsg.String( text )
 			EGP.umsg.End()
 		end
-
+		
 		EGP:SendQueueItem( ply )
 	end
-
+	
 	-- Extra Set Text queue item, used by text objects with a lot of text in them
 	umsg.PoolString( "SetText" )
 	function EGP._SetText( Ent, ply, index, text )
 		-- Check interval
-		if (ply and ply:IsValid() and ply:IsPlayer()) then
-			if (EGP:CheckInterval( ply ) == false) then
+		if (ply and ply:IsValid() and ply:IsPlayer()) then 
+			if (EGP:CheckInterval( ply ) == false) then 
 				EGP:InsertQueue( Ent, ply, EGP._SetText, "SetText", index, text )
 				return
 			end
 		else return end
-
+		
 		local bool, k, v = EGP:HasObject( Ent, index )
 		if (bool) then
 			if (#text > 220) then
@@ -244,7 +244,7 @@ if (SERVER) then
 				if (temp != "") then
 					table.insert( DataToSend, 1, {index, temp} )
 				end
-
+				
 				-- This step is required because otherwise it adds the strings backwards to the queue.
 				for i=1,#DataToSend do
 					EGP:InsertQueue( Ent, ply, AddText, "AddText", unpack(DataToSend[i]) )
@@ -258,54 +258,54 @@ if (SERVER) then
 				EGP.umsg.End()
 			end
 		end
-
+		
 		EGP:SendQueueItem( ply )
 	end
-
+	
 	local function SetScale( ent, ply, x, y )
 		EGP:SetScale( ent, x, y )
 		EGP:SendQueueItem( ply )
 	end
-
+	
 	local function MoveTopLeft( ent, ply, bool )
 		ent.TopLeft = bool
 		EGP:SendQueueItem( ply )
 	end
-
+	
 	umsg.PoolString( "ReceiveObjects" )
 	local function SendObjects( Ent, ply, DataToSend )
 		if (!Ent or !Ent:IsValid() or !ply or !ply:IsValid() or !DataToSend) then return end
-
+		
 		local Done = 0
-
+		
 		-- Check duped
 		if (Ent.EGP_Duplicated) then
 			EGP:InsertQueueObjects( Ent, ply, SendObjects, DataToSend )
 			return
 		end
-
+		
 		-- Check interval
-		if (ply:IsValid() and ply:IsPlayer()) then
-			if (EGP:CheckInterval( ply ) == false) then
+		if (ply:IsValid() and ply:IsPlayer()) then 
+			if (EGP:CheckInterval( ply ) == false) then 
 				EGP:InsertQueueObjects( Ent, ply, SendObjects, DataToSend )
 				return
 			end
 		else return end
-
+		
 		if (!EGP.umsg.Start( "EGP_Transmit_Data" )) then return end
 			EGP.umsg.Entity( Ent )
 			EGP.umsg.String( "ReceiveObjects" )
-
+			
 			EGP.umsg.Short( #DataToSend ) -- Send estimated number of objects to be sent
 			for k,v in ipairs( DataToSend ) do
-
+				
 				-- Check if the object doesn't exist serverside anymore (It may have been removed by a command in the queue before this, like egpClear or egpRemove)
 				--if (!EGP:HasObject( Ent, v.index )) then
 				--	EGP:CreateObject( Ent, v.ID, v )
 				--end
-
+					
 				EGP.umsg.Short( v.index ) -- Send index of object
-
+				
 				if (v.remove == true) then
 					EGP.umsg.Char( -128 ) -- Object is to be removed, send a 0
 					local bool, k, v = EGP:HasObject( Ent, v.index )
@@ -316,26 +316,26 @@ if (SERVER) then
 								EGP:UnParent( Ent, v2 )
 							end
 						end
-
+						
 						table.remove( Ent.RenderTable, k )
 					end
 				else
 					EGP.umsg.Char( v.ID - 128 ) -- Else send the ID of the object
-
+					
 					if (Ent.Scaling or Ent.TopLeft) then
 						v = table.Copy(v) -- Make a copy of the table so it doesn't overwrite the serverside object
 					end
-
+					
 					-- Scale the positions and size
 					if (Ent.Scaling) then
 						EGP:ScaleObject( Ent, v )
 					end
-
+					
 					-- Move the object to draw from the top left
 					if (Ent.TopLeft) then
 						EGP:MoveTopLeft( Ent, v )
 					end
-
+				
 					if (v.ChangeOrder) then -- We want to change the order of this object, send the index to where we wish to move it
 						local from = v.ChangeOrder[1]
 						local to = v.ChangeOrder[2]
@@ -347,10 +347,10 @@ if (SERVER) then
 					else
 						EGP.umsg.Short( 0 ) -- Don't change order
 					end
-
+					
 					v:Transmit( Ent, ply )
 				end
-
+				
 				Done = Done + 1
 				if (EGP.umsg.CurrentCost() > 200) then -- Getting close to the max size! Start over
 					if (Done == 1 and EGP.umsg.CurrentCost() > 256) then -- The object was too big
@@ -365,10 +365,10 @@ if (SERVER) then
 				end
 			end
 		EGP.umsg.End()
-
+		
 		EGP:SendQueueItem( ply )
 	end
-
+	
 	----------------------------
 	-- DoAction
 	----------------------------
@@ -377,52 +377,52 @@ if (SERVER) then
 		if (Action == "SendObject") then
 			local Data = {...}
 			if (!Data[1]) then return end
-
+			
 			if (E1 and E2.entity and E2.entity:IsValid()) then
 				E2.prf = E2.prf + 100
 			end
-
+			
 			self:AddQueueObject( Ent, E2.player, SendObjects, Data[1] )
 		elseif (Action == "RemoveObject") then
 			local Data = {...}
 			if (!Data[1]) then return end
-
+			
 			if (E1 and E2.entity and E2.entity:IsValid()) then
 				E2.prf = E2.prf + 100
 			end
-
+			
 			self:AddQueueObject( Ent, E2.player, SendObjects, { index = Data[1], remove = true } )
 		elseif (Action == "ClearScreen") then
 			if (E2 and E2.entity and E2.entity:IsValid()) then
 				E2.prf = E2.prf + 100
 			end
-
+			
 			Ent.RenderTable = {}
-
+			
 			self:AddQueue( Ent, E2.player, ClearScreen, "ClearScreen" )
 		elseif (Action == "SaveFrame") then
 			local Data = {...}
 			if (!Data[1]) then return end
-
+			
 			if (E2 and E2.entity and E2.entity:IsValid()) then
 				E2.prf = E2.prf + 100
 			end
-
+			
 			EGP:SaveFrame( E2.player, Ent, Data[1] )
 			self:AddQueue( Ent, E2.player, SaveFrame, "SaveFrame", Data[1] )
 		elseif (Action == "LoadFrame") then
 			local Data = {...}
 			if (!Data[1]) then return end
-
+			
 			if (E2 and E2.entity and E2.entity:IsValid()) then
 				E2.prf = E2.prf + 100
 			end
-
+			
 			local bool, frame = EGP:LoadFrame( E2.player, Ent, Data[1] )
 			if (bool) then
 				Ent.RenderTable = frame
 			end
-
+			
 			self:AddQueue( Ent, E2.player, LoadFrame, "LoadFrame", Data[1] )
 		elseif (Action == "SetScale") then
 			local Data = {...}
@@ -436,7 +436,7 @@ else -- SERVER/CLIENT
 	function EGP:Receive( um )
 		local Ent = um:ReadEntity()
 		if (!self:ValidEGP( Ent ) or !Ent.RenderTable) then return end
-
+		
 		local Action = um:ReadString()
 		if (Action == "ClearScreen") then
 			Ent.RenderTable = {}
@@ -469,7 +469,7 @@ else -- SERVER/CLIENT
 			local bool, k,v = EGP:HasObject( Ent, index )
 			if (bool) then
 				local vertices = {}
-
+				
 				if (v.HasUV) then
 					local n = 0
 					for i=1,um:ReadShort() do
@@ -483,7 +483,7 @@ else -- SERVER/CLIENT
 						vertices[i] = { x=x, y=y }
 					end
 				end
-
+				
 				if (EGP:EditObject( v, { vertices = vertices })) then Ent:EGP_Update() end
 			end
 		elseif (Action == "AddVertex") then
@@ -491,7 +491,7 @@ else -- SERVER/CLIENT
 			local bool, k, v = EGP:HasObject( Ent, index )
 			if (bool) then
 				local vertices = table.Copy(v.vertices)
-
+				
 				if (v.HasUV) then
 					local n = 0
 					for i=1,um:ReadChar() do
@@ -505,7 +505,7 @@ else -- SERVER/CLIENT
 						vertices[#vertices+1] = { x=x, y=y }
 					end
 				end
-
+				
 				if (EGP:EditObject( v, { vertices = vertices })) then Ent:EGP_Update() end
 			end
 		elseif (Action == "ReceiveObjects") then
@@ -513,9 +513,9 @@ else -- SERVER/CLIENT
 			for i=1,Nr do
 				local index = um:ReadShort()
 				if (index == 0) then break end -- In case the umsg had to abort early
-
+				
 				local ID = um:ReadChar()
-
+				
 				if (ID == -128) then -- Remove object
 					local bool, k, v = EGP:HasObject( Ent, index )
 					if (bool) then
@@ -527,18 +527,18 @@ else -- SERVER/CLIENT
 								EGP:UnParent( Ent, v2 )
 							end
 						end
-
+						
 						table.remove( Ent.RenderTable, k )
 					end
 				else
-
+				
 					-- Change Order
 					local ChangeOrder_From = um:ReadShort()
 					local ChangeOrder_To
 					if (ChangeOrder_From != 0) then
 						ChangeOrder_To = um:ReadShort()
 					end
-
+				
 					ID = ID + 128
 					local bool, k, v = self:HasObject( Ent, index )
 					if (bool) then -- Object already exists
@@ -550,17 +550,17 @@ else -- SERVER/CLIENT
 							Obj.index = index
 							Ent.RenderTable[k] = Obj
 							if (Obj.OnCreate) then Obj:OnCreate() end
-
+						
 							-- For EGP HUD
 							if (Obj.res) then Obj.res = nil end
 						else -- Edit
 							self:EditObject( v, v:Receive( um ) )
-
+							
 							-- If parented, reset the parent indexes
 							if (v.parent and v.parent != 0) then
 								EGP:AddParentIndexes( v )
 							end
-
+						
 							-- For EGP HUD
 							if (v.res) then v.res = nil end
 						end
@@ -571,25 +571,23 @@ else -- SERVER/CLIENT
 						if (Obj.OnCreate) then Obj:OnCreate() end
 						Ent.RenderTable[#Ent.RenderTable+1] = Obj--table.insert( Ent.RenderTable, Obj )
 					end
-
+					
 					-- Change Order
 					if (ChangeOrder_From and ChangeOrder_To) then
 						local b = self:SetOrder( Ent, ChangeOrder_From, ChangeOrder_To )
 					end
 				end
 			end
-
-			Ent:EGP_Update()
-		end
+			
+			Ent:EGP_Update()	
+		end	
 	end
 	usermessage.Hook( "EGP_Transmit_Data", function(um) EGP:Receive( um ) end )
 
 end
 
-require("datastream")
-
 if (SERVER) then
-
+	util.AddNetworkString("EGP_Request_Transmit")
 	EGP.DataStream = {}
 
 	concommand.Add("EGP_Request_Reload",function(ply,cmd,args)
@@ -598,7 +596,7 @@ if (SERVER) then
 		if (!tbl.SingleTime) then tbl.SingleTime = 0 end
 		if (!tbl.AllTime) then tbl.AllTime = 0 end
 		if (args[1]) then
-			if (tbl.SingleTime > CurTime()) then
+			if (tbl.SingleTime > CurTime()) then 
 				ply:ChatPrint("[EGP] This command has anti-spam protection. Try again after 10 seconds.")
 			else
 				tbl.SingleTime = CurTime() + 10
@@ -606,7 +604,7 @@ if (SERVER) then
 				EGP:SendDataStream( ply, args[1] )
 			end
 		else
-			if (tbl.AllTime > CurTime()) then
+			if (tbl.AllTime > CurTime()) then 
 				ply:ChatPrint("[EGP] This command has anti-spam protection. Try again after 30 seconds.")
 			else
 				tbl.AllTime = CurTime() + 30
@@ -618,7 +616,7 @@ if (SERVER) then
 			end
 		end
 	end)
-
+	
 	function EGP:SendDataStream( ply, entid )
 		if (!ply or !ply:IsValid()) then return false, "ERROR: Invalid ply." end
 		local targets
@@ -634,45 +632,48 @@ if (SERVER) then
 			targets = ents.FindByClass("gmod_wire_egp")
 			table.Add( targets, ents.FindByClass("gmod_wire_egp_hud") )
 			table.Add( targets, ents.FindByClass("gmod_wire_egp_emitter") )
-
+			
 			if (#targets == 0) then return false, "There are no EGP screens on the map." end
 		end
-
+		
 		local DataToSend = {}
 		for k,v in ipairs( targets ) do
 			if (v.RenderTable and #v.RenderTable>0) then
 				local DataToSend2 = {}
 				for k2, v2 in pairs( v.RenderTable ) do
 					local obj = v2
-
+					
 					if (v.Scaling or v.TopLeft) then
 						obj = table.Copy(v2) -- Make a copy of the table so it doesn't overwrite the serverside object
 					else
 						obj = v2
 					end
-
+					
 					-- Scale the positions and size
 					if (v.Scaling) then
 						EGP:ScaleObject( v, obj )
 					end
-
+					
 					-- Move the object to draw from the top left
 					if (v.TopLeft) then
 						EGP:MoveTopLeft( v, obj )
 					end
-
+					
 					DataToSend2[#DataToSend2+1] = { ID = obj.ID, index = obj.index, Settings = obj:DataStreamInfo() }
 				end
 				DataToSend[#DataToSend+1] = { Ent = v, Objects = DataToSend2 }
 			end
 		end
 		if (DataToSend and #DataToSend>0) then
-			datastream.StreamToClients( ply, "EGP_Request_Transmit", DataToSend )
+			net.Start("EGP_Request_Transmit")
+				net.WriteTable(DataToSend)
+			net.Send(ply)
+			-- datastream.StreamToClients( ply, "EGP_Request_Transmit", DataToSend )
 			return true, #DataToSend
 		end
 		return false, "None of the screens have any objects drawn on them."
 	end
-
+	
 	local function initspawn(ply)
 		timer.Simple(10,function(ply)
 			if (ply and ply:IsValid()) then
@@ -686,7 +687,7 @@ if (SERVER) then
 
 	hook.Add("PlayerInitialSpawn","EGP_SpawnFunc",initspawn)
 else
-
+	
 	function EGP:ReceiveDataStream( decoded )
 		for k,v in pairs( decoded ) do
 			local Ent = v.Ent
@@ -707,6 +708,6 @@ else
 		end
 		LocalPlayer():ChatPrint("[EGP] Received EGP object reload. " .. #decoded .. " screens' objects were reloaded.")
 	end
-	datastream.Hook("EGP_Request_Transmit", function(_,_,_,decoded) EGP:ReceiveDataStream( decoded ) end )
-
+	--datastream.Hook("EGP_Request_Transmit", function(_,_,_,decoded) EGP:ReceiveDataStream( decoded ) end )
+	net.Receive("EGP_Request_Transmit", function(len) EGP:ReceiveDataStream( net.ReadTable() ) end )
 end

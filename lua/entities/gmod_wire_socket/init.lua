@@ -23,10 +23,10 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
-
+	
+	
 	self:SetNWBool( "Linked", false )
-
+	
 	self.Memory = {}
 end
 
@@ -36,7 +36,7 @@ end
 function ENT:SetUp( ArrayInput, WeldForce, AttachRange )
 	local old = self.ArrayInput
 	self.ArrayInput = ArrayInput or false
-
+	
 	if (!self.Inputs or !self.Outputs or self.ArrayInput != old) then
 		if (self.ArrayInput) then
 			self.Inputs = WireLib.CreateInputs( self, { "In [ARRAY]" } )
@@ -46,11 +46,11 @@ function ENT:SetUp( ArrayInput, WeldForce, AttachRange )
 			self.Outputs = WireLib.CreateOutputs( self, LETTERS )
 		end
 	end
-
+	
 	self.WeldForce = WeldForce or 5000
 	self.AttachRange = AttachRange or 5
 	self:SetNWInt( "AttachRange", self.AttachRange )
-
+	
 	self:ShowOutput()
 end
 
@@ -160,22 +160,22 @@ end
 ------------------------------------------------------------
 function ENT:Think()
 	self.BaseClass.Think(self)
-
+	
 	if (!self.Plug or !self.Plug:IsValid()) then -- Has not been linked or plug was deleted
 		local Pos, Ang = self:GetLinkPos()
-
+	
 		local Closest = self:GetClosestPlug()
-
+		
 		self:SetNWBool( "Linked", false )
 
 		if (Closest and Closest:IsValid() and self:CanLink( Closest ) and !Closest:IsPlayerHolding() and Closest:GetClosestSocket() == self) then
 			self.Plug = Closest
 			Closest.Socket = self
-
+			
 			-- Move
 			Closest:SetPos( Pos )
 			Closest:SetAngles( Ang )
-
+			
 			-- Weld
 			local weld = constraint.Weld( self, Closest, 0, 0, self.WeldForce, true )
 			if (weld and weld:IsValid()) then
@@ -183,30 +183,30 @@ function ENT:Think()
 				self:DeleteOnRemove( weld )
 				self.Weld = weld
 			end
-
+			
 			-- Resend all values
 			Closest:ResendValues()
 			self:ResendValues()
-
+			
 			Closest:SetNWBool( "Linked", true )
 			self:SetNWBool( "Linked", true )
 		end
-
+		
 		self:NextThink( CurTime() + 0.05 )
 		return true
 	else
 		if (self.Weld and !self.Weld:IsValid()) then -- Plug was unplugged
 			self.Weld = nil
-
-			self.Plug:SetNWBool( "Linked", false )
+			
+			self.Plug:SetNWBool( "Linked", false )	
 			self:SetNWBool( "Linked", false )
-
+			
 			self.Plug.Socket = nil
 			self.Plug:ResetValues()
-
+			
 			self.Plug = nil
 			self:ResetValues()
-
+	
 			self:NextThink( CurTime() + NEW_PLUG_WAIT_TIME )
 			return true
 		end
@@ -236,13 +236,13 @@ end
 ------------------------------------------------------------
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
-
+	
 	info.Socket = {}
 	info.Socket.ArrayInput = self.ArrayInput
 	info.Socket.WeldForce = self.WeldForce
 	info.Socket.AttachRange = self.AttachRange
 	if (self.Plug) then info.Socket.Plug = self.Plug:EntIndex() end
-
+	
 	return info
 end
 
@@ -268,12 +268,12 @@ local function FindConstraint( ent, plug )
 end
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID, GetConstByID)
-	if (!ply:CheckLimit("wire_sockets")) then
+	if (!ply:CheckLimit("wire_sockets")) then 
 		ent:Remove()
 		return
 	end
 	ply:AddCount( "wire_sockets", ent )
-
+	
 	if (info.Socket) then
 		ent:SetUp( info.Socket.ArrayInput, info.Socket.WeldForce, info.Socket.AttachRange )
 		if (info.Socket.Plug) then
@@ -282,11 +282,11 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID, GetConstByID)
 				ent.Plug = plug
 				plug.Socket = ent
 				ent.Weld = { ["IsValid"] = function() return true end }
-
-
+				
+					
 				plug:SetNWBool( "Linked", true )
 				ent:SetNWBool( "Linked", true )
-
+				
 				if (GetConstByID) then
 					if (info.Socket.Weld) then
 						local weld = GetConstByID( info.Socket.Weld )
@@ -301,7 +301,7 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID, GetConstByID)
 		end
 	else -- OLD DUPES COMPATIBILITY
 		ent:SetUp() -- default values
-
+		
 		-- Attempt to find connected plug
 		timer.Simple(0.5,function(ent)
 			local welds = constraint.FindConstraints( ent, "Weld" )
@@ -316,7 +316,7 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID, GetConstByID)
 			end
 		end,ent)
 	end -- /OLD DUPES COMPATIBILITY
-
+	
 	ent:SetPlayer( ply )
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 end

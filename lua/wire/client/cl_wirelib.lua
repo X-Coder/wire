@@ -41,46 +41,46 @@ local beamhi_mat = mats["Models/effects/comball_tape"]
 function Wire_Render(ent)
 	if (not ent:IsValid()) then return end
 	if (Wire_DisableWireRender == 1) then return end
-
+	
 	if (Wire_DisableWireRender == 0) then
 		local path_count = ent:GetNetworkedBeamInt("wpn_count") or 0
 		if (path_count <= 0) then return end
-
+		
 		local w,f = math.modf(CurTime()*WIRE_BLINKS_PER_SECOND)
 		local blink = nil
 		if (f < 0.5) then
 			blink = ent:GetNetworkedBeamString("BlinkWire")
 		end
-
+		
 		for i = 1,path_count do
 			local path_name = ent:GetNetworkedBeamString("wpn_" .. i)
 			if (blink ~= path_name) then
 				local net_name = "wp_"..path_name
 				local len = ent:GetNetworkedBeamInt(net_name) or 0
-
+				
 				if (len > 0) then
 					local start = ent:GetNetworkedBeamVector(net_name .. "_start")
 					if (ent:IsValid()) then start = ent:LocalToWorld(start) end
 					local color_v = ent:GetNetworkedBeamVector(net_name .. "_col")
 					local color = Color(color_v.x, color_v.y, color_v.z, 255)
 					local width = ent:GetNetworkedBeamFloat(net_name .. "_width")
-
+					
 					local scroll = CurTime()*WIRE_SCROLL_SPEED
-
+					
 					render.SetMaterial(getmat(ent:GetNetworkedBeamString(net_name .. "_mat")))
 					render.StartBeam(len+1)
 					render.AddBeam(start, width, scroll, color)
-
+					
 					for j=1,len do
 						local node_ent = ent:GetNetworkedBeamEntity(net_name .. "_" .. j .. "_ent")
 						local endpos = ent:GetNetworkedBeamVector(net_name .. "_" .. j .. "_pos")
 						if (node_ent:IsValid()) then
 							endpos = node_ent:LocalToWorld(endpos)
-
+							
 							scroll = scroll+(endpos-start):Length()/10
-
+							
 							render.AddBeam(endpos, width, scroll, color)
-
+							
 							start = endpos
 						end
 					end
@@ -88,36 +88,36 @@ function Wire_Render(ent)
 				end
 			end
 		end
-
+		
 	else
 		local p = ent.ppp
 		if p == nil then p = {next = -100} end
-
+		
 		if p.next < CurTime() then
 			p.next = CurTime() + 0.25
 			p.paths = {}
-
+			
 			local path_count = ent:GetNetworkedBeamInt("wpn_count") or 0
 			if (path_count <= 0) then return end
-
+			
 			for i = 1,path_count do
 				local x = {}
 				local path_name = ent:GetNetworkedBeamString("wpn_" .. i)
 				x.path_name = path_name
 				local net_name = "wp_"..path_name
 				local len = ent:GetNetworkedBeamInt(net_name) or 0
-
+				
 				if (len > 0) then
-
+					
 					local start = ent:GetNetworkedBeamVector(net_name .. "_start")
 					x.startx = start
 					if (ent:IsValid()) then start = ent:LocalToWorld(start) end
 					local color_v = ent:GetNetworkedBeamVector(net_name .. "_col")
 					local color = Color(color_v.x, color_v.y, color_v.z, 255)
 					local width = ent:GetNetworkedBeamFloat(net_name .. "_width")
-
+					
 					local scroll = CurTime()*WIRE_SCROLL_SPEED
-
+					
 					x.material = getmat(ent:GetNetworkedBeamString(net_name .. "_mat"))
 					x.startbeam = len + 1
 					x.start = start
@@ -125,7 +125,7 @@ function Wire_Render(ent)
 					x.scroll = scroll
 					x.color = color
 					x.beams = {}
-
+					
 					for j=1,len do
 						local v = {}
 						local node_ent = ent:GetNetworkedBeamEntity(net_name .. "_" .. j .. "_ent")
@@ -134,28 +134,28 @@ function Wire_Render(ent)
 						v.node_endpos = endpos
 						if (node_ent:IsValid()) then
 							endpos = node_ent:LocalToWorld(endpos)
-
+							
 							scroll = scroll+(endpos-start):Length()/10
-
+							
 							v.endpos = endpos
 							v.width = width
 							v.scroll = scroll
 							v.color = color
 							table.insert(x.beams, v)
-
+							
 							start = endpos
 						end
 					end
-
+					
 					table.insert(p.paths, x)
-
+					
 				end
 			end
-
+			
 			ent.ppp = p
 		end
-
-
+		
+		
 		local w,f = math.modf(CurTime()*WIRE_BLINKS_PER_SECOND)
 		local blink = f < 0.5
 		local blinkname = ent:GetNetworkedBeamString("BlinkWire")
@@ -176,32 +176,32 @@ function Wire_Render(ent)
 				render.EndBeam()
 			end
 		end
-
+		
 	end
 end
 
 
 local function Wire_GetWireRenderBounds(ent)
 	if (not ent:IsValid()) then return end
-
+	
 	local paths = ent.WirePaths
 	local bbmin = ent:OBBMins()
 	local bbmax = ent:OBBMaxs()
-
+	
 	local path_count = ent:GetNetworkedBeamInt("wpn_count") or 0
 	if (path_count > 0) then
 		for i = 1,path_count do
 			local path_name = ent:GetNetworkedBeamString("wpn_" .. i)
 			local net_name = "wp_"..path_name
 			local len = ent:GetNetworkedBeamInt(net_name) or 0
-
+			
 			if (len > 0) then
 				for j=1,len do
 					local node_ent = ent:GetNetworkedBeamEntity(net_name .. "_" .. j .. "_ent")
 					local nodepos = ent:GetNetworkedBeamVector(net_name .. "_" .. j .. "_pos")
 					if (node_ent:IsValid()) then
 						nodepos = ent:WorldToLocal(node_ent:LocalToWorld(nodepos))
-
+						
 						if (nodepos.x < bbmin.x) then bbmin.x = nodepos.x end
 						if (nodepos.y < bbmin.y) then bbmin.y = nodepos.y end
 						if (nodepos.z < bbmin.z) then bbmin.z = nodepos.z end
@@ -213,7 +213,7 @@ local function Wire_GetWireRenderBounds(ent)
 			end
 		end
 	end
-
+	
 	if (ent.ExtraRBoxPoints) then
 		for _,point_l in pairs( ent.ExtraRBoxPoints ) do
 			local point = point_l
@@ -248,20 +248,20 @@ concommand.Add( "cl_Wire_SetWireRenderMode", WireDisableRender )
 function Wire_DrawTracerBeam( ent, beam_num, hilight, beam_length )
 	local beam_length = beam_length or ent:GetBeamLength(beam_num)
 	if (beam_length > 0) then
-
+		
 		local x, y = 0, 0
 		if (ent.GetSkewX and ent.GetSkewY) then
 			x, y = ent:GetSkewX(beam_num), ent:GetSkewY(beam_num)
 		end
-
+		
 		local start, ang = ent:GetPos(), ent:GetAngles()
-
+		
 		if (ent.ls != start or ent.la != ang or ent.ll != beam_length or ent.lx != x or ent.ly != y) then
 			ent.ls, ent.la = start, ang
-
+			
 			if (ent.ll != beam_length or ent.lx != x or ent.ly != y) then
 				ent.ll, ent.lx, ent.ly = beam_length, x, y
-
+				
 				if (x == 0 and y == 0) then
 					ent.endpos = start + (ent:GetUp() * beam_length)
 				else
@@ -278,16 +278,17 @@ function Wire_DrawTracerBeam( ent, beam_num, hilight, beam_length )
 				ent.endpos = ent:LocalToWorld(ent.ExtraRBoxPoints[beam_num])
 			end
 		end
-
+		
 		local trace = {}
 		trace.start = start
 		trace.endpos = ent.endpos
 		trace.filter = { ent }
 		if ent:GetNetworkedBool("TraceWater") then trace.mask = MASK_ALL end
 		trace = util.TraceLine(trace)
-
+		
 		render.SetMaterial(beam_mat)
-		render.DrawBeam(start, trace.HitPos, 6, 0, 10, Color(ent:GetColor()))
+		local c = ent:GetColor()
+		render.DrawBeam(start, trace.HitPos, 6, 0, 10, Color(c.r, c.g, c.b, c.a))
 		if (hilight) then
 			render.SetMaterial(beamhi_mat)
 			render.DrawBeam(start, trace.HitPos, 6, 0, 10, Color(255,255,255,255))
@@ -308,7 +309,7 @@ if not CanRunConsoleCommand then
 	hook.Add("OnEntityCreated", "CanRunConsoleCommand", function(ent)
 		if not ValidEntity(ent) then return end
 		if ent ~= LocalPlayer() then return end
-
+		
 		function CanRunConsoleCommand() return true end
 		hook.Remove("OnEntityCreated", "CanRunConsoleCommand")
 	end)
@@ -316,10 +317,10 @@ end
 
 function Derma_StringRequestNoBlur(...)
 	local f = math.max
-
+	
 	function math.max(...)
 		local ret = f(...)
-
+		
 		for i = 1,20 do
 			local name, value = debug.getlocal(2, i)
 			if name == "Window" then
@@ -327,12 +328,12 @@ function Derma_StringRequestNoBlur(...)
 				break
 			end
 		end
-
+		
 		return ret
 	end
 	local ok, ret = pcall(Derma_StringRequest, ...)
 	math.max = f
-
+	
 	if not ok then error(ret, 0) end
 	return ret
 end

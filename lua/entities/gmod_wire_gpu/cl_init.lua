@@ -35,13 +35,13 @@ local function GPU_MonitorState(um)
   -- Read monitors for this GPU
   local gpuIdx = um:ReadLong()
   Monitors[gpuIdx] = {}
-
+  
   -- Fetch all monitors
   local count = um:ReadShort()
   for i=1,count do
     Monitors[gpuIdx][i] = um:ReadLong()
   end
-
+  
   -- Recalculate small lookup table for monitor system
   recalculateMonitorLookup()
 end
@@ -57,7 +57,7 @@ local function GPU_MemoryModel(um)
   local GPU = ents.GetByIndex(um:ReadLong())
   if not GPU then return end
   if not GPU:IsValid() then return end
-
+    
   if GPU.VM then
     GPU.VM.ROMSize = um:ReadLong()
     GPU.VM.SerialNo = um:ReadFloat()
@@ -111,13 +111,13 @@ function ENT:Initialize()
   self.GPU = WireGPU(self)
   self.In3D2D = false
   self.In2D = false
-
+  
   -- Setup caching
   GPULib.ClientCacheCallback(self,function(Address,Value)
     self.VM:WriteCell(Address,Value)
     self.VM.ROM[Address] = Value
   end)
-
+  
   -- Draw outlines in chip mode
   local tempDrawOutline = self.DrawEntityOutline
   self.DrawEntityOutline = function(self) if self.ChipType ~= 0 then tempDrawOutline(self) end end
@@ -150,7 +150,7 @@ function ENT:Run(isAsync)
   if isAsync then
     -- Limit frequency
     self.VM.Memory[65527] = math.Clamp(self.VM.Memory[65527],1,1200000)
-
+    
     -- Calculate timing
     Cycles = math.max(1,math.floor(self.VM.Memory[65527]*self.DeltaTime*0.5))
     self.VM.TimerDT = self.DeltaTime/Cycles
@@ -171,16 +171,16 @@ function ENT:Run(isAsync)
 
     self.VM.ASYNC = 0
   end
-
+  
   -- Run until interrupt, or if async thread then until async thread stops existing
   while (Cycles > 0) and (self.VM.INTR == 0) do -- and (not (isAsync and (self.VM.Entrypoint4 == 0)))
     local previousTMR = self.VM.TMR
     self.VM:Step()
     Cycles = Cycles - (self.VM.TMR - previousTMR)
-
+    
     if (self.VM.ASYNC == 0) and (Cycles < 0) then self.VM:Interrupt(17,0) end
   end
-
+  
   -- Reset INTR register for async thread
   if self.VM.ASYNC == 1 then self.VM.INTR = 0 end
 end
@@ -192,7 +192,7 @@ end
 -- Request rendering to rendertarget
 function ENT:SetRendertarget(ID)
   if ID == 1 then self:AssertSpriteBufferExists() end
-
+  
   if not ID then -- Restore state
     if self.In2D == true then self.In2D = false cam.End2D() end
     if self.ScreenRT then
@@ -218,21 +218,21 @@ function ENT:SetRendertarget(ID)
       self.ScreenRTHeight = ScrH()
       noRT = false
     end
-
+    
     -- Bind correct rendertarget
     local newRT
     if ID == 0
     then newRT = self.GPU.RT
     else newRT = self.SpriteGPU.RT
     end
-
+    
     if not newRT then return end
-
+    
     -- Start drawing to the RT
     if self.In2D == true then self.In2D = false cam.End2D() end
     -- Get out of the 2D3D camera if its set
     if self.In3D2D == true then self.In3D2D = false cam.End3D2D() end
-
+    
     render.SetRenderTarget(newRT)
     render.SetViewPort(0,0,512,512)
     cam.Start2D()
@@ -242,7 +242,7 @@ function ENT:SetRendertarget(ID)
     self.VM.ScreenWidth = 512
     self.VM.ScreenHeight = 512
     self.VM.CurrentBuffer = ID
-
+    
     if self.VM.VertexMode == 0 then self.VM.RenderEnable = 1 end
   end
 end
@@ -265,7 +265,7 @@ function ENT:RenderGPU()
       self:Run(false)
     end
   end
-
+  
   -- Restore screen rendertarget
   self:SetRendertarget()
 end
@@ -280,7 +280,7 @@ function ENT:RenderVertex(width,height)
   self.VM.ScreenHeight = height or 512
   self.VM.VertexScreenWidth = self.VM.ScreenWidth
   self.VM.VertexScreenHeight = self.VM.ScreenHeight
-
+  
   if self.VM:ReadCell(65531) == 0 then -- Halt register
     if self.VM:ReadCell(65533) == 1 then -- Hardware clear
       surface.SetDrawColor(0,0,0,255)
@@ -315,7 +315,7 @@ function ENT:RenderMisc(pos, ang, resolution, aspect, monitor)
       if self.VM:ReadCell(65532) == 1 then -- Check for vertex mode to counter the faulty offset
         cursorOffset = 0.5
       end
-
+	  
 	  self.VM:WriteCell(65505,x - cursorOffset)
       self.VM:WriteCell(65504,y - cursorOffset)
 
@@ -342,7 +342,7 @@ function ENT:Draw()
 
   -- Draw GPU itself
   self:DrawModel()
-
+  
   -- Draw image from another GPU
   local videoSource = MonitorLookup[self:EntIndex()]
   if videoSource then
@@ -378,11 +378,11 @@ function ENT:Draw()
       then self:SetRendertarget(self.VM.LastBuffer)
       else self:SetRendertarget()
       end
-
+  
       self.VM:RestoreAsyncThread()
       self:Run(true)
       self.VM:SaveAsyncThread()
-
+  
       self:SetRendertarget()
     end
   end
@@ -453,7 +453,7 @@ local function GPU_DrawHUD()
     if videoGPU and videoGPU:IsValid() and videoGPU.RenderVertex then
       local screenWidth = ScrW()
       local screenHeight = ScrH()
-
+  
       videoGPU:RenderVertex(screenWidth,screenHeight)
     end
   end

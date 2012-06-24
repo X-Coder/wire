@@ -9,7 +9,7 @@ function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
-
+	
 	self.Outputs = WireLib.CreateOutputs( self, { "Memory [ARRAY]", "Size" } )
 	self.Inputs = WireLib.CreateInputs( self, { "Data [ARRAY]", "Clear", "AllowWrite" } )
 
@@ -62,7 +62,7 @@ end
 
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo( self ) or {}
-
+	
 	info.DHDD = {}
 	info.ROM = self.ROM
 	local n = 0
@@ -72,23 +72,23 @@ function ENT:BuildDupeInfo()
 		if (n > 512*512) then break end
 		info.DHDD.Memory[k] = v
 	end
-
+	
 	return info
 end
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
-	if (!ply:CheckLimit("wire_dhdds")) then
+	if (!ply:CheckLimit("wire_dhdds")) then 
 		ent:Remove()
 		return
 	end
 	ply:AddCount( "wire_dhdds", ent )
-
+	
 	if (info.DHDD) then
 		ent.Memory = (info.DHDD.Memory or {})
 		self:ShowOutputs()
 	end
 	self.ROM = info.ROM or false
-
+	
 	ent:SetPlayer( ply )
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 end

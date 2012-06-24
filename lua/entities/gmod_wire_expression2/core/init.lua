@@ -1,5 +1,7 @@
 AddCSLuaFile("init.lua")
 
+if (!glon) then require("glon") end
+
 /******************************************************************************\
   Expression 2 for Garry's Mod
   Andreas "Syranide" Svensson, me@syranide.com
@@ -171,9 +173,10 @@ end
 
 /******************************************************************************/
 
-if not datastream then require( "datastream" ) end
-
 if SERVER then
+	
+	util.AddNetworkString("e2st")
+	util.AddNetworkString("e2se")
 
 	local clientside_files = {}
 
@@ -188,12 +191,11 @@ if SERVER then
 	function _R.CRecipientFilter.IsValid() return true end -- workaround for this bug: http://www.facepunch.com/showpost.php?p=15117600 - thanks Lexi
 
 	do
-		if (!glon) then require("glon") end -- Doubt this will be necessary, but still
-
 		local functiondata,functiondata2
-		local functiondata_buffer, functiondata2_buffer, clientside_files_buffer = {}, {}, {}
+		local functiondata_buffer, functiondata2_buffer = {}, {}
 
 		-- prepares a table with information (no, a glon string! - edit by Divran) about E2 types and functions
+		
 		function wire_expression2_prepare_functiondata()
 			functiondata = { {}, {}, clientside_files, wire_expression2_constants }
 			functiondata2 = {}
@@ -206,37 +208,36 @@ if SERVER then
 				functiondata2[signature] = { v[4], v.argnames } -- cost, argnames
 			end
 
+			
 			-- Add functiondata to buffer
 			local temp = glon.encode( functiondata )
 			functiondata_buffer = {}
-			for i=1,#temp,245 do
-				functiondata_buffer[#functiondata_buffer+1] = temp:sub(i,i+244)
+			for i=1,#temp,63999 do
+				functiondata_buffer[#functiondata_buffer+1] = temp:sub(i,i+62998)
 			end
-
+			
 			-- Add functiondata2 to buffer
 			local temp = glon.encode( functiondata2 )
 			functiondata2_buffer = {}
-			for i=1,#temp,245 do
-				functiondata2_buffer[#functiondata2_buffer+1] = temp:sub(i,i+244)
+			for i=1,#temp,63999 do
+				functiondata2_buffer[#functiondata2_buffer+1] = temp:sub(i,i+62998)
 			end
-
-			-- Clientside file buffer (for initial spawn only)
-			local temp = {}
-			for k,v in pairs( clientside_files ) do temp[#temp+1] = k end
-			temp = glon.encode( temp )
-			clientside_files_buffer = {}
-			for i=1,#temp,245 do
-				clientside_files_buffer[#clientside_files_buffer+1] = temp:sub(i,i+244)
-			end
+			
 		end
 
 		wire_expression2_prepare_functiondata()
-
-		local sendClientsideFilesList
-
-		-- Send everything
+		
 		local targets = {}
 		local function sendData( target )
+			--[[
+			net.Start( "e2_data1" )
+				net.WriteTable(functiondata)
+			net.Send(target)
+			net.Start( "e2_data2" )
+				net.WriteTable(functiondata2)
+			net.Send(target)
+			]]
+			
 			if (type(target) == "table") then
 				for k,v in pairs( target ) do
 					if (type(v) == "Player") then
@@ -247,38 +248,24 @@ if SERVER then
 			end
 			if (target and type(target) == "Player" and target:IsValid() and targets[target] == nil) then
 				targets[target] = { 1, 0 }
-				umsg.Start("e2st",target) umsg.Short( #functiondata_buffer + #functiondata2_buffer ) umsg.End()
-				timer.Remove( "wire_expression2_clientside_files_list_send_" .. target:UniqueID() )
+				
+				--[[
+				net.Start("e2_data1")
+					net.WriteTable(functiondata)
+				net.Send(target)
+				net.Start("e2_data2")
+					net.WriteTable(functiondata2)
+				net.Send(target)
+				]]
+				
+				--umsg.Start("e2st",target) umsg.Short( #functiondata_buffer + #functiondata2_buffer ) umsg.End()
+				
+				net.Start("e2st")
+					net.WriteLong( #functiondata_buffer + #functiondata2_buffer )
+				net.Send(target)
 			end
 		end
-
-		-- Send only CL file list
-		function sendClientsideFilesList( target )
-			if type(target) == "table" then
-				for k,v in pairs( target ) do
-					if type(v) == "Player" then
-						sendCLientsideFilesList( v )
-					end
-				end
-				return
-			end
-
-			if target and type(target) == "Player" and target:IsValid() and not timer.IsTimer( "wire_expression2_clientside_files_list_send_" .. target:UniqueID() ) then
-				local i = 0
-				umsg.Start("e2fs",target) umsg.Short( #clientside_files_buffer ) umsg.End()
-				timer.Create( "wire_expression2_clientside_files_list_send_" .. target:UniqueID(), 0, 0,function()
-					i = i + 1
-					umsg.Start( "e2fd", target )
-						umsg.String( clientside_files_buffer[i] )
-					umsg.End()
-					if i == #clientside_files_buffer then
-						umsg.Start( "e2fe", target ) umsg.End()
-						timer.Remove( "wire_expression2_clientside_files_list_send_" .. target:UniqueID() )
-					end
-				end)
-			end
-		end
-
+		
 		hook.Remove("Think","wire_expression2_sendfunctions_think") -- Remove the old hook
 		hook.Add("Think","wire_expression2_sendfunctions_think",function()
 			for k,v in pairs( targets ) do
@@ -286,20 +273,44 @@ if SERVER then
 					targets[k] = nil
 				elseif (v[1] == 1) then -- functiondata
 					v[2] = v[2] + 1
-					umsg.Start("e2sd",k) umsg.String( functiondata_buffer[v[2]] ) umsg.End()
-					if (v[2] == #functiondata_buffer) then
-						umsg.Start("e2se",k) umsg.Bool(false) umsg.End()
-						v[1] = 2
-						v[2] = 0
-					end
+					
+					net.Start("e2se")
+						net.WriteString( functiondata_buffer[v[2]] )
+					
+						--umsg.Start("e2sd",k) umsg.String( functiondata_buffer[v[2]] ) umsg.End()
+						if (v[2] == #functiondata_buffer) then
+						
+							net.WriteFloat(1) -- Done with functiondata nr 1
+							
+						
+							--umsg.Start("e2se",k) umsg.Bool(false) umsg.End()
+							v[1] = 2
+							v[2] = 0
+						else
+							net.WriteFloat(0) -- We're not done yet
+						end
+					
+					net.Send(k)
 				elseif (v[1] == 2) then -- functiondata2
 					v[2] = v[2] + 1
-					umsg.Start("e2sd",k) umsg.String( functiondata2_buffer[v[2]] ) umsg.End()
-					if (v[2] == #functiondata2_buffer) then
-						umsg.Start("e2se",k) umsg.Bool(true) umsg.End()
-						v[1] = 3
-						v[2] = 0
-					end
+					
+					
+					--umsg.Start("e2sd",k) umsg.String( functiondata2_buffer[v[2]] ) umsg.End()
+					net.Start("e2se")
+						net.WriteString( functiondata2_buffer[v[2]] )
+							
+						if (v[2] == #functiondata2_buffer) then
+							
+							net.WriteFloat( 2 ) -- Done with functiondata nr 2
+							
+							v[1] = 3
+							v[2] = 0
+						else
+							net.WriteFloat( 0 ) -- We're not done yet
+						end
+					
+					net.Send(k)
+						
 				end
 			end
 		end)
@@ -322,17 +333,8 @@ if SERVER then
 		-- add a console command the user can use to re-request the function info, in case of errors or updates
 		concommand.Add("wire_expression2_sendfunctions", wire_expression2_sendfunctions)
 
-		hook.Add( "PlayerInitialSpawn", "wire_expression2_sendfunctions", function( ply )
-			-- If single player, send everything
-			if SinglePlayer() then
-				sendData( ply )
-			else -- else send only files list
-				sendClientsideFilesList( ply )
-			end
-		end)
-
 		-- send function info once the player first spawns (NOTE: Only in single player)
-		--if SinglePlayer() then hook.Add("PlayerInitialSpawn", "wire_expression2_sendfunctions", wire_expression2_sendfunctions) end
+		if SinglePlayer() then hook.Add("PlayerInitialSpawn", "wire_expression2_sendfunctions", wire_expression2_sendfunctions) end
 	end
 
 elseif CLIENT then
@@ -377,19 +379,19 @@ elseif CLIENT then
 				entry.argnames = v[2] -- argnames
 			end
 		end
-
+		
 		e2_function_data_received = true
 
-		if wire_expression2_editor then
+		if wire_expression2_editor then 
 			wire_expression2_editor:Validate(false)
-
+			
 			-- Update highlighting on all tabs
 			for i=1,wire_expression2_editor:GetNumTabs() do
 				wire_expression2_editor:GetEditor( i ).PaintRows = {}
 			end
 		end
 	end
-
+	
 	local function status( count, total_count )
 		local editor = wire_expression2_editor
 		if (editor and editor:IsValid() and editor:IsVisible()) then
@@ -401,7 +403,7 @@ elseif CLIENT then
 	local buffer = ""
 	local buffer_total_count = 0
 	local buffer_current_count = 0
-	usermessage.Hook("e2st",function( um )
+	--[[ usermessage.Hook("e2st",function( um )
 		buffer_total_count = um:ReadShort()
 		draw_progress_bar = true
 		buffer_current_count = 0
@@ -412,8 +414,42 @@ elseif CLIENT then
 		buffer = buffer .. str
 		buffer_current_count = buffer_current_count + 1
 		status( buffer_current_count, buffer_total_count )
+	end) ]]--
+	
+	net.Receive("e2st",function(len)
+		buffer_total_count = net.ReadLong()
+		draw_progress_bar = true
+		buffer_current_count = 0
+		status( 0, buffer_total_count )
+		buffer = ""
 	end)
-	usermessage.Hook("e2se",function( um )
+	
+	net.Receive("e2se",function( len )
+		local data = net.ReadString()
+		buffer = buffer .. data
+		buffer_current_count = buffer_current_count + 1
+		status( buffer_current_count,buffer_total_count )
+		
+		local bit = net.ReadFloat()
+		
+		if bit == 1 or bit == 2 then
+			local OK, data = pcall( glon.decode, buffer )
+			if (!OK) then
+				ErrorNoHalt( "[E2] Failed to receive extension data. Error message was:\n" .. data )
+				if wire_expression2_editor and wire_expression2_editor:IsValid() then
+					wire_expression2_editor:SetValidatorStatus( "Failed to receive extension data. Error message was: " .. data )
+				end
+			else
+				if bit == 1 then
+					insertData( data )
+				else
+					insertData2( data )
+				end
+			end
+		end
+	end)
+	
+	--[[ usermessage.Hook("e2se",function( um )
 		local OK, data = pcall( glon.decode, buffer )
 		if (!OK) then
 			ErrorNoHalt( "[E2] Failed to receive extension data. Error message was:\n" .. data )
@@ -429,34 +465,7 @@ elseif CLIENT then
 			end
 		end
 		buffer = ""
-	end)
-
-
-	-- Initial spawn file includes
-	local buffer2 = ""
-	usermessage.Hook( "e2fs", function( um )
-		buffer2 = ""
-	end)
-
-	usermessage.Hook( "e2fd", function( um )
-		local str = um:ReadString()
-		buffer2 = buffer2 .. str
-	end)
-
-	usermessage.Hook( "e2fe", function( um )
-		local OK, data = pcall( glon.decode, buffer2 )
-		if (!OK) then
-			ErrorNoHalt( "[E2] Failed to receive client side file list. Error message was:\n" .. data )
-			if wire_expression2_editor and wire_expression2_editor:IsValid() then
-				wire_expression2_editor:SetValidatorStatus( "Failed to receive client side file list. Error message was: " .. data )
-			end
-		else
-			for _,filename in pairs( data ) do
-				include("entities/gmod_wire_expression2/core/"..filename)
-			end
-		end
-		buffer2 = ""
-	end)
+	end) ]]--
 end
 
 include("e2doc.lua")

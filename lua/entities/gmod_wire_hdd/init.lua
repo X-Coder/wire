@@ -26,7 +26,7 @@ function ENT:Initialize()
 	self.ARead = 0
 	self.Data = 0
 	self.Out = 0
-
+	
 	-- Flash type
 	--   0: compatibility 16 values per block mode
 	--   1: 128 values per block mode
@@ -36,7 +36,7 @@ function ENT:Initialize()
 	-- Hard drive id/folder id:
 	self.DriveID = 0
 	self.PrevDriveID = nil
-
+	
 	-- Hard drive capicacity (loaded from hdd)
 	self.DriveCap = 0
 	self.MaxAddress = 0
@@ -60,7 +60,7 @@ function ENT:GetCap()
 	if file.Exists(self:GetStructName("drive")) then
 		-- Read format data
 		local formatData = file.Read(self:GetStructName("drive"))
-
+		
 		if tonumber(formatData) then
 			self.DriveCap = tonumber(formatData)
 			self.FlashType = 0
@@ -146,7 +146,7 @@ function ENT:ReadCell(Address)
 		else
 			self.owner_steamid = "SINGLEPLAYER"
 		end
-
+		
 		-- If drive has changed, change cap
 		if self.DriveID ~= self.PrevDriveID then
 			self:GetCap()
@@ -158,7 +158,7 @@ function ENT:ReadCell(Address)
 			-- Compute address
 			local block = math.floor(Address / self.BlockSize)
 			local blockaddress = math.floor(Address) % self.BlockSize
-
+			
 			-- Check if this address is cached for read
 			if self.Cache[block] then
 				return self.Cache[block][blockaddress] or 0
@@ -216,7 +216,7 @@ function ENT:WriteCell(Address, value)
 			-- Compute address
 			local block = math.floor(Address / self.BlockSize)
 			local blockaddress = math.floor(Address) % self.BlockSize
-
+			
 			-- Check if this address is cached
 			if self.Cache[block] then
 				self.CacheUpdated[block] = true
@@ -226,7 +226,7 @@ function ENT:WriteCell(Address, value)
 				end
 				return true
 			end
-
+			
 			-- If sector isn't created yet, cache it
 			if not file.Exists(self:GetStructName(block)) then
 				self.Cache[block] = {}

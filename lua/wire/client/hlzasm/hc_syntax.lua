@@ -32,7 +32,7 @@ function HCOMP:Opcode() local TOKEN = self.TOKEN
   local opcodeName = self.TokenData
   local opcodeNo = self.OpcodeNumber[self.TokenData]
   local operandCount = self.OperandCount[opcodeNo]
-
+  
   -- Check if opcode is obsolete or old
   if self.OpcodeObsolete[opcodeName] then
     self:Warning("Instruction \""..opcodeName.."\" is obsolete")
@@ -40,12 +40,12 @@ function HCOMP:Opcode() local TOKEN = self.TOKEN
   if self.OpcodeOld[opcodeName] then
     self:Warning("Mnemonic \""..opcodeName.."\" is an old mnemonic for this instruction. Please use the newer mnemonic \""..self.OpcodeOld[opcodeName].."\".")
   end
-
+  
   -- Create leaf
   local opcodeLeaf = self:NewLeaf()
   opcodeLeaf.Opcode = opcodeName
   opcodeLeaf.ExplictAssign = true
-
+  
   -- Parse operands
   for i=1,operandCount do
     local segmentOffset,constantValue,expressionLeaf
@@ -56,7 +56,7 @@ function HCOMP:Opcode() local TOKEN = self.TOKEN
       isMemoryReference = true
       useSpecialMemorySyntax = true
     end
-
+    
     -- Check for segment prefix (ES:<...> or ES+<...>)
     if ((self:PeekToken() == TOKEN.SEGMENT) or (self:PeekToken() == TOKEN.REGISTER)) and
        ((self:PeekToken(1) == TOKEN.DCOLON) or
@@ -71,7 +71,7 @@ function HCOMP:Opcode() local TOKEN = self.TOKEN
           segmentOffset = self.TokenData + 8
         end
       end
-
+      
       if useSpecialMemorySyntax then
         if not self:MatchToken(TOKEN.DCOLON) then self:ExpectToken(TOKEN.PLUS) end
       else
@@ -83,7 +83,7 @@ function HCOMP:Opcode() local TOKEN = self.TOKEN
     if not useSpecialMemorySyntax then
       if self:MatchToken(TOKEN.HASH) then isMemoryReference = true end
     end
-
+      
     -- Parse operand expression (use previous result if previous const wasnt related to seg offset)
     local c,v,e = self:ConstantExpression()
     if c then -- Constant value
@@ -98,7 +98,7 @@ function HCOMP:Opcode() local TOKEN = self.TOKEN
       end
       -- FIXME: warning about using extra registers?
     end
-
+    
     -- Check for segment prefix again (reversed syntax <...>:ES)
     if self:MatchToken(TOKEN.DCOLON) then
       if (not segmentOffset) and
@@ -122,7 +122,7 @@ function HCOMP:Opcode() local TOKEN = self.TOKEN
     if useSpecialMemorySyntax then
       self:ExpectToken(TOKEN.RSUBSCR)
     end
-
+    
     -- Create operand
     if isMemoryReference then
       if expressionLeaf then
@@ -141,11 +141,11 @@ function HCOMP:Opcode() local TOKEN = self.TOKEN
             -- Swap EBX:ES with ES:EBX (because the former one is invalid in ZCPU)
             local register = expressionLeaf.Register
             local segment = segmentOffset
-
+            
             -- Convert segment register index to register index
             if (segment >= 1) and (segment <= 8)  then expressionLeaf.Register = segment + 15 end
             if (segment >= 9) and (segment <= 16) then expressionLeaf.Register = segment - 8 end
-
+            
             -- Convert register index to segment register index
             if (register >= 1)  and (register <= 8)  then segmentOffset = register + 8 end
             if (register >= 16) and (register <= 23) then segmentOffset = register - 15 end
@@ -165,12 +165,12 @@ function HCOMP:Opcode() local TOKEN = self.TOKEN
         opcodeLeaf.Operands[i] = { Constant = constantValue, Segment = segmentOffset }
       end
     end
-
+    
     -- Attach information from expression
     if expressionLeaf then
       opcodeLeaf.Operands[i].PreviousLeaf = expressionLeaf.PreviousLeaf
     end
-
+  
     -- Syntax
     if i < operandCount then
       self:ExpectToken(TOKEN.COMMA)
@@ -180,7 +180,7 @@ function HCOMP:Opcode() local TOKEN = self.TOKEN
       end
     end
   end
-
+  
   -- Check if first operand is a non-preserved register
   if self.BusyRegisters then
     if opcodeLeaf.Operands[1] and opcodeLeaf.Operands[1].Register and
@@ -188,7 +188,7 @@ function HCOMP:Opcode() local TOKEN = self.TOKEN
        (self.BlockDepth > 0) then
       self:Warning("Warning: using an unpreserved register")
     end
-
+    
     if opcodeLeaf.Operands[1] and opcodeLeaf.Operands[1].MemoryRegister and
        (self.BusyRegisters[opcodeLeaf.Operands[1].MemoryRegister] == false) and
        (self.BlockDepth > 0) then
@@ -222,14 +222,14 @@ function HCOMP:BlockStart(blockType)
     end
 
     self.StringsTable = {}
-
+    
     self.BlockType = {}
     self.SpecialLeaf = {}
-
+    
     -- Create busy registers list
     self.BusyRegisters = { false,false,false,false,false,false,true,true }
   end
-
+  
   -- Create a leaf that corresponds to label for BREAK
   local breakLeaf = self:NewLeaf()
   breakLeaf.Opcode = "LABEL"
@@ -244,20 +244,20 @@ function HCOMP:BlockStart(blockType)
   continueLeaf.Label.Type = "Pointer"
   continueLeaf.Label.Leaf = continueLeaf
   self:AddLeafToTail(continueLeaf)
-
+  
   self.SpecialLeaf[#self.SpecialLeaf+1] = {
     Break = breakLeaf,
     Continue = continueLeaf,
     JumpBack = self:NewLeaf(),
   }
-
+  
   if (blockType == "FOR") or
      (blockType == "WHILE") or
      (blockType == "DO") then
     self.CurrentContinueLeaf = self.SpecialLeaf[#self.SpecialLeaf].Continue
     self.CurrentBreakLeaf = self.SpecialLeaf[#self.SpecialLeaf].Break
   end
-
+  
   -- Push block type
   table.insert(self.BlockType,blockType or "FUNCTION")
   self.BlockDepth = self.BlockDepth + 1
@@ -269,7 +269,7 @@ end
 function HCOMP:BlockEnd()
   -- If required, end the previous block
   local endPreviousBlock = self.SpecialLeaf[#self.SpecialLeaf].EndPreviousBlock
-
+  
   -- If required, add leaf that jumps back to block start
   if self.SpecialLeaf[#self.SpecialLeaf].JumpBack.Opcode ~= "INVALID" then
     self.SpecialLeaf[#self.SpecialLeaf].JumpBack.CurrentPosition = self:CurrentSourcePosition()
@@ -279,7 +279,7 @@ function HCOMP:BlockEnd()
   -- Add leaf that corresponds to break label
   self.SpecialLeaf[#self.SpecialLeaf].Break.CurrentPosition = self:CurrentSourcePosition()
   self:AddLeafToTail(self.SpecialLeaf[#self.SpecialLeaf].Break)
-
+  
   -- Pop current continue leaf if required
   if self.CurrentContinueLeaf == self.SpecialLeaf[#self.SpecialLeaf].Continue then
     if self.SpecialLeaf[#self.SpecialLeaf-1] then
@@ -293,7 +293,7 @@ function HCOMP:BlockEnd()
 
   -- Pop unused leaves
   self.SpecialLeaf[#self.SpecialLeaf] = nil
-
+  
   -- Pop block type
   local blockType = self.BlockType[#self.BlockType]
   self.BlockType[#self.BlockType] = nil
@@ -305,7 +305,7 @@ function HCOMP:BlockEnd()
     if (self.StackPointer == 0) and
        (self.ParameterPointer == 0) and
        (not self.Settings.AlwaysEnterLeave) then self.HeadLeaf.Opcode = "DATA" end
-
+    
     -- Create leaf for exiting local scope
     local leaveLeaf = self:NewLeaf()
     leaveLeaf.Opcode = "leave"
@@ -314,7 +314,7 @@ function HCOMP:BlockEnd()
        (self.Settings.AlwaysEnterLeave) then
       self:AddLeafToTail(leaveLeaf)
     end
-
+    
     -- Create leaf for returning from call
     if blockType == "FUNCTION" then
       if not self.GenerateInlineFunction then
@@ -323,39 +323,39 @@ function HCOMP:BlockEnd()
         self:AddLeafToTail(retLeaf)
       end
     end
-
+    
     -- Write down strings table
     for string,leaf in pairs(self.StringsTable) do
       self:AddLeafToTail(leaf)
     end
     self.StringsTable = nil
-
+    
     -- Add local labels to lookup list
     for labelName,labelData in pairs(self.LocalLabels) do
       self.DebugInfo.Labels["local."..labelName] = { StackOffset = labelData.StackOffset }
     end
-
+    
     self.LocalLabels = nil
     self.StackPointer = nil
     self.ParameterPointer = nil
-
+    
     self.BlockType = nil
     self.SpecialLeaf = nil
-
+    
     -- Zap all registers preserved inside the function
     self.BusyRegisters = nil
-
+    
     -- Disable inlining
     if self.GenerateInlineFunction then
       self.Functions[self.GenerateInlineFunction].InlineCode = self.InlineFunctionCode
       self.GenerateInlineFunction = nil
       self.InlineFunctionCode = nil
     end
-
+    
     -- Disable parent label
     self.CurrentParentLabel = nil
   end
-
+  
   -- End it, see first line of the function
   if endPreviousBlock then
     self:BlockEnd()
@@ -370,7 +370,7 @@ function HCOMP:ParseElse(parentBlockExists)
   local jumpLeaf = self:NewLeaf()
   jumpLeaf.Opcode = "jmp"
   self:AddLeafToTail(jumpLeaf)
-
+  
   -- Alter the conditional jump so it goes to else clause
   local jumpOverLabelLeaf = self:NewLeaf()
   local jumpOverLabel = self:GetTempLabel()
@@ -379,15 +379,15 @@ function HCOMP:ParseElse(parentBlockExists)
   jumpOverLabel.Leaf = jumpOverLabelLeaf
   jumpOverLabelLeaf.Label = jumpOverLabel
   self:AddLeafToTail(jumpOverLabelLeaf)
-
+  
   if parentBlockExists and self.SpecialLeaf[#self.SpecialLeaf].ConditionalBreak then
     self:AddLeafToTail(self.SpecialLeaf[#self.SpecialLeaf].ConditionalBreak)
   end
-
+  
   -- Enter the ELSE block
   local needBlock = self:MatchToken(self.TOKEN.LBRACKET)
   self:BlockStart("ELSE")
-
+  
   -- Update properly the jump leaf
   jumpLeaf.Operands[1] = { PointerToLabel = self.SpecialLeaf[#self.SpecialLeaf].Break.Label }
 
@@ -398,12 +398,12 @@ function HCOMP:ParseElse(parentBlockExists)
     -- Parse next statement if dont need a block
     local previousBlockDepth = #self.BlockType
     self:Statement()
-
+    
     -- If did not enter any new blocks, it was a plain statement. Pop ELSE block
     if #self.BlockType == previousBlockDepth then
       -- End the ELSE block
       self:BlockEnd()
-
+      
       -- End the IF block, if required
       if parentBlockExists then self:BlockEnd() end
     else
@@ -447,7 +447,7 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
     varSize = 1
     if varType == 5 then varSize = 4 end
   end
-
+  
   -- Variable labels list
   local labelsList = {}
 
@@ -456,7 +456,7 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
     -- Get pointer level (0, *, **, ***, etc)
     local pointerLevel = 0
     while self:MatchToken(TOKEN.TIMES) do pointerLevel = pointerLevel + 1 end
-
+    
     -- Fix structure size
     if isStruct then
       if pointerLevel > 0
@@ -464,11 +464,11 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
       else varSize = self.StructSize[varType]
       end
     end
-
+    
     -- Get variable name
     self:ExpectToken(TOKEN.IDENT)
     local varName = self.TokenData
-
+    
     -- Try to read information about array size, stuff
     local arraySize
     while self:MatchToken(TOKEN.LSUBSCR) do -- varname[<arr size>]
@@ -484,11 +484,11 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
         else
           self:Error("Array size must be constant")
         end
-
+        
         self:ExpectToken(TOKEN.RSUBSCR)
       end
     end
-
+    
     -- Calculate size of array
     local bytesArraySize
     if arraySize then
@@ -496,36 +496,36 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
         bytesArraySize = (bytesArraySize or 0) + v*varSize
       end
     end
-
+    
     -- Add to global list
     table.insert(labelsList,{ Name = varName, Type = varType, PtrLevel = pointerLevel, Size = bytesArraySize or varSize })
-
+  
     if not isStructMember then -- Do not define struct members
       if self:MatchToken(TOKEN.LPAREN) then -- Define function
         -- Create function entrypoint
         local label
         label = self:DefineLabel(varName)
-
+  
         label.Type = "Pointer"
         label.Defined = true
-
+        
         -- Make all further leaves parented to this label
         self.CurrentParentLabel = label
-
+  
         -- Create label leaf
         label.Leaf = self:NewLeaf()
         label.Leaf.Opcode = "LABEL"
         label.Leaf.Label = label
         self:AddLeafToTail(label.Leaf) --isInlined
-
+  
         -- Define a function
         local _,functionVariables = nil,{}
-
+        
         self:BlockStart()
         if not self:MatchToken(TOKEN.RPAREN) then
           _,functionVariables = self:DefineVariable(true)
           self:ExpectToken(TOKEN.RPAREN)
-
+          
           -- Add comments about function into assembly listing
           if self.Settings.GenerateComments then
             for i=1,#functionVariables do
@@ -534,7 +534,7 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
             end
           end
         end
-
+        
         -- Forward declaration, mess up label name
         if isForwardDecl then
           local newName = label.Name.."@"
@@ -546,7 +546,7 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
           end
           self:RedefineLabel(label.Name,newName)
         end
-
+        
         -- Generate comment if required
         if self.Settings.GenerateComments then label.Leaf.Comment = varName.."("..(label.Leaf.Comment or "")..")" end
         self:ExpectToken(TOKEN.LBRACKET)
@@ -558,7 +558,7 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
           if not self.LocalLabels then -- Check rules for global init
             if self:MatchToken(TOKEN.LBRACKET) then -- Array initializer
               if not bytesArraySize then self:Error("Cannot initialize value: not an array") end
-
+              
               initializerValues = {}
               while not self:MatchToken(TOKEN.RBRACKET) do
                 local c,v = self:ConstantExpression(true)
@@ -570,7 +570,7 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
               end
             else -- Single initializer
               if bytesArraySize then self:Error("Cannot initialize value: is an array") end
-
+            
               local c,v = self:ConstantExpression(true)
               if not c then
   --              initializerLeaves = { self:Expression() }
@@ -582,13 +582,13 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
           else -- Local init always an expression
             if self:MatchToken(TOKEN.LBRACKET) then -- Array initializer
               if not bytesArraySize then self:Error("Cannot initialize value: not an array") end
-
+              
               initializerLeaves = {}
               while not self:MatchToken(TOKEN.RBRACKET) do
                 table.insert(initializerLeaves,self:Expression())
                 self:MatchToken(TOKEN.COMMA)
               end
-
+              
               if #initializerLeaves > 256 then
                 self:Error("Too much local variable initializers")
               end
@@ -598,11 +598,11 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
             end
           end
         end
-
+  
         -- Define a variable
         if self.LocalLabels then -- check if var is local
           local label = self:DefineLabel(varName,true)
-
+        
           if isRegisterDecl then
             label.Type = "Register"
             label.Value = self:DeclareRegisterVariable()
@@ -614,10 +614,10 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
           label.Defined = true
           if varType == 5 then label.ForceType = "vector" end
           if isStruct then label.Struct = varType end
-
+          
           -- If label has associated array size, mark it as an array
           if bytesArraySize then label.Array = bytesArraySize end
-
+            
           if not isRegisterDecl then
             if not isFunctionParam then
               -- Add a new local variable (stack pointer increments)
@@ -629,7 +629,7 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
               label.StackOffset = self.ParameterPointer
             end
           end
-
+          
           -- Initialize local variable
           if isRegisterDecl then
             if initializerLeaves then
@@ -663,7 +663,7 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
         else
           -- Define a new global variable
           local label = self:DefineLabel(varName)
-
+          
           if isRegisterDecl then
             label.Type = "Register"
             label.Value = self:DeclareRegisterVariable()
@@ -674,10 +674,10 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
           label.Defined = true
           if varType == 5 then label.ForceType = "vector" end
           if isStruct then label.Struct = varType end
-
+  
           -- If label has associated array size, mark it as an array
           if bytesArraySize then label.Array = bytesArraySize end
-
+            
           -- Create initialization leaf
           label.Leaf = self:NewLeaf()
           label.Leaf.ParentLabel = self.CurrentParentLabel or label
@@ -695,7 +695,7 @@ function HCOMP:DefineVariable(isFunctionParam,isForwardDecl,isRegisterDecl,isStr
     else -- Struct member
       -- Do nothing right now
     end
-
+  
     if not self:MatchToken(TOKEN.COMMA) then
       return true,labelsList
     else --int x, char y, float z
@@ -722,22 +722,22 @@ end
 function HCOMP:Statement() local TOKEN = self.TOKEN
   -- Parse end of line colon
   if self:MatchToken(TOKEN.COLON) then return true end
-
+  
   -- Check for EOF
   if self:MatchToken(TOKEN.EOF) then return false end
-
+  
   -- Parse variable/function definition
   local exportSymbol = self:MatchToken(TOKEN.EXPORT)
   local inlineFunction = self:MatchToken(TOKEN.INLINE)
   local forwardFunction = self:MatchToken(TOKEN.FORWARD)
   local registerValue = self:MatchToken(TOKEN.LREGISTER)
-
+  
   if self:PeekToken() == TOKEN.TYPE then
     if inlineFunction then
       self.GenerateInlineFunction = true
       self.InlineFunctionCode = {}
     end
-
+        
     local isDefined,variableList,functionName,returnType,returnPtrLevel = self:DefineVariable(false,forwardFunction,registerValue)
     if isDefined then
       if functionName then
@@ -759,7 +759,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
         end
       end
     end
-
+    
     if inlineFunction and (not functionName) then
       self:Error("Can only inline functions")
     end
@@ -768,18 +768,18 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     end
     return isDefined
   end
-
+  
   -- Peek structure definition
   local nextToken,structName = self:PeekToken(0,true)
   if (nextToken == TOKEN.IDENT) and (self.Structs[structName]) then
     self:DefineVariable()
     return true
   end
-
+  
   if inlineFunction or exportSymbol or forwardFunction or registerValue then
     self:Error("Function definition or symbol definition expected")
   end
-
+  
   -- Parse preserve/zap
   if self:MatchToken(TOKEN.PRESERVE) or self:MatchToken(TOKEN.ZAP) then
     local tokenType = self.TokenType
@@ -794,19 +794,19 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       self:Error("Can only zap/preserve registers inside functions/local blocks")
     end
   end
-
+  
   -- Parse assembly instruction
   if self:MatchToken(TOKEN.OPCODE) then return self:Opcode() end
-
+  
   -- Parse STRUCT macro
   if self:MatchToken(TOKEN.STRUCT) then
     self:ExpectToken(TOKEN.IDENT)
     local structName = self.TokenData
-
+    
     -- Create structure
     self.Structs[structName] = {}
     self.StructSize[structName] = 0
-
+    
     -- Populate structure
     self:ExpectToken(TOKEN.LBRACKET)
     while (not self:MatchToken(TOKEN.RBRACKET)) and (not self:MatchToken(TOKEN.EOF)) do
@@ -826,18 +826,18 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     if self.BlockDepth > 0 then
       self:Warning("Defining a vector inside a function block might cause issues")
     end
-
+  
     -- Vector type (VEC2F, etc)
     local vectorType = self.TokenData
-
+    
     -- Vector name
     self:ExpectToken(TOKEN.IDENT)
     local vectorName = self.TokenData
-
+    
     -- Create leaf and label for vector name
     local vectorNameLabelLeaf = self:NewLeaf()
     vectorNameLabelLeaf.Opcode = "LABEL"
-
+    
     local vectorNameLabel = self:DefineLabel(vectorName)
     vectorNameLabel.Type = "Pointer"
     vectorNameLabel.Defined = true
@@ -845,7 +845,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     vectorNameLabel.DebugAsVector = #VectorSyntax[vectorType]
     vectorNameLabelLeaf.Label = vectorNameLabel
     self:AddLeafToTail(vectorNameLabelLeaf)
-
+    
     -- Create leaves for all vector labels and their data
     local vectorLeaves = {}
     for index,labelNames in pairs(VectorSyntax[vectorType]) do
@@ -853,7 +853,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       for labelIndex,labelName in pairs(labelNames) do
         local vectorLabelLeaf = self:NewLeaf()
         vectorLabelLeaf.Opcode = "LABEL"
-
+        
         local vectorLabel = self:GetLabel(vectorName.."."..labelName)
         vectorLabel.Type = "Pointer"
         vectorLabel.Defined = true
@@ -867,7 +867,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       vectorLeaves[index].Opcode = "DATA"
       vectorLeaves[index].Data = { 0 }
       self:AddLeafToTail(vectorLeaves[index])
-
+      
       if vectorType == "COLOR" then
         vectorLeaves[index].Data = { 255 }
       end
@@ -883,7 +883,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
         else
           self:Error("Vector initialization must be constant")
         end
-
+        
         if (index == #VectorSyntax[vectorType]) and self:MatchToken(TOKEN.COMMA) then
           self:Error("Too much values for intialization")
         end
@@ -906,7 +906,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     self:AddLeafToTail(jmpLeaf)
     return true
   end
-
+  
   -- Parse CODE macro
   if self:MatchToken(TOKEN.CODE) then
     local label = self:DefineLabel("_code")
@@ -924,11 +924,11 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     -- org x
     local markerLeaf = self:NewLeaf()
     markerLeaf.Opcode = "MARKER"
-
+    
     local c,v = self:ConstantExpression(true)
     if c then markerLeaf.SetWritePointer = v
     else self:Error("ORG offset must be constant") end
-
+    
     self:AddLeafToTail(markerLeaf)
     return true
   end
@@ -963,7 +963,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       else
         table.insert(dbLeaf.Data,v or e)
       end
-
+      
       -- Only keep parsing if next token is comma
       if self:MatchToken(TOKEN.COMMA) then
         c,v,e = self:ConstantExpression(false)
@@ -973,11 +973,11 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     end
     self.IgnoreStringInExpression = false
     self.MostLikelyConstantExpression = false
-
+    
     self:AddLeafToTail(dbLeaf)
     return true
   end
-
+  
   -- Parse STRING macro
   if self:MatchToken(TOKEN.STRALLOC) then
     -- string name,1,...
@@ -986,7 +986,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     -- Create leaf and label for vector name
     local stringNameLabelLeaf = self:NewLeaf()
     stringNameLabelLeaf.Opcode = "LABEL"
-
+    
     local stringNameLabel = self:DefineLabel(self.TokenData)
     stringNameLabel.Type = "Pointer"
     stringNameLabel.Defined = true
@@ -1031,9 +1031,9 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     local defineLabel = self:DefineLabel(self.TokenData)
     defineLabel.Type = "Pointer"
     defineLabel.Defined = true
-
+    
     self:ExpectToken(TOKEN.COMMA)
-
+    
     self.MostLikelyConstantExpression = true
     local c,v,e = self:ConstantExpression(false)
     if c then
@@ -1046,7 +1046,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       self:Error("Define value must be constant")
     end
     self.MostLikelyConstantExpression = false
-
+    
     return true
   end
 
@@ -1060,7 +1060,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     local allocLabel,allocSize,allocValue = nil,1,0
     local expectSize = false
     allocLeaf.Opcode = "DATA"
-
+    
     -- Add a label to this alloc
     if self:MatchToken(TOKEN.IDENT) then
       allocLabel = self:DefineLabel(self.TokenData)
@@ -1070,10 +1070,10 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
 
       allocLabel.Leaf = allocLeaf
       allocLeaf.Label = allocLabel
-
+      
       if self:MatchToken(TOKEN.COMMA) then expectSize = true end
     end
-
+      
     -- Read size
     self.MostLikelyConstantExpression = true
     if (not allocLabel) or (expectSize) then
@@ -1081,7 +1081,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       if c then allocSize = v
       else self:Error("Alloc size must be constant") end
     end
-
+    
     if allocLabel and expectSize then
       if self:MatchToken(TOKEN.COMMA) then
         local c,v = self:ConstantExpression(true) -- need precise value here, no ptrs allowed
@@ -1093,17 +1093,17 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       end
     end
     self.MostLikelyConstantExpression = false
-
+    
     -- Initialize alloc
     allocLeaf.ZeroPadding = allocSize
     self:AddLeafToTail(allocLeaf)
     return true
   end
-
-
-
-
-
+  
+  
+  
+  
+  
   -- Parse RETURN
   if self:MatchToken(TOKEN.RETURN) and self.HeadLeaf then
     if not self:MatchToken(TOKEN.COLON) then
@@ -1115,7 +1115,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       returnLeaf.ExplictAssign = true
       self:AddLeafToTail(returnLeaf)
     end
-
+    
     -- Check if this is the last return in the function
 --    self:MatchToken(TOKEN.COLON)
 --    if self:MatchToken(TOKEN.RBRACKET) then
@@ -1126,7 +1126,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
 --        self:Error("Unexpected bracket")
 --      end
 --    end
-
+    
 
     if not self.GenerateInlineFunction then
       -- Create leaf for exiting local scope
@@ -1143,10 +1143,10 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       retLeaf.Opcode = "ret"
       self:AddLeafToTail(retLeaf)
     end
-
+    
     return true
   end
-
+  
   -- Parse IF syntax
   if self:MatchToken(TOKEN.IF) then
     -- Parse condition
@@ -1156,11 +1156,11 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     local conditionLeaf = self:Expression()
     local conditionText = "if ("..self:PrintTokens(self:GetSavedTokens(firstToken))..")"
     self:ExpectToken(TOKEN.RPAREN)
-
+    
     -- Enter the IF block
     local needBlock = self:MatchToken(TOKEN.LBRACKET)
     self:BlockStart("IF")
-
+    
     -- Calculate condition
     local cmpLeaf = self:NewLeaf()
     cmpLeaf.Opcode = "cmp"
@@ -1168,7 +1168,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     cmpLeaf.Operands[2] = conditionLeaf
     cmpLeaf.Comment = conditionText
     self:AddLeafToTail(cmpLeaf)
-
+    
     -- Create label for conditional break (if condition is false)
     local conditionalBreakLeaf = self:NewLeaf()
     local conditionalBreak = self:GetTempLabel()
@@ -1178,7 +1178,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     conditionalBreakLeaf.Label = conditionalBreak
     self.SpecialLeaf[#self.SpecialLeaf].ConditionalBreak = conditionalBreakLeaf
 --    self:AddLeafToTail(conditionalBreakLeaf)
-
+    
     -- Generate conditional jump over the block
     local jumpLeaf = self:NewLeaf()
     jumpLeaf.Opcode = "jge"
@@ -1188,10 +1188,10 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     if not needBlock then
       -- Parse next statement if dont need a block
       self:Statement()
-
+      
       -- End the IF block early
       self:BlockEnd()
-
+      
       -- Add exit label
       self:AddLeafToTail(conditionalBreakLeaf)
 
@@ -1203,14 +1203,14 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
 --      self:AddLeafToTail(conditionalBreak)
 --      self.SpecialLeaf[#self.SpecialLeaf].ConditionalBreak = jumpLeaf
     end
-
+    
     return true
   end
-
+  
   -- Parse WHILE syntax
   if self:MatchToken(TOKEN.WHILE) then
     local returnLabel
-
+  
     -- Parse condition
     self:ExpectToken(TOKEN.LPAREN)
     local firstToken = self.CurrentToken
@@ -1218,7 +1218,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     local conditionLeaf = self:Expression()
     local conditionText = "if ("..self:PrintTokens(self:GetSavedTokens(firstToken))
     self:ExpectToken(TOKEN.RPAREN)
-
+    
     -- Enter the WHILE block
     local needBlock = self:MatchToken(TOKEN.LBRACKET)
     if needBlock then
@@ -1257,10 +1257,10 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       jumpOverLeaf.Opcode = "jz"
       jumpOverLeaf.Operands[1] = { PointerToLabel = jumpOverLabel }
       self:AddLeafToTail(jumpOverLeaf)
-
+      
       -- Parse next statement if dont need a block
       self:Statement()
-
+      
       -- Generate the jump back leaf
       local jumpBackLeaf = self:NewLeaf()
       jumpBackLeaf.Opcode = "jmp"
@@ -1275,15 +1275,15 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       jumpOverLeaf.Opcode = "jz"
       jumpOverLeaf.Operands[1] = { PointerToLabel = self.SpecialLeaf[#self.SpecialLeaf].Break.Label }
       self:AddLeafToTail(jumpOverLeaf)
-
+   
       -- Set the jump back leaf
       self.SpecialLeaf[#self.SpecialLeaf].JumpBack.Opcode = "jmp"
       self.SpecialLeaf[#self.SpecialLeaf].JumpBack.Operands[1] = { PointerToLabel = self.SpecialLeaf[#self.SpecialLeaf].Continue.Label }
     end
-
+   
     return true
   end
-
+  
   -- Parse FOR syntax
   if self:MatchToken(TOKEN.FOR) then
     local returnLabel
@@ -1299,7 +1299,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     local stepLeaf = self:Expression()
     stepLeaf.Comment = "loop step"
     self:ExpectToken(TOKEN.RPAREN)
-
+    
     self:AddLeafToTail(initLeaf)
 
     -- Enter the FOR block
@@ -1367,7 +1367,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
 
     return true
   end
-
+  
   -- Parse CONTINUE
   if self:MatchToken(TOKEN.CONTINUE) then
     if (self.BlockDepth > 0) and (self.CurrentContinueLeaf) then
@@ -1380,7 +1380,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       self:Error("Nowhere to continue here")
     end
   end
-
+  
   -- Parse BREAK
   if self:MatchToken(TOKEN.BREAK) then
     if (self.BlockDepth > 0) and (self.CurrentBreakLeaf) then
@@ -1393,7 +1393,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       self:Error("Nowhere to break from here")
     end
   end
-
+  
   -- Parse GOTO
   if self:MatchToken(TOKEN.GOTO) then
     local gotoExpression = self:Expression()
@@ -1410,7 +1410,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
     self:BlockStart("LBLOCK")
     return true
   end
-
+  
   -- Parse block close bracket
   if self:MatchToken(TOKEN.RBRACKET) then
     if self.BlockDepth > 0 then
@@ -1428,7 +1428,7 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
       self:Error("Unexpected bracket")
     end
   end
-
+  
   -- Parse possible label definition
   local firstToken = self.CurrentToken
   self:SaveParserState()
@@ -1440,12 +1440,12 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
         local label = self:DefineLabel(self.TokenData)
         label.Type = "Pointer"
         label.Defined = true
-
+        
         label.Leaf = self:NewLeaf()
         label.Leaf.Opcode = "LABEL"
         label.Leaf.Label = label
         self:AddLeafToTail(label.Leaf)
-
+        
         self:MatchToken(TOKEN.COMMA)
         if not self:MatchToken(TOKEN.IDENT) then break end
       end
@@ -1460,12 +1460,12 @@ function HCOMP:Statement() local TOKEN = self.TOKEN
   -- If nothing else, must be some kind of an expression
   local expressionLeaf = self:Expression()
   self:AddLeafToTail(expressionLeaf)
-
+  
   -- Add expression to leaf comment
   if self.Settings.GenerateComments then
     expressionLeaf.Comment = self:PrintTokens(self:GetSavedTokens(firstToken))
   end
-
+  
   -- Skip a colon
   self:MatchToken(TOKEN.COLON)
   return true

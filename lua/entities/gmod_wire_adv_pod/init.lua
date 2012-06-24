@@ -25,32 +25,32 @@ function ENT:Initialize()
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
 	self:SetUseType( SIMPLE_USE )
-
+		
 	local outputs = {
 		-- Keys
 		"W", "A", "S", "D", "Mouse1", "Mouse2",
 		"R", "Space", "Shift", "Zoom", "Alt", "TurnLeftKey", "TurnRightKey",
-
+		
 		-- Clientside keys
 		"PrevWeapon", "NextWeapon", "Light",
-
+		
 		-- Aim Position
 		"X", "Y", "Z", "AimPos [VECTOR]",
 		"Distance", "Bearing", "Elevation",
-
+		
 		-- Other info
 		"ThirdPerson", "Team", "Health", "Armor",
-
+		
 		-- Active
 		"Active",
-
+		
 		-- Entity
 		"Entity [ENTITY]",
 	}
-
+	
 	self.Inputs = WireLib.CreateInputs( self, { "Lock", "Terminate", "Strip weapons", "Eject", "Disable", "Crosshairs", "Brake", "Allow Buttons", "Relative", "Damage Health", "Damage Armor", "Hide Player", "Hide HUD"} )
 	self.Outputs = WireLib.CreateOutputs( self, outputs )
-
+	
 	self:SetLocked( false )
 	self:SetHidePlayer( false )
 	self:SetHideHUD( false )
@@ -60,56 +60,50 @@ function ENT:Initialize()
 	self.AllowButtons = false
 	self.Relative = false
 	self.MouseDown = false
-
+	
 	self:SetActivated( false )
-
-	local r,g,b,a = self:GetColor()
-	self:SetColor( 255,0,0, a )
+	
+	local c = self:GetColor()
+	self:SetColor( Color(255,0,0, c.a) )
 	self:SetOverlayText( "Adv. Pod Controller" )
 end
 
 -- Accessor funcs for certain functions
 function ENT:SetLocked( b )
 	if (!self:HasPod() or self.Locked == b) then return end
-
+	
 	self.Locked = b
 	self.Pod:Fire( b and "Lock" or "Unlock", "1", 0 )
 end
 
 function ENT:SetActivated( b )
 	if (self.Activated == b) then return end
-
-	local _,_,_,a = self:GetColor()
+	
+	local c = self:GetColor()
 	if (b) then
-		self:SetColor( 0,255,0,a )
+		self:SetColor( Color(0,255,0,c.a) )
 	else
-		self:SetColor( 255,0,0,a )
+		self:SetColor( Color(255,0,0,c.a) )
 	end
-
+	
 	self.Activated = b
 	WireLib.TriggerOutput(self, "Active", b and 1 or 0)
-end
-
-function ENT:HidePlayer( b )
-	if not self:HasPly() then return end
-
-	local r,g,_b,a = self:GetPly():GetColor()
-	if (b) then
-		self.OldPlyAlpha = a
-		self:GetPly():SetColor(r,g,_b,0)
-	else
-		self:GetPly():SetColor(r,g,_b,self.OldPlyAlpha or 255)
-		self.OldPlyAlpha = nil
-	end
 end
 
 function ENT:SetHidePlayer( b )
 	if (self.HidePlayer == b) then return end
 
-	self.HidePlayerVal = b
-
+	self.HidePlayer = b
+	
 	if (self:HasPly()) then
-		self:HidePlayer( b )
+		local c = self:GetPly():GetColor()
+		if (b) then
+			self.OldPlyAlpha = c.a
+			self:GetPly():SetColor(Color(c.r,c.g,c.b,0))
+		else
+			self:GetPly():SetColor(Color(c.r,c.g,c.b,self.OldPlyAlpha or 255))
+			self.OldPlyAlpha = nil
+		end
 	end
 end
 
@@ -128,7 +122,7 @@ function ENT:SetPod( pod )
 	return true
 end
 
-function ENT:HasPly()
+function ENT:HasPly() 
 	return (self.Ply and self.Ply:IsValid())
 end
 function ENT:GetPly()
@@ -142,7 +136,7 @@ end
 
 function ENT:SetHideHUD( bool )
 	self.HideHUD = bool
-
+	
 	if self:HasPly() and self:HasPod() then -- If we have a player, we SHOULD always have a pod as well, but just in case.
 		umsg.Start( "wire adv pod hud", self:GetPly() )
 			umsg.Entity( self:GetPod() )
@@ -156,11 +150,11 @@ function ENT:GetHideHUD() return self.HideHUD end
 concommand.Add("wire_adv_pod_bind", function( ply,cmd,args )
 	local bind = args[1]
 	if (!bind) then return end
-
+	
 	if (bind == "1") then bind = "PrevWeapon"
 	elseif (bind == "2") then bind = "NextWeapon"
 	elseif (bind == "3") then bind = "Light" end
-
+	
 	for _, pod in pairs( ents.FindByClass( "gmod_wire_adv_pod" ) ) do
 		if (ply:GetVehicle() == pod.Pod) then
 			WireLib.TriggerOutput( pod, bind, 1 )
@@ -206,7 +200,7 @@ function ENT:TriggerInput( name, value )
 	elseif (name == "Strip weapons") then
 		if (value == 0 or !self:HasPly()) then return end
 		local ply = self:GetPly()
-		if (self.RC) then
+		if (self.RC) then 
 			ply:ChatPrint( "Your control has been terminated, and your weapons stripped!" )
 			self:RCEject( ply )
 		else
@@ -215,14 +209,14 @@ function ENT:TriggerInput( name, value )
 		ply:StripWeapons()
 	elseif (name == "Eject") then
 		if (value == 0 or !self:HasPly()) then return end
-		if (self.RC) then
+		if (self.RC) then 
 			self:RCEject( self:GetPly() )
 		else
 			self:GetPly():ExitVehicle()
 		end
 	elseif (name == "Disable") then
 		self.Disable = (value != 0)
-
+		
 		if (self.Disable) then
 			for k,v in pairs( serverside_keys ) do
 				WireLib.TriggerOutput( self, v, 0 )
@@ -263,6 +257,7 @@ function ENT:TriggerInput( name, value )
 		self.Relative = (value != 0)
 	elseif (name == "Hide Player") then
 		self:SetHidePlayer( value != 0 )
+		self.HidePlayerVal = (value != 0)
 	elseif (name == "Hide HUD") then
 		self:SetHideHUD( value ~= 0 )
 	end
@@ -278,12 +273,12 @@ function ENT:Think()
 	if (self:HasPly() and self.Activated) then
 		local ply = self:GetPly()
 		local pod = self:GetPod()
-
+		
 		-- Tracing
 		local trace = util.TraceLine( { start = ply:GetShootPos(), endpos = ply:GetShootPos() + ply:GetAimVector() * 9999999999, filter = { ply, pod } } )
 		local distance = 0
 		if (self:HasPod()) then distance = trace.HitPos:Distance( pod:GetPos() ) else distance = trace.HitPos:Distance( ply:GetShootPos() ) end
-
+		
 		if (trace.Hit) then
 			-- Position
 			WireLib.TriggerOutput( self, "X", trace.HitPos.x )
@@ -292,10 +287,10 @@ function ENT:Think()
 			WireLib.TriggerOutput( self, "AimPos", trace.HitPos )
 			WireLib.TriggerOutput( self, "Distance", distance )
 			self.VPos = trace.HitPos
-
+			
 			-- Bearing & Elevation
 			local angle = ply:GetAimVector():Angle()
-
+			
 			if (self.Relative) then
 				local originalangle
 				if (self.RC) then
@@ -321,7 +316,7 @@ function ENT:Think()
 			WireLib.TriggerOutput( self, "Elevation", 0 )
 			self.VPos = Vector(0,0,0)
 		end
-
+		
 		-- Button pressing
 		if (self.AllowButtons and distance < 82) then
 			local button = trace.Entity
@@ -347,7 +342,7 @@ function ENT:Think()
 				end
 			end
 		end
-
+		
 		-- Other info
 		WireLib.TriggerOutput(self, "Team", ply:Team())
 		WireLib.TriggerOutput(self, "Health", ply:Health())
@@ -362,34 +357,35 @@ end
 function ENT:PlayerEntered( ply, RC )
 	if (self:HasPly()) then return end
 	self:SetPly( ply )
-
+	
 	if (RC != nil) then self.RC = RC else self.RC = nil end
-
+	
 	if (self.Crosshairs) then
 		ply:CrosshairEnable()
 	end
-
+	
 	if self.HideHUD and self:HasPod() then
 		umsg.Start( "wire adv pod hud", ply )
 			umsg.Entity( self:GetPod() )
 			umsg.Bool( true )
 		umsg.End()
 	end
-
+	
 	if (self.HidePlayerVal) then
-		self:HidePlayer( true )
+		self:SetHidePlayer( true )
 	end
-
+	
 	self:SetActivated( true )
 end
 
 function ENT:PlayerExited( ply )
 	if (!self:HasPly()) then return end
-
-	self:HidePlayer( false )
-
+	self:SetPly( nil )
+	
+	self:SetHidePlayer( false )
+	
 	ply:CrosshairEnable()
-
+	
 	self:SetActivated( false )
 
 	for k,v in pairs( serverside_keys ) do
@@ -398,22 +394,20 @@ function ENT:PlayerExited( ply )
 	WireLib.TriggerOutput( self, "PrevWeapon", 0 )
 	WireLib.TriggerOutput( self, "NextWeapon", 0 )
 	WireLib.TriggerOutput( self, "Light", 0 )
-
+	
 	WireLib.TriggerOutput( self, "X", 0 )
 	WireLib.TriggerOutput( self, "Y", 0 )
 	WireLib.TriggerOutput( self, "Z", 0 )
 	WireLib.TriggerOutput( self, "AimPos", Vector(0,0,0) )
-
+	
 	WireLib.TriggerOutput( self, "Distance", 0 )
 	WireLib.TriggerOutput( self, "Bearing", 0 )
 	WireLib.TriggerOutput( self, "Elevation", 0 )
-
+	
 	WireLib.TriggerOutput( self, "ThirdPerson", 0 )
 	WireLib.TriggerOutput( self, "Team", 0 )
 	WireLib.TriggerOutput( self, "Health", 0 )
 	WireLib.TriggerOutput( self, "Armor", 0 )
-
-	self:SetPly( nil )
 end
 
 hook.Add( "PlayerEnteredVehicle", "Wire_Adv_Pod_EnterVehicle", function( ply, vehicle )
@@ -461,11 +455,11 @@ function ENT:Use( User, caller )
 		if not User:IsPlayer() then return end
 		if not User:KeyDown(IN_USE) then return end
 		if not User:GetEyeTrace().Entity or User:GetEyeTrace().Entity ~= self then return end
-
+		
 		if not User:GetWeapon("RemoteController"):IsValid()  then
 			User:Give("RemoteController")
 		end
-
+		
 		User:GetWeapon("RemoteController").Linked = self
 		User:PrintMessage(HUD_PRINTTALK, "You are now linked!")
 		User:SelectWeapon("RemoteController")
@@ -475,7 +469,7 @@ end
 
 function MakeWireAdvPod(pl, Pos, Ang, model, frozen)
 	if not pl:CheckLimit("wire_pods") then return false end
-
+	
 	local wire_pod = ents.Create("gmod_wire_adv_pod")
 	if not wire_pod:IsValid() then return false end
 	wire_pod:SetModel( model or MODEL )
@@ -489,10 +483,10 @@ function MakeWireAdvPod(pl, Pos, Ang, model, frozen)
 
 	wire_pod:SetPlayer(pl)
 	wire_pod.pl = pl
-
+	
 	pl:AddCount("wire_pods", wire_pod)
 	pl:AddCleanup( "gmod_wire_adv_pod", wire_pod )
-
+	
 	return wire_pod
 end
 duplicator.RegisterEntityClass("gmod_wire_adv_pod", MakeWireAdvPod, "Pos", "Ang", "Model", "frozen")

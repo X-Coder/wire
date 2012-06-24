@@ -21,7 +21,7 @@ local function WireTab()
 	for _,Category in ipairs(Wire_Categories) do
 		spawnmenu.AddToolCategory("Wire", Category, Category)
 	end
-
+	
 	--start: UGLY HACK, BAD BAD BAD D:
 	local oldspawnmenuAddToolMenuOption = spawnmenu.AddToolMenuOption
 	function spawnmenu.AddToolMenuOption(tab, category, ...)
@@ -40,7 +40,7 @@ local devs = {
 	["#Max Wiremod Values"] 			= "values",
 	["#Max Wiremod Two-way Radios"]		= "twoway_radioes",
 	["#Max Wiremod Turrets"]			= "turrets",
-	["#Max Wiremod Thrusters"]			= "thrusters",
+	["#Max Wiremod Thrusters"]			= "thrusters",	
 	["#Max Wiremod Target Finders"]		= "target_finders",
 	["#Max Wiremod Speedometers"]		= "speedometers",
 	["#Max Wiremod Spawners"]			= "spawners",
@@ -55,7 +55,7 @@ local devs = {
 	["#Max Wiremod Outputs"]			= "outputs",
 	["#Max Wiremod Oscilloscopes"]		= "oscilloscopes",
 	["#Max Wiremod Numpads"]			= "numpads",
-	["#Max Wiremod Nailers"]			= "nailers",
+	["#Max Wiremod Nailers"]			= "nailers",	
 	["#Max Wiremod Locators"]			= "locators",
 	["#Max Wiremod Inputs"]				= "inputs",
 	["#Max Wiremod Hoverballs"]			= "hoverballs",

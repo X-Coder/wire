@@ -29,11 +29,11 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	RegisterReceiver( self )
-
+	
 	self.Outputs = WireLib.CreateOutputs( self, { "Message [STRING]", "Player [ENTITY]", "Clk" } )
-
+	
 	self.UseLuaPatterns = false
 	self.CaseInsensitive = true
 	self.Matches = {}
@@ -47,7 +47,7 @@ function ENT:Setup( UseLuaPatterns, Matches, CaseInsensitive )
 		end
 	end
 	self.Outputs = WireLib.AdjustOutputs( self, outputs )
-
+	
 	self.UseLuaPatterns = UseLuaPatterns
 	self.Matches = Matches
 	self.CaseInsensitive = CaseInsensitive
@@ -69,12 +69,12 @@ local string_lower = string.lower
 function ENT:PlayerSpoke( ply, text )
 	WireLib.TriggerOutput( self, "Message", text )
 	WireLib.TriggerOutput( self, "Player", ply )
-
+	
 	WireLib.TriggerOutput( self, "Clk", 1 )
 	timer.Simple( 0, nextTick, self )
-
+	
 	if self.CaseInsensitive then text = string_lower(text) end
-
+	
 	for i=1,#self.Matches do
 		local match = self.Matches[i]
 		if self.CaseInsensitive then match = string_lower(match) end
@@ -88,16 +88,16 @@ end
 
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
-
+	
 	info.UseLuaPatterns = self.UseLuaPatterns
 	info.Matches = self.Matches
-
+	
 	return info
 end
 
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	self:Setup( info.UseLuaPatterns, info.Matches )
-
+	
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 end

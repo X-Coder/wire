@@ -22,6 +22,10 @@ local blocked_types = {
 	xgt = true,
 }
 
+local _maxdepth = CreateConVar("wire_expression2_table_maxdepth",6,{FCVAR_ARCHIVE,FCVAR_NOTIFY})
+local function maxdepth()
+	return _maxdepth:GetInt()
+end
 local _maxsize = 1024*1024
 local function maxsize()
 	return _maxsize
@@ -39,7 +43,7 @@ end
 -- Type defining
 --------------------------------------------------------------------------------
 
-local DEFAULT = {n={},ntypes={},s={},stypes={},size=0,istable=true}
+local DEFAULT = {n={},ntypes={},s={},stypes={},size=0,istable=true,depth=0}
 
 registerType("table", "t", table.Copy(DEFAULT),
 	function(self, input)
@@ -65,15 +69,15 @@ local function temp( ret, tbl, k, v, orientvertical, isnum )
 	else
 		id = tbl.stypes[k]
 	end
-
+	
 	if (isnum) then
 		ret = ret .. k .. "="
 	else
 		ret = ret .. '"' .. k .. '"' .. "="
 	end
-
+	
 	local longtype = wire_expression_types2[id][1]
-
+	
 	if (tbls[id] == true) then
 		if (id == "xgt") then
 			ret = ret .. "wtf how did this get here"
@@ -89,13 +93,13 @@ local function temp( ret, tbl, k, v, orientvertical, isnum )
 	else
 		ret = ret .. formatPort[longtype]( v, orientvertical )
 	end
-
+	
 	if (orientvertical) then
 		ret = ret .. "\n"
 	else
 		ret = ret .. ", "
 	end
-
+	
 	return ret
 end
 WireLib.registerDebuggerFormat( "table", function( value, orientvertical )
@@ -127,6 +131,32 @@ end
 -- Uppercases the first letter
 local function upperfirst( word )
 	return word:Left(1):upper() .. word:Right(-2):lower()
+end
+
+-- Sets the depth of all tables in the table, and returns the deepest depth
+local function checkdepth( tbl, depth, setdepth )
+	local deepest = depth or 0
+	for k,v in pairs( tbl.n ) do
+		if (tbl.ntypes[k] == "t") then
+			if (depth + 1 > maxdepth()) then return depth + 1 end
+			if (setdepth != false) then v.depth = depth + 1 end
+			local temp = checkdepth( v, depth + 1, setdepth )
+			if (temp > deepest) then 
+				deepest = temp
+			end
+		end
+	end
+	for k,v in pairs( tbl.s ) do
+		if (tbl.stypes[k] == "t") then
+			if (depth + 1 > maxdepth()) then return depth + 1 end
+			if (setdepth != false) then v.depth = depth + 1 end
+			local temp = checkdepth( v, depth + 1, setdepth )
+			if (temp > deepest) then
+				deepest = temp
+			end
+		end
+	end
+	return deepest
 end
 
 local function normal_table_tostring( tbl, indenting, printed, abortafter )
@@ -205,20 +235,24 @@ __e2setcost(5)
 registerOperator("ass", "t", "t", function(self, args)
 	local lhs, op2, scope = args[2], args[3], args[4]
 	local      rhs = op2[1](self, op2)
-
-	if (rhs.size > maxsize()) then
+	
+	if (checkdepth( rhs, 0, false ) > maxdepth()) then 
 		self.prf = self.prf + 500
-		return table.Copy(DEFAULT)
+		return table.Copy(DEFAULT) 
 	end
-
+	if (rhs.size > maxsize()) then 
+		self.prf = self.prf + 500
+		return table.Copy(DEFAULT) 
+	end
+	
 	local Scope = self.Scopes[scope]
 	if !Scope.lookup then Scope.lookup = {} end
-
+	
 	local lookup = Scope.lookup
 	if (lookup[rhs]) then lookup[rhs][lhs] = nil end
 	if (!lookup[rhs]) then lookup[rhs] = {} end
 	lookup[rhs][lhs] = true
-
+	
 	Scope[lhs] = rhs
 	Scope.vclk[lhs] = true
 	return rhs
@@ -241,7 +275,7 @@ registerOperator("fea","t","s",function(self,args)
 	local tbl = args[5]
 	tbl = tbl[1](self,tbl)
 	local statement = args[6]
-
+	
 	local keys = {}
 	local count = 0
 	for key,_ in pairs(tbl.s) do
@@ -250,19 +284,19 @@ registerOperator("fea","t","s",function(self,args)
 			keys[count] = key
 		end
 	end
-
+	
 	for i=1, count do
 		self:PushScope()
 		local key = keys[i]
 		if tbl.s[key] ~= nil then
 			self.prf = self.prf + 3
-
+			
 			self.Scope.vclk[keyname] = true
 			self.Scope.vclk[valname] = true
-
+	
 			self.Scope[keyname] = key
 			self.Scope[valname] = tbl.s[key]
-
+			
 			local ok, msg = pcall(statement[1], self, statement)
 			if not ok then
 				if msg == "break" then self:PopScope() break
@@ -275,17 +309,17 @@ end)
 
 registerOperator( "kvtable", "", "t", function( self, args )
 	local ret = table.Copy( DEFAULT )
-
+	
 
 	local types = args[3]
-
+	
 	local s, stypes, n, ntypes = {}, {}, {}, {}
 
 	local size = 0
 	for k,v in pairs( args[2] ) do
 		if not blocked_types[types[k]] then
 			local key = k[1]( self, k )
-
+			
 			if type(key) == "string" then
 				s[key] = v[1]( self, v )
 				stypes[key] = types[k]
@@ -294,14 +328,23 @@ registerOperator( "kvtable", "", "t", function( self, args )
 				ntypes[key] = types[k]
 			end
 			size = size + 1
-
+			
 			if size > maxsize() then
 				self.prf = self.prf + size * opcost + 500
 				return ret
 			end
+			
+			if types[k] == "t" then
+				if checkdepth( s[key], 1 ) > maxdepth() then
+					self.prf = self.prf + size * opcost + 500
+					return ret
+				end
+				s[key].depth = 1
+				s[key].parent = ret
+			end
 		end
 	end
-
+	
 	self.prf = self.prf + size * opcost
 	ret.size = size
 	ret.s = s
@@ -315,7 +358,7 @@ end)
 -- Common functions
 --------------------------------------------------------------------------------
 
-__e2setcost(1)
+__e2setcost(1)		
 
 -- Creates an table
 e2function table table(...)
@@ -329,6 +372,14 @@ e2function table table(...)
 			if (size > maxsize()) then -- Max size check
 				self.prf = self.prf + size * opcost + 500
 				return table.Copy(DEFAULT)
+			end
+			if (typeids[k] == "t") then
+				if (checkdepth( v, 1 )>maxdepth()) then -- Max depth check
+					self.prf = self.prf + size * opcost + 500
+					return table.Copy(DEFAULT)
+				end
+				v.depth = 1
+				v.parent = ret
 			end
 			ret.n[k] = v
 			ret.ntypes[k] = typeids[k]
@@ -348,6 +399,7 @@ e2function void table:clear()
 	this.ntypes = {}
 	table.Empty( this.s )
 	this.stypes = {}
+	this.parent = nil
 	this.size = 0
 	return this
 end
@@ -359,7 +411,17 @@ e2function number table:count()
 	return this.size
 end
 
+-- Returns the depth of the table
+e2function number table:depth()
+	return this.depth
+end
+
 __e2setcost(3)
+
+-- Returns the parent of the table
+e2function table table:parent()
+	return this.parent or table.Copy(DEFAULT)
+end
 
 __e2setcost(1)
 -- Returns 1 if any value exists at the specified index, else 0
@@ -430,7 +492,7 @@ e2function void table:remove( number index )
 	table.remove( this.n, index )
 	table.remove( this.ntypes, index )
 	this.size = this.size - 1
-	self.vclk[this] = true
+	self.vclk[this] = true		
 end
 
 -- Remove a variable at a string index
@@ -440,7 +502,7 @@ e2function void table:remove( string index )
 	this.s[index] = nil
 	this.stypes[index] = nil
 	this.size = this.size - 1
-	self.vclk[this] = true
+	self.vclk[this] = true		
 end
 
 -- Removes all variables not of the type
@@ -526,7 +588,7 @@ e2function table table:add( table rv2 )
 	local ret = table.Copy(this)
 	local cost = this.size
 	local size = this.size
-
+	
 	local count = #ret.n
 	for k,v in pairs( rv2.n ) do
 		cost = cost + 1
@@ -538,7 +600,7 @@ e2function table table:add( table rv2 )
 		end
 	end
 	size = size + count
-
+	
 	for k,v in pairs( rv2.s ) do
 		cost = cost + 1
 		if (!ret.s[k]) then
@@ -550,8 +612,12 @@ e2function table table:add( table rv2 )
 			end
 		end
 	end
-
+	
 	self.prf = self.prf + cost * opcost
+	if (checkdepth( ret, 0, false ) > maxdepth()) then 
+		self.prf = self.prf + 500 -- Punishment
+		return table.Copy(DEFAULT) 
+	end
 	ret.size = size
 	return ret
 end
@@ -561,7 +627,7 @@ e2function table table:merge( table rv2 )
 	local ret = table.Copy(this)
 	local cost = this.size
 	local size = this.size
-
+	
 	for k,v in pairs( rv2.n ) do
 		cost = cost + 1
 		local id = rv2.ntypes[k]
@@ -571,7 +637,7 @@ e2function table table:merge( table rv2 )
 			ret.ntypes[k] = id
 		end
 	end
-
+	
 	for k,v in pairs( rv2.s ) do
 		cost = cost + 1
 		local id = rv2.stypes[k]
@@ -581,8 +647,12 @@ e2function table table:merge( table rv2 )
 			ret.stypes[k] = id
 		end
 	end
-
+	
 	self.prf = self.prf + cost * opcost
+	if (checkdepth( ret, 0, false ) > maxdepth()) then 
+		self.prf = self.prf + 500 -- Punishment
+		return table.Copy(DEFAULT) 
+	end
 	ret.size = size
 	return ret
 end
@@ -592,7 +662,7 @@ e2function table table:difference( table rv2 )
 	local ret = table.Copy(DEFAULT)
 	local cost = 0
 	local size = 0
-
+	
 	for k,v in pairs( this.n ) do
 		cost = cost + 1
 		if (!rv2.n[k]) then
@@ -601,7 +671,7 @@ e2function table table:difference( table rv2 )
 			ret.ntypes[size] = this.ntypes[k]
 		end
 	end
-
+	
 	for k,v in pairs( this.s ) do
 		cost = cost + 1
 		if (!rv2.s[k]) then
@@ -612,7 +682,7 @@ e2function table table:difference( table rv2 )
 	end
 	self.prf = self.prf + cost * opcost
 	ret.size = size
-
+	
 	return ret
 end
 
@@ -621,7 +691,7 @@ e2function table table:intersect( table rv2 )
 	local ret = table.Copy(DEFAULT)
 	local cost = 0
 	local size = 0
-
+	
 	for k,v in pairs( this.n ) do
 		cost = cost + 1
 		if (rv2.n[k]) then
@@ -630,7 +700,7 @@ e2function table table:intersect( table rv2 )
 			ret.ntypes[size] = this.ntypes[k]
 		end
 	end
-
+	
 	for k,v in pairs( this.s ) do
 		cost = cost + 1
 		if (rv2.s[k]) then
@@ -641,7 +711,7 @@ e2function table table:intersect( table rv2 )
 	end
 	self.prf = self.prf + cost * opcost
 	ret.size = size
-
+	
 	return ret
 end
 
@@ -761,7 +831,7 @@ e2function array table:toArray()
 		if (tbls[id] != true) then
 			ret[k] = v
 		end
-	end
+	end		
 	self.prf = self.prf + cost * opcost
 	return ret
 end
@@ -785,6 +855,7 @@ e2function string table:concat()
 	self.prf = self.prf + #this * opcost
 	return concat(this.n)
 end
+
 e2function string table:concat(string delimiter)
 	self.prf = self.prf + #this/3
 	return concat(this.n,delimiter)
@@ -959,15 +1030,15 @@ registerCallback( "postinit", function()
 	for k,v in pairs( wire_expression_types ) do
 		local name = k
 		local id = v[1]
-
+		
 		if (!blocked_types[id]) then -- blocked check start
-
+		
 		--------------------------------------------------------------------------------
 		-- Set/Get functions, t[index,type] syntax
 		--------------------------------------------------------------------------------
-
+		
 		__e2setcost(5)
-
+		
 		-- Getters
 		registerOperator("idx",	id.."=ts"		, id, function(self,args)
 			local op1, op2 = args[2], args[3]
@@ -976,7 +1047,7 @@ registerCallback( "postinit", function()
 			if (v[6] and v[6](rv1.s[rv2])) then return fixdef(v[2]) end -- Type check
 			return rv1.s[rv2]
 		end)
-
+		
 		registerOperator("idx",	id.."=tn"		, id, function(self,args)
 			local op1, op2 = args[2], args[3]
 			local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
@@ -984,25 +1055,41 @@ registerCallback( "postinit", function()
 			if (v[6] and v[6](rv1.n[rv2])) then return fixdef(v[2]) end -- Type check
 			return rv1.n[rv2]
 		end)
-
+		
 		-- Setters
-		registerOperator("idx", id.."=ts"..id , id, function( self, args )
+		registerOperator("idx", id.."=ts"..id , id, function( self, args )	
 			local op1, op2, op3, scope = args[2], args[3], args[4], args[5]
 			local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+			if (id == "t") then
+				rv3.depth = rv1.depth + 1
+				if (checkdepth( rv3, rv3.depth, true ) > maxdepth()) then -- max depth check 
+					self.prf = self.prf + 500
+					return fixdef(v[2]) 
+				end
+				rv3.parent = rv1
+			end
 			if (!rv1.s[rv2]) then rv1.size = rv1.size + 1 end
-			if (rv1.size > maxsize()) then
+			if (rv1.size > maxsize()) then 
 				self.prf = self.prf + 500
-				return fixdef(v[2])
+				return fixdef(v[2]) 
 			end
 			rv1.s[rv2] = rv3
 			rv1.stypes[rv2] = id
 			self.vclk[rv1] = true //self.Scopes[scope].vclk[rv1] = true
 			return rv3
 		end)
-
+		
 		registerOperator("idx", id.."=tn"..id, id, function(self,args)
 			local op1, op2, op3, scope = args[2], args[3], args[4], args[5]
 			local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+			if (id == "t") then
+				rv3.depth = rv1.depth + 1
+				if (checkdepth( rv3, rv3.depth, true ) > maxdepth()) then -- max depth check
+					self.prf = self.prf + 500
+					return fixdef(v[2]) 
+				end
+				rv3.parent = rv1
+			end
 			if (!rv1.n[rv2]) then rv1.size = rv1.size + 1 end
 			if (rv1.size > maxsize()) then return fixdef(v[2]) end
 			rv1.n[rv2] = rv3
@@ -1010,14 +1097,14 @@ registerCallback( "postinit", function()
 			self.vclk[rv1] = true //self.Scopes[scope].vclk[rv1] = true
 			return rv3
 		end)
-
-
+		
+						
 		--------------------------------------------------------------------------------
 		-- Remove functions
 		--------------------------------------------------------------------------------
-
+		
 		__e2setcost(8)
-
+		
 		local function removefunc( self, rv1, rv2, numidx )
 			if (!rv1 or !rv2) then return fixdef(v[2]) end
 			if (numidx) then
@@ -1038,33 +1125,41 @@ registerCallback( "postinit", function()
 				return ret
 			end
 		end
-
+		
 		name = upperfirst( name )
 		if (name == "Normal") then name = "Number" end
-		registerFunction("remove"..name,"t:s",id,function(self,args)
+		registerFunction("remove"..name,"t:s",id,function(self,args) 			
 			local op1, op2 = args[2], args[3]
 			local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 			return removefunc( self, rv1, rv2)
 		end)
-		registerFunction("remove"..name,"t:n",id,function(self,args)
+		registerFunction("remove"..name,"t:n",id,function(self,args) 			
 			local op1, op2 = args[2], args[3]
 			local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 			return removefunc(self, rv1, rv2, true)
 		end)
-
-
+		
+				
 		--------------------------------------------------------------------------------
 		-- Array functions
 		--------------------------------------------------------------------------------
 		__e2setcost(10)
-
+		
 		-- Push a variable into the table (into the array part)
-		registerFunction( "push"..name,"t:"..id,"",function(self,args)
+		registerFunction( "push"..name,"t:"..id,"",function(self,args) 
 			local op1, op2 = args[2], args[3]
 			local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 			local n = #rv1.n+1
+			if (id == "t") then
+				rv2.depth = rv1.depth + 1
+				if (checkdepth( rv2, rv2.depth, true ) > maxdepth()) then 
+					self.prf = self.prf + 500
+					return fixdef(v[2])
+				end
+				rv2.parent = rv1
+			end
 			rv1.size = rv1.size + 1
-			if (rv1.size > maxsize()) then
+			if (rv1.size > maxsize()) then 
 				self.prf = self.prf + 500
 				return fixdef(v[2])
 			end
@@ -1073,43 +1168,59 @@ registerCallback( "postinit", function()
 			self.vclk[rv1] = true
 			return rv2
 		end)
-
-		registerFunction( "pop"..name,"t:",id,function(self,args)
+		
+		registerFunction( "pop"..name,"t:",id,function(self,args) 			
 			local op1 = args[2]
 			local rv1 = op1[1](self, op1)
 			return removefunc(self, rv1, #rv1.n, true)
 		end)
-
+		
 		registerFunction( "insert"..name,"t:n"..id,"",function(self,args)
 			local op1, op2, op3 = args[2], args[3], args[4]
 			local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self,op3)
 			if (rv2 < 0) then return end
+			if (id == "t") then
+				rv3.depth = rv1.depth + 1
+				if (checkdepth( rv3, rv3.depth, true ) > maxdepth()) then 
+					self.prf = self.prf + 500
+					return fixdef(v[2])
+				end
+				rv3.parent = rv1
+			end
 			rv1.size = rv1.size + 1
 			if (rv1.size > maxsize()) then
 				self.prf = self.prf + 500
-				return fixdef(v[2])
+				return fixdef(v[2]) 
 			end
 			table.insert( rv1.n, rv2, rv3 )
 			table.insert( rv1.ntypes, rv2, id )
 			self.vclk[rv1] = true
 			return rv3
 		end)
-
+		
 		registerFunction( "unshift"..name,"t:"..id,"",function(self,args)
 			local op1, op2 = args[2], args[3]
 			local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+			if (id == "t") then
+				rv2.depth = rv1.depth + 1
+				if (checkdepth( rv2, rv2.depth, true ) > maxdepth()) then 
+					self.prf = self.prf + 500
+					return fixdef(v[2]) 
+				end
+				rv2.parent = rv1
+			end
 			rv1.size = rv1.size + 1
-			if (rv1.size > maxsize()) then
+			if (rv1.size > maxsize()) then 
 				self.prf = self.prf + 500
-				return fixdef(v[2])
+				return fixdef(v[2]) 
 			end
 			table.insert( rv1.n, 1, rv2 )
 			table.insert( rv1.ntypes, 1, id )
 			self.vclk[rv1] = true
 			return rv2
 		end)
-
-
+		
+		
 		end -- blocked check end
 
 	end
@@ -1127,7 +1238,7 @@ registerCallback("postexecute", function(self)
 	-- Go through all registered values of the types table and array.
 	for value,varnames in pairs(lookup) do
 		local clk = vclk[value]
-
+		
 		local still_assigned = false
 		-- For each value, go through the variables they're assigned to and trigger them.
 		for varname,_ in pairs(varnames) do
@@ -1140,7 +1251,7 @@ registerCallback("postexecute", function(self)
 				varnames[varname] = nil
 			end
 		end
-
+		
 		-- if the value is no longer assigned to anything, remove all references to it.
 		if not still_assigned then
 			lookup[value] = nil
@@ -1158,7 +1269,7 @@ local tbls = {
 registerCallback("construct", function(self)
 	local Scope = self.GlobalScope
 	Scope.lookup = {}
-
+	
 	for k,v in pairs( Scope ) do
 		if k != "lookup" then
 			local datatype = self.entity.outports[3][k]

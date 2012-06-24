@@ -15,16 +15,16 @@ Obj.Draw = function( self )
 			local radd = rad(i)
 			local x = cos(radd)
 			local y = sin(radd)
-
+			
 			local tempx = x * self.w * c - y * self.h * s + self.x
 			y = x * self.w * s + y * self.h * c + self.y
 			x = tempx
-
+			
 			vertices[#vertices+1] = { x = x, y = y, u = u, v = v }
 		end
-
+		
 		surface.SetDrawColor( self.r, self.g, self.b, self.a )
-
+		
 		local n = #vertices
 		for i=1, n do
 			local v = vertices[i]
@@ -34,7 +34,7 @@ Obj.Draw = function( self )
 				EGP:DrawLine( x, y, x2, y2, self.size )
 			end
 		end
-
+		
 		EGP:DrawLine( vertices[n].x, vertices[n].y, vertices[1].x, vertices[1].y, self.size )
 	end
 end

@@ -28,7 +28,7 @@ for varname,default in pairs(nwvars) do
 	ENT["Set"..varname] = function(self, val)
 		self:SetNetworkedFloat("Light"..varname,val)
 	end
-
+	
 	ENT["Get"..varname] = function(self)
 		return self:GetNetworkedFloat("Light"..varname, default)
 	end

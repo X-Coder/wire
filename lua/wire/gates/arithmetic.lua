@@ -10,7 +10,7 @@ GateActions["increment"] = {
 	output = function(gate, A, Clk, Reset)
 		local clk = ( Clk > 0 )
 		local reset = ( Reset > 0 )
-
+		
 		if ( gate.PrevValue ~= clk ) then
 			gate.PrevValue = clk
 			if ( clk ) then
@@ -21,14 +21,14 @@ GateActions["increment"] = {
 				end
 			end
 		end
-
+		
 		if( gate.PrevReset ~= reset ) then
 			gate.PrevReset = reset
 			if ( reset ) then
 				gate.Memory = 0
 			end
 		end
-
+		
 		return gate.Memory
 	end,
 	label = function(Out, A)
@@ -278,7 +278,7 @@ GateActions["pow"] = {
 	name = "Exponential Powers",
 	inputs = { "A", "B" },
 	output = function(gate, A, B)
-		return A ^ B
+		return math.pow(A, B)
 	end,
 	label = function(Out, A, B)
 		return "pow("..A..", "..B..") = "..Out
@@ -378,28 +378,28 @@ GateActions["increment/decrement"] = {
 		local increment = ( Increment > 0 )
 		local decrement = ( Decrement > 0 )
 		local reset = (Reset > 0)
-
+		
 		if ( gate.PrevValue ~= increment ) then
 			gate.PrevValue = increment
 			if ( increment ) then
 				gate.Memory = (gate.Memory or 0) + A
 			end
 		end
-
+		
 		if ( gate.PrevValue ~= decrement ) then
 			gate.PrevValue = decrement
 			if ( decrement ) then
 				gate.Memory = (gate.Memory or 0) - A
 			end
 		end
-
+		
 		if( gate.PrevReset ~= reset ) then
 			gate.PrevReset = reset
 			if ( reset ) then
 				gate.Memory = 0
 			end
 		end
-
+		
 		return gate.Memory
 	end,
 	label = function(Out, A)

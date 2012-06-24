@@ -10,17 +10,17 @@ local function rotate( x, y, a )
 	return _x, _y
 end
 
-Obj.Draw = function( self )
+Obj.Draw = function( self )	
 	if (self.a>0 and self.w > 0 and self.h > 0) then
 		surface.SetDrawColor( self.r, self.g, self.b, self.a )
-
+		
 		local x, y, w, h, a, s = self.x, self.y, self.w, self.h, self.angle, self.size
-
+		
 		local x1, y1 = rotate( w / 2 - s / 2, 0, -a )
 		local x2, y2 = rotate( -w / 2 + s / 2, 0, -a )
 		local x3, y3 = rotate( 0, h / 2 - s / 2, -a )
 		local x4, y4 = rotate( 0, -h / 2 + s / 2, -a )
-
+		
 		if (h - s*2 > 0) then
 			surface.DrawTexturedRectRotated( x + math.ceil(x1), y + math.ceil(y1), h - s*2, s, a - 90 )
 			surface.DrawTexturedRectRotated( x + math.ceil(x2), y + math.ceil(y2), h - s*2, s, a + 90 )

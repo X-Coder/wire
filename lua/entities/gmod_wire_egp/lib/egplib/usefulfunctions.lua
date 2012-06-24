@@ -45,10 +45,10 @@ function EGP:ScaleObject( ent, v )
 	local xMax = xScale[2]
 	local yMin = yScale[1]
 	local yMax = yScale[2]
-
+	
 	local xMul = 512/(xMax-xMin)
 	local yMul = 512/(yMax-yMin)
-
+	
 	if (v.verticesindex) then -- Object has vertices
 		local r = makeArray( v, true )
 		for i=1,#r,2 do
@@ -70,7 +70,7 @@ function EGP:ScaleObject( ent, v )
 		end
 		if (v.h) then
 			v.h = math.abs(v.h * yMul)
-		end
+		end			
 	end
 end
 
@@ -80,7 +80,7 @@ end
 
 function EGP:MoveTopLeft( ent, v )
 	if (!self:ValidEGP( ent )) then return end
-
+	
 	if (v.CanTopLeft and v.x and v.y and v.w and v.h) then
 		local vec, ang = LocalToWorld( Vector( v.w/2, v.h/2, 0 ), Angle(0,0,0), Vector( v.x, v.y, 0 ), Angle( 0, -v.angle or 0, 0 ) )
 		local t = { x = vec.x, y = vec.y }
@@ -108,16 +108,16 @@ function EGP:IsDifferent( tbl1, tbl2 )
 			end
 		end
 	end
-
+	
 	for k,v in ipairs( tbl2 ) do -- Were any objects removed?
 		if (!tbl1[k]) then
 			return true
 		end
 	end
-
+	
 	return false
 end
-
+			
 
 ----------------------------
 -- IsAllowed check
@@ -216,9 +216,9 @@ else
 			end
 		end)
 	end)
-
+	
 	EGP.ScrHW = {}
-
+	
 	concommand.Add("EGP_ScrWH",function(ply,cmd,args)
 		if (args and args[1] and args[2]) then
 			EGP.ScrHW[ply] = { args[1], args[2] }
@@ -235,28 +235,28 @@ function EGP:DrawLine( x, y, x2, y2, size )
 		-- Calculate position
 		local x3 = (x + x2) / 2
 		local y3 = (y + y2) / 2
-
+		
 		-- calculate height
 		local w = math.sqrt( (x2-x) ^ 2 + (y2-y) ^ 2 )
-
+		
 		-- Calculate angle (Thanks to Fizyk)
 		local angle = math.deg(math.atan2(y-y2,x2-x))
-
+		
 		surface.DrawTexturedRectRotated( x3, y3, w, size, angle )
 	end
 end
 
 local function ScaleCursor( this, x, y )
-	if (this.Scaling) then
+	if (this.Scaling) then			
 		local xMin = this.xScale[1]
 		local xMax = this.xScale[2]
 		local yMin = this.yScale[1]
 		local yMax = this.yScale[2]
-
+		
 		x = (x * (xMax-xMin)) / 512 + xMin
 		y = (y * (yMax-yMin)) / 512 + yMin
 	end
-
+	
 	return x, y
 end
 
@@ -270,35 +270,35 @@ end
 function EGP:EGPCursor( this, ply )
 	if (!EGP:ValidEGP( this )) then return {-1,-1} end
 	if (!ply or !ply:IsValid() or !ply:IsPlayer()) then return ReturnFailure( this ) end
-
+	
 	local Normal, Pos, monitor, Ang
 	-- If it's an emitter, set custom normal and pos
 	if (this:GetClass() == "gmod_wire_egp_emitter") then
 		Normal = this:GetRight()
 		Pos = this:LocalToWorld( Vector( -64, 0, 135 ) )
-
+		
 		monitor = { Emitter = true }
 	else
 		-- Get monitor screen pos & size
 		monitor = WireGPU_Monitors[ this:GetModel() ]
-
+		
 		-- Monitor does not have a valid screen point
 		if (!monitor) then return {-1,-1} end
-
+		
 		Ang = this:LocalToWorldAngles( monitor.rot )
 		Pos = this:LocalToWorld( monitor.offset )
-
+		
 		Normal = Ang:Up()
 	end
-
+	
 	local Start = ply:GetShootPos()
 	local Dir = ply:GetAimVector()
-
+	
 	local A = Normal:Dot(Dir)
-
+	
 	-- If ray is parallel or behind the screen
 	if (A == 0 or A > 0) then return ReturnFailure( this ) end
-
+	
 	local B = Normal:Dot(Pos-Start) / A
 
 	if (B >= 0) then
@@ -308,12 +308,12 @@ function EGP:EGPCursor( this, ply )
 			local x = HitPos.x*(512/128)
 			local y = HitPos.z*-(512/128)
 			x, y = ScaleCursor( this, x, y )
-			return {x,y}
+			return {x,y}			
 		else
 			local HitPos = WorldToLocal( Start + Dir * B, Angle(), Pos, Ang )
 			local x = (0.5+HitPos.x/(monitor.RS*512/monitor.RatioX)) * 512
-			local y = (0.5-HitPos.y/(monitor.RS*512)) * 512
-			if (x < 0 or x > 512 or y < 0 or y > 512) then return ReturnFailure( this ) end -- Aiming off the screen
+			local y = (0.5-HitPos.y/(monitor.RS*512)) * 512	
+			if (x < 0 or x > 512 or y < 0 or y > 512) then return ReturnFailure( this ) end -- Aiming off the screen 
 			x, y = ScaleCursor( this, x, y )
 			return {x,y}
 		end

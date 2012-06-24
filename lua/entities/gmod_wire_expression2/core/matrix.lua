@@ -11,7 +11,7 @@ local function clone(a)
 	end
 	return b
 end
-
+		
 
 /******************************************************************************\
   2x2 Matrices
@@ -178,12 +178,12 @@ end
 e2function matrix2 operator^(matrix2 rv1, rv2)
 
 	if rv2 == -1 then return ( inverse2(rv1) )
-
+	
 	elseif rv2 == 0 then return { 1, 0,
 								  0, 1 }
-
+	
 	elseif rv2 == 1 then return rv1
-
+	
 	elseif rv2 == 2 then
 		return { rv1[1] * rv1[1] + rv1[2] * rv1[3],
 				 rv1[1] * rv1[2] + rv1[2] * rv1[4],
@@ -200,11 +200,11 @@ end
 
 e2function vector2 matrix2:row(rv2)
 	local k
-
+	
 	if rv2 < 1 then k = 1
 	elseif rv2 > 2 then k = 2
 	else k = rv2 - rv2 % 1 end
-
+	
 	local x = this[k * 2 - 1]
 	local y = this[k * 2]
 	return { x, y }
@@ -216,7 +216,7 @@ e2function vector2 matrix2:column(rv2)
 	if rv2 < 1 then k = 1
 	elseif rv2 > 2 then k = 2
 	else k = rv2 - rv2 % 1 end
-
+	
 	local x = this[k]
 	local y = this[k + 2]
 	return { x, y }
@@ -224,11 +224,11 @@ end
 
 e2function matrix2 matrix2:setRow(rv2, rv3, rv4)
 	local k
-
+	
 	if rv2 < 1 then k = 2
 	elseif rv2 > 2 then k = 4
 	else k = (rv2 - rv2 % 1)*2 end
-
+	
 	local a = clone(this)
 	a[k - 1] = rv3
 	a[k] = rv4
@@ -237,11 +237,11 @@ end
 
 e2function matrix2 matrix2:setRow(rv2, vector2 rv3)
 	local k
-
+	
 	if rv2 < 1 then k = 2
 	elseif rv2 > 2 then k = 4
 	else k = (rv2 - rv2 % 1)*2 end
-
+	
 	local a = clone(this)
 	a[k - 1] = rv3[1]
 	a[k] = rv3[2]
@@ -251,11 +251,11 @@ end
 
 e2function matrix2 matrix2:setColumn(rv2, rv3, rv4)
 	local k
-
+	
 	if rv2 < 1 then k = 1
 	elseif rv2 > 2 then k = 2
 	else k = rv2 - rv2 % 1 end
-
+	
 	local a = clone(this)
 	a[k] = rv3
 	a[k + 2] = rv4
@@ -264,11 +264,11 @@ end
 
 e2function matrix2 matrix2:setColumn(rv2, vector2 rv3)
 	local k
-
+	
 	if rv2 < 1 then k = 1
 	elseif rv2 > 2 then k = 2
 	else k = rv2 - rv2 % 1 end
-
+	
 	local a = clone(this)
 	a[k] = rv3[1]
 	a[k + 2] = rv3[2]
@@ -276,14 +276,14 @@ e2function matrix2 matrix2:setColumn(rv2, vector2 rv3)
 end
 
 e2function matrix2 matrix2:swapRows()
-
+	
 	this = { this[3], this[4],
 			this[1], this[2] }
 	return this
 end
 
 e2function matrix2 matrix2:swapColumns()
-
+	
 	this = { this[2], this[1],
 			this[4], this[3] }
 	return this
@@ -291,14 +291,14 @@ end
 
 e2function number matrix2:element(rv2, rv3)
 	local i, j
-
+	
 	if rv2 < 1 then i = 1
 	elseif rv2 > 2 then i = 2
 	else i = rv2 - rv2 % 1 end
 	if rv3 < 1 then j = 1
 	elseif rv3 > 2 then j = 2
 	else j = rv3 - rv3 % 1 end
-
+	
 	local k = i + (j - 1) * 2
 	return this[k]
 end
@@ -324,19 +324,19 @@ e2function matrix2 matrix2:swapElements(rv2, rv3, rv4, rv5)
 	if rv2 < 1 then i1 = 1
 	elseif rv2 > 3 then i1 = 3
 	else i1 = rv2 - rv2 % 1 end
-
+	
 	if rv3 < 1 then j1 = 1
 	elseif rv3 > 3 then j1 = 3
 	else j1 = rv3 - rv3 % 1 end
-
+	
 	if rv4 < 1 then i2 = 1
 	elseif rv4 > 3 then i2 = 3
 	else i2 = rv4 - rv4 % 1 end
-
+	
 	if rv5 < 1 then j2 = 1
 	elseif rv5 > 3 then j2 = 3
 	else j2 = rv5 - rv5 % 1 end
-
+	
 	local k1 = i1 + (j1 - 1) * 2
 	local k2 = i2 + (j2 - 1) * 2
 	local a = clone(this)
@@ -591,13 +591,13 @@ end
 e2function matrix operator^(matrix rv1, rv2)
 
 	if rv2 == -1 then return ( inverse3(rv1) )
-
+	
 	elseif rv2 == 0 then return { 1, 0, 0,
 								  0, 1, 0,
 								  0, 0, 1 }
-
+	
 	elseif rv2 == 1 then return rv1
-
+	
 	elseif rv2 == 2 then
 		return { rv1[1] * rv1[1] + rv1[2] * rv1[4] + rv1[3] * rv1[7],
 				 rv1[1] * rv1[2] + rv1[2] * rv1[5] + rv1[3] * rv1[8],
@@ -620,11 +620,11 @@ end
 
 e2function vector matrix:row(rv2)
 	local k
-
+	
 	if rv2 < 1 then k = 3
 	elseif rv2 > 3 then k = 9
 	else k = (rv2 - rv2 % 1)*3 end
-
+	
 	local x = this[k - 2]
 	local y = this[k - 1]
 	local z = this[k]
@@ -637,7 +637,7 @@ e2function vector matrix:column(rv2)
 	if rv2 < 1 then k = 1
 	elseif rv2 > 3 then k = 3
 	else k = rv2 - rv2 % 1 end
-
+	
 	local x = this[k]
 	local y = this[k + 3]
 	local z = this[k + 6]
@@ -646,11 +646,11 @@ end
 
 e2function matrix matrix:setRow(rv2, rv3, rv4, rv5)
 	local k
-
+	
 	if rv2 < 1 then k = 1
 	elseif rv2 > 3 then k = 3
 	else k = rv2 - rv2 % 1 end
-
+	
 	local a = clone(this)
 	a[k * 3 - 2] = rv3
 	a[k * 3 - 1] = rv4
@@ -660,11 +660,11 @@ end
 
 e2function matrix matrix:setRow(rv2, vector rv3)
 	local k
-
+	
 	if rv2 < 1 then k = 1
 	elseif rv2 > 3 then k = 3
 	else k = rv2 - rv2 % 1 end
-
+	
 	local a = clone(this)
 	a[k * 3 - 2] = rv3[1]
 	a[k * 3 - 1] = rv3[2]
@@ -674,11 +674,11 @@ end
 
 e2function matrix matrix:setColumn(rv2, rv3, rv4, rv5)
 	local k
-
+	
 	if rv2 < 1 then k = 1
 	elseif rv2 > 3 then k = 3
 	else k = rv2 - rv2 % 1 end
-
+	
 	local a = clone(this)
 	a[k] = rv3
 	a[k + 3] = rv4
@@ -688,11 +688,11 @@ end
 
 e2function matrix matrix:setColumn(rv2, vector rv3)
 	local k
-
+	
 	if rv2 < 1 then k = 1
 	elseif rv2 > 3 then k = 3
 	else k = rv2 - rv2 % 1 end
-
+	
 	local a = clone(this)
 	a[k] = rv3[1]
 	a[k + 3] = rv3[2]
@@ -702,14 +702,14 @@ end
 
 e2function matrix matrix:swapRows(rv2, rv3)
 	local r1, r2
-
+	
 	if rv2 < 1 then r1 = 1
 	elseif rv2 > 3 then r1 = 3
 	else r1 = rv2 - rv2 % 1 end
 	if rv3 < 1 then r2 = 1
 	elseif rv3 > 3 then r2 = 3
 	else r2 = rv3 - rv3 % 1 end
-
+	
 	if r1 == r2 then return this
 	elseif (r1 == 1 && r2 == 2) || (r1 == 2 && r2 == 1) then
 		this = { this[4], this[5], this[6],
@@ -718,25 +718,25 @@ e2function matrix matrix:swapRows(rv2, rv3)
 	elseif (r1 == 2 && r2 == 3) || (r1 == 3 && r2 == 2) then
 		this = { this[1], this[2], this[3],
 				this[7], this[8], this[9],
-				this[4], this[5], this[6] }
+				this[4], this[5], this[6] }	
 	elseif (r1 == 1 && r2 == 3) || (r1 == 3 && r2 == 1) then
 		this = { this[7], this[8], this[9],
 				this[4], this[5], this[6],
-				this[1], this[2], this[3] }
+				this[1], this[2], this[3] }	
 	end
 	return this
 end
 
 e2function matrix matrix:swapColumns(rv2, rv3)
 	local r1, r2
-
+	
 	if rv2 < 1 then r1 = 1
 	elseif rv2 > 3 then r1 = 3
 	else r1 = rv2 - rv2 % 1 end
 	if rv3 < 1 then r2 = 1
 	elseif rv3 > 3 then r2 = 3
 	else r2 = rv3 - rv3 % 1 end
-
+	
 	if r1 == r2 then return this
 	elseif (r1 == 1 && r2 == 2) || (r1 == 2 && r2 == 1) then
 		this = { this[2], this[1], this[3],
@@ -755,15 +755,15 @@ e2function matrix matrix:swapColumns(rv2, rv3)
 end
 
 e2function number matrix:element(rv2, rv3)
-	local i, j
-
+	local i, j	
+	
 	if rv2 < 1 then i = 1
 	elseif rv2 > 3 then i = 3
 	else i = rv2 - rv2 % 1 end
 	if rv3 < 1 then j = 1
 	elseif rv3 > 3 then j = 3
 	else j = rv3 - rv3 % 1 end
-
+	
 	local k = i + (j - 1) * 3
 	return this[k]
 end
@@ -777,7 +777,7 @@ e2function matrix matrix:setElement(rv2, rv3, rv4)
 	if rv3 < 1 then j = 1
 	elseif rv3 > 3 then j = 3
 	else j = rv3 - rv3 % 1 end
-
+	
 	local a = clone(this)
 	a[i + (j - 1) * 3] = rv4
 	return a
@@ -789,19 +789,19 @@ e2function matrix matrix:swapElements(rv2, rv3, rv4, rv5)
 	if rv2 < 1 then i1 = 1
 	elseif rv2 > 3 then i1 = 3
 	else i1 = rv2 - rv2 % 1 end
-
+	
 	if rv3 < 1 then j1 = 1
 	elseif rv3 > 3 then j1 = 3
 	else j1 = rv3 - rv3 % 1 end
-
+	
 	if rv4 < 1 then i2 = 1
 	elseif rv4 > 3 then i2 = 3
 	else i2 = rv4 - rv4 % 1 end
-
+	
 	if rv5 < 1 then j2 = 1
 	elseif rv5 > 3 then j2 = 3
 	else j2 = rv5 - rv5 % 1 end
-
+	
 	local k1 = i1 + (j1 - 1) * 3
 	local k2 = i2 + (j2 - 1) * 3
 	local a = clone(this)
@@ -904,7 +904,7 @@ end
 
 // Create a rotation matrix in the format (v,n) where v is the axis direction vector and n is degrees (right-handed rotation)
 e2function matrix mRotation(vector rv1, rv2)
-
+	
 	local vec
 	local len = (rv1[1] * rv1[1] + rv1[2] * rv1[2] + rv1[3] * rv1[3]) ^ 0.5
 	if len == 1 then vec = rv1
@@ -913,7 +913,7 @@ e2function matrix mRotation(vector rv1, rv2)
 				  0, 0, 0,
 				  0, 0, 0 }
 	end
-
+	
 	local vec2 = { vec[1] * vec[1], vec[2] * vec[2], vec[3] * vec[3] }
 	local a = rv2 * 3.14159265 / 180
 	local cos = math.cos(a)
@@ -927,7 +927,7 @@ e2function matrix mRotation(vector rv1, rv2)
 			 vec[2] * vec[3] * cosmin - vec[1] * sin,
 			 vec[1] * vec[3] * cosmin - vec[2] * sin,
 			 vec[2] * vec[3] * cosmin + vec[1] * sin,
-			 vec2[3] + (1 - vec2[3]) * cos }
+			 vec2[3] + (1 - vec2[3]) * cos }	
 end
 
 /******************************************************************************\
@@ -1173,14 +1173,14 @@ end
 e2function matrix4 operator^(matrix4 lhs, rhs)
 
 	//if rhs == -1 then return ( inverse4(lhs) )
-
+	
 	if rhs == 0 then 	return { 1, 0, 0, 0,
 								 0, 1, 0, 0,
 								 0, 0, 1, 0,
 								 0, 0, 0, 1 }
-
+	
 	elseif rhs == 1 then return lhs
-
+	
 	elseif rhs == 2 then
 		return {
 			lhs[ 1] * lhs[ 1] + lhs[ 2] * lhs[ 5] + lhs[ 3] * lhs[ 9] + lhs[ 4] * lhs[13],
@@ -1213,11 +1213,11 @@ end
 
 e2function vector4 matrix4:row(rv2)
 	local k
-
+	
 	if rv2 < 1 then k = 4
 	elseif rv2 > 4 then k = 16
 	else k = (rv2 - rv2 % 1)*4 end
-
+	
 	local x = this[k - 3]
 	local y = this[k - 2]
 	local z = this[k - 1]
@@ -1231,7 +1231,7 @@ e2function vector4 matrix4:column(rv2)
 	if rv2 < 1 then k = 1
 	elseif rv2 > 4 then k = 4
 	else k = rv2 - rv2 % 1 end
-
+	
 	local x = this[k]
 	local y = this[k + 4]
 	local z = this[k + 8]
@@ -1241,11 +1241,11 @@ end
 
 e2function matrix4 matrix4:setRow(rv2, rv3, rv4, rv5, rv6)
 	local k
-
+	
 	if rv2 < 1 then k = 1
 	elseif rv2 > 4 then k = 4
 	else k = rv2 - rv2 % 1 end
-
+	
 	local a = clone(this)
 	a[k * 4 - 3] = rv3
 	a[k * 4 - 2] = rv4
@@ -1256,11 +1256,11 @@ end
 
 e2function matrix4 matrix4:setRow(rv2, vector4 rv3)
 	local k
-
+	
 	if rv2 < 1 then k = 1
 	elseif rv2 > 4 then k = 4
 	else k = rv2 - rv2 % 1 end
-
+	
 	local a = clone(this)
 	a[k * 4 - 3] = rv3[1]
 	a[k * 4 - 2] = rv3[2]
@@ -1271,11 +1271,11 @@ end
 
 e2function matrix4 matrix4:setColumn(rv2, rv3, rv4, rv5, rv6)
 	local k
-
+	
 	if rv2 < 1 then k = 1
 	elseif rv2 > 4 then k = 4
 	else k = rv2 - rv2 % 1 end
-
+	
 	local a = clone(this)
 	a[k]		= rv3
 	a[k + 4]	= rv4
@@ -1286,11 +1286,11 @@ end
 
 e2function matrix4 matrix4:setColumn(rv2, vector4 rv3)
 	local k
-
+	
 	if rv2 < 1 then k = 1
 	elseif rv2 > 4 then k = 4
 	else k = rv2 - rv2 % 1 end
-
+	
 	local a = clone(this)
 	a[k]		= rv3[1]
 	a[k + 4]	= rv3[2]
@@ -1301,14 +1301,14 @@ end
 
 e2function matrix matrix:swapRows(rv2, rv3)
 	local r1, r2
-
+	
 	if rv2 < 1 then r1 = 1
 	elseif rv2 > 4 then r1 = 4
 	else r1 = rv2 - rv2 % 1 end
 	if rv3 < 1 then r2 = 1
 	elseif rv3 > 4 then r2 = 4
 	else r2 = rv3 - rv3 % 1 end
-
+	
 	if r1 == r2 then return this
 	elseif (r1 == 1 && r2 == 2) || (r1 == 2 && r2 == 1) then
 		this = { this[5], this[6], this[7], this[8],
@@ -1346,14 +1346,14 @@ end
 
 e2function matrix4 matrix4:swapColumns(rv2, rv3)
 	local r1, r2
-
+	
 	if rv2 < 1 then r1 = 1
 	elseif rv2 > 4 then r1 = 4
 	else r1 = rv2 - rv2 % 1 end
 	if rv3 < 1 then r2 = 1
 	elseif rv3 > 4 then r2 = 4
 	else r2 = rv3 - rv3 % 1 end
-
+	
 	if r1 == r2 then return this
 	elseif (r1 == 1 && r2 == 2) || (r1 == 2 && r2 == 1) then
 		this = { this[2], this[1], this[3], this[4],
@@ -1390,15 +1390,15 @@ e2function matrix4 matrix4:swapColumns(rv2, rv3)
 end
 
 e2function number matrix4:element(rv2, rv3)
-	local i, j
-
+	local i, j	
+	
 	if rv2 < 1 then i = 1
 	elseif rv2 > 4 then i = 4
 	else i = rv2 - rv2 % 1 end
 	if rv3 < 1 then j = 1
 	elseif rv3 > 4 then j = 4
 	else j = rv3 - rv3 % 1 end
-
+	
 	local k = i + (j - 1) * 4
 	return this[k]
 end
@@ -1412,7 +1412,7 @@ e2function matrix4 matrix4:setElement(rv2, rv3, rv4)
 	if rv3 < 1 then j = 1
 	elseif rv3 > 4 then j = 4
 	else j = rv3 - rv3 % 1 end
-
+	
 	local a = clone(this)
 	a[i + (j - 1) * 4] = rv4
 	return a
@@ -1424,19 +1424,19 @@ e2function matrix4 matrix4:swapElements(rv2, rv3, rv4, rv5)
 	if rv2 < 1 then i1 = 1
 	elseif rv2 > 4 then i1 = 4
 	else i1 = rv2 - rv2 % 1 end
-
+	
 	if rv3 < 1 then j1 = 1
 	elseif rv3 > 4 then j1 = 4
 	else j1 = rv3 - rv3 % 1 end
-
+	
 	if rv4 < 1 then i2 = 1
 	elseif rv4 > 4 then i2 = 4
 	else i2 = rv4 - rv4 % 1 end
-
+	
 	if rv5 < 1 then j2 = 1
 	elseif rv5 > 4 then j2 = 4
 	else j2 = rv5 - rv5 % 1 end
-
+	
 	local k1 = i1 + (j1 - 1) * 4
 	local k2 = i2 + (j2 - 1) * 4
 	local a = clone(this)

@@ -11,7 +11,7 @@ local function addUV( v, t ) -- Polygon u v fix
 			t[k].u = t2[k].u
 			t[k].v = t2[k].v
 		end
-	end
+	end		
 end
 EGP.ParentingFuncs.addUV = addUV
 
@@ -97,10 +97,10 @@ function EGP:GetGlobalPos( Ent, index )
 						r[i+1] = vec.y
 					end
 					local ret = {}
-					if (type(v.verticesindex) == "string") then
+					if (type(v.verticesindex) == "string") then 
 						local temp = makeTable( v, r )
 						addUV( v, temp )
-						ret = { [v.verticesindex] = temp }
+						ret = { [v.verticesindex] = temp }	
 					else ret = makeTable( v, r ) end
 					return true, ret
 				else
@@ -130,7 +130,7 @@ function EGP:GetGlobalPos( Ent, index )
 						if (type(v.verticesindex) == "string") then
 							local temp = makeTable( v, r )
 							addUV( v, temp )
-							ret = { [v.verticesindex] = temp }
+							ret = { [v.verticesindex] = temp }	
 						else ret = makeTable( v, r ) end
 						return true, ret
 					end
@@ -162,7 +162,7 @@ function EGP:GetGlobalPos( Ent, index )
 						local x, y, ang = data.x, data.y, data.angle
 						local vec, ang = LocalToWorld( Vector( v._x, v._y, 0 ), Angle( 0, v._angle or 0, 0 ), Vector( x, y, 0 ), Angle( 0, -(ang or 0), 0 ) )
 						return false, { x = vec.x, y = vec.y, angle = -ang.y }
-					end
+					end					
 				end
 			end
 			return false, { x = v.x, y = v.y, angle = v.angle or 0 }
@@ -207,7 +207,7 @@ local function GetChildren( Ent, Obj )
 end
 
 local function CheckParents( Ent, Obj, parentindex, checked )
-	if (Obj.index == parentindex) then
+	if (Obj.index == parentindex) then 
 		return false
 	end
 	if (!checked[Obj.index]) then
@@ -235,16 +235,16 @@ function EGP:SetParent( Ent, index, parentindex )
 				if (CLIENT or SinglePlayer()) then
 					self:AddParentIndexes( v )
 				end
-
+				
 				if (SERVER) then parentindex = math.Clamp(parentindex,1,self.ConVars.MaxObjects:GetInt()) end
-
+				
 				-- If it's already parented to that object
 				if (v.parent and v.parent == parentindex) then return false end
 				-- If the user is trying to parent it to itself
 				if (v.parent and v.parent == v.index) then return false end
 				-- If the user is trying to create a circle of parents, causing an infinite loop
 				if (!CheckParents( Ent, v, parentindex, {} )) then return false end
-
+				
 				if (self:EditObject( v, { parent = parentindex } )) then return true, v end
 			end
 		end
@@ -287,11 +287,11 @@ function EGP:UnParent( Ent, index )
 		else
 			hasVertices, data = self:GetGlobalPos( Ent, index )
 		end
-
+		
 		if (!v.parent or v.parent == 0) then return false end
-
+		
 		data.parent = 0
-
+		
 		if (self:EditObject( v, data, Ent:GetPlayer() )) then return true, v end
 	end
 end

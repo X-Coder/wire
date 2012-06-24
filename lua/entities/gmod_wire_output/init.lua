@@ -11,7 +11,7 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	self:SetOn( false )
 
 	self.Inputs = Wire_CreateInputs(self, { "A" })
@@ -30,9 +30,9 @@ end
 function ENT:Switch( on, ply )
 	local plyindex 	= self:GetPlayerIndex()
 	local key 		= self:GetKey()
-
+	
 	if (not key) then return end
-
+	
 	if (on) then
 		numpad.Activate( ply, _, {key}, plyindex )
 	else

@@ -16,7 +16,7 @@ ENT.AdminSpawnable  = false
 	list.Set( "wire_socket_models", "models/wingf0x/isasocket.mdl", {} )
 	list.Set( "wire_socket_models", "models/wingf0x/altisasocket.mdl", {} )
 	list.Set( "wire_socket_models", "models/wingf0x/ethernetsocket.mdl", {} )
-	list.Set( "wire_socket_models", "models/wingf0x/hdmisocket.mdl", {} )
+	list.Set( "wire_socket_models", "models/wingf0x/hdmisocket.mdl", {} )	
 
 
 
@@ -65,10 +65,10 @@ function ENT:GetClosestPlug()
 	local Pos, _ = self:GetLinkPos()
 
 	local plugs = ents.FindInSphere( Pos, (CLIENT and self:GetNWInt( "AttachRange", 5 ) or self.AttachRange) )
-
+	
 	local ClosestDist
 	local Closest
-
+	
 	for k,v in pairs( plugs ) do
 		if (v:GetClass() == "gmod_wire_plug" and !v:GetNWBool( "Linked", false )) then
 			local Dist = v:GetPos():Distance( Pos )
@@ -78,6 +78,6 @@ function ENT:GetClosestPlug()
 			end
 		end
 	end
-
+	
 	return Closest
 end

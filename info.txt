@@ -1,9 +1,7 @@
+// Extracted with MulleDK19's GMAD Extractor
 "AddonInfo"
 {
-	"name"        "Wiremod"
-	"version"     "SVN"
-	"author_name" "Wire Team"
-	"author_url"  "http://www.wiremod.com/"
-	"info"        "A set of SEnts and STools that communicate through wires."
-	"override"    "0"
+	"name" "Wiremod"
+	"author_name" "Unknown"
+	"info" "www.wiremod.com - Revision: 2533  16/03/12: Fixed whitelist error/Updated to main revision 2533 07/03/12: Updated code to match Wiremod revision 2532. Removed Adv. Dupe to separate addon. 03/03/12: Updated net library code required for latest gmod update. 25/02/12: Fixed hologram color being set in the holoCreate function. Fixed E2 Toolgun screen. 24/02/12: Fixed E2 trails and code issues when downloaded from chip/dupe. Fixed wire button errors. 21/02/12: Fixed constant value & keyboard 15/02/12: Added Advanced Duplicator 10/02/12: Expression 2 is in full working order                 Fixed most of the UI (ColorMixers aren't finished yet)"
 }

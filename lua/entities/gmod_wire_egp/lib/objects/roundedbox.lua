@@ -16,7 +16,7 @@ Obj.Draw = function( self )
             local srx,sry = source[x].x,source[x].y
             local scx,scy = srx*(sx-(radius*2))/2 , sry*(sy-(radius*2))/2
             scx,scy = scx*math.cos(math.rad(angle)) - scy*math.sin(math.rad(angle)),
-                      scx*math.sin(math.rad(angle)) + scy*math.cos(math.rad(angle))
+                      scx*math.sin(math.rad(angle)) + scy*math.cos(math.rad(angle)) 
             local a,r = math.rad(div*i+(x*90)), radius
             local dir = {x=math.sin(-(a+math.rad(angle))),y=math.cos(-(a+math.rad(angle)))}
             local dirUV = {x=math.sin(-a),y=math.cos(-a)}

@@ -27,12 +27,12 @@ if ZVM.MicrocodeDebug then -- Debug microcode generator
   local pad = 0
   function ZVM:Emit(text)
     if string.find(text,"end") and (not string.find(text,"if")) then pad = pad - 1 end
-
+    
     if string.find(text,"elseif") or string.find(text,"else")
     then self.EmitBlock = self.EmitBlock..string.rep("  ",pad-1)..text.."\n"
     else self.EmitBlock = self.EmitBlock..string.rep("  ",pad)..text.."\n"
     end
-
+  
     if (string.find(text,"if") or string.find(text,"for")) and (not string.find(text,"elseif")) and (not string.find(text,"end")) then pad = pad + 1 end
   end
 else
@@ -84,15 +84,15 @@ function ZVM:Dyn_LoadOperand(OP,RM)
     else
       preEmit = self.OperandReadFunctions[RM]
     end
-
+    
     -- Make sure segment register is global
     self:Dyn_EmitForceRegisterGlobal(self.EmitOperandSegment[OP])
-
+    
     -- Generate operand text
     preEmit = string.gsub(preEmit,"$BYTE",self.EmitOperandByte[OP] or "0")
     preEmit = string.gsub(preEmit,"$SEG","VM."..(self.EmitOperandSegment[OP] or "DS"))
     self.EmitOperand[OP] = preEmit
-
+    
     if self.NeedInterruptCheck[RM] then self.EmitNeedInterruptCheck = true end
   end
 
@@ -125,7 +125,7 @@ function ZVM:Dyn_WriteOperand(OP,RM)
           preEmit = self.OperandWriteFunctions[RM]
         end
       end
-
+      
       preEmit = string.gsub(preEmit,"$EXPR",self.EmitExpression[OP])
       preEmit = string.gsub(preEmit,"$BYTE",self.EmitOperandByte[OP] or "0")
       preEmit = string.gsub(preEmit,"$SEG","VM."..(self.EmitOperandSegment[OP] or "0"))
@@ -340,7 +340,7 @@ function ZVM:Precompile_Initialize()
   self.PrecompileBreak = false
   self.PrecompileInstruction = 0
   self.PrecompileBytes = 0
-
+  
   self.PrecompilePreviousPage = math.floor(self.XEIP / 128)
   self:Dyn_StartBlock()
 end
@@ -348,7 +348,7 @@ end
 function ZVM:Precompile_Finalize()
   -- Emit finalizer
   self:Dyn_EndBlock()
-
+  
   local result,message
   if CompileString
   then result,message = CompileString(self.EmitBlock,"ZVM:["..self.PrecompileStartXEIP.."]")
@@ -365,7 +365,7 @@ function ZVM:Precompile_Finalize()
     end
     self.PrecompiledData[self.PrecompileStartXEIP] = result
   end
-
+  
   return result
 end
 
@@ -374,7 +374,7 @@ function ZVM:Precompile_Fetch()
   self.IF = 0
   local value = self:ReadCell(self.PrecompileXEIP)
   self.IF = prevIF
-
+  
   self.PrecompileXEIP = self.PrecompileXEIP + 1
   self.PrecompileIP = self.PrecompileIP + 1
   self.PrecompileBytes = self.PrecompileBytes + 1
@@ -392,17 +392,17 @@ function ZVM:Precompile_Step()
   -- Set true XEIP register value for this step (this value will be used if XEIP is accessed)
   self.PrecompileTrueXEIP = self.PrecompileXEIP
   self.PrecompileStartIP = self.PrecompileIP
-
+  
   -- Move on to the next instruction
   self.PrecompileInstruction = self.PrecompileInstruction + 1
-
+  
   -- Reset requirement for an interrupt check, reset registers
   self.EmitNeedInterruptCheck = false
   --self.EmitRegisterChangedByOperand = {}
-
+  
   -- Reset interrupts trigger if precompiling
   self.INTR = 0
-
+  
   -- Check if we crossed the page boundary, if so - repeat the check
   if math.floor(self.PrecompileXEIP / 128) ~= self.PrecompilePreviousPage then
     self:Emit("VM:SetCurrentPage("..math.floor(self.PrecompileXEIP/128)..")")
@@ -411,34 +411,34 @@ function ZVM:Precompile_Step()
       self:Dyn_EmitInterrupt("14","VM.CPAGE")
     self:Emit("end")
     self:Emit("VM:SetPreviousPage("..math.floor(self.PrecompileXEIP/128)..")")
-
+    
     self.PrecompilePreviousPage = math.floor(self.PrecompileXEIP / 128)
   end
-
+  
   -- Fetch instruction and RM byte
   local Opcode,RM = self:Precompile_Fetch(),0
   local isFixedSize = false
-
+  
   -- Check if it is a fixed-size instruction
   if ((Opcode >= 2000) and (Opcode < 4000)) or
      ((Opcode >= 12000) and (Opcode < 14000)) then
     Opcode = Opcode - 2000
     isFixedSize = true
   end
-
+  
   -- Fetch RM if required
   if (self.OperandCount[Opcode % 1000] and (self.OperandCount[Opcode % 1000] > 0)) or
      (self:Precompile_Peek() == 0) or isFixedSize then
     RM = self:Precompile_Fetch()
   end
-
+  
   -- If failed to fetch opcode/RM then report an error
   if self.INTR == 1 then
     self.IF = 1
     self:Interrupt(5,12)
     return
   end
-
+  
   -- Check opcode runlevel
   if self.OpcodeRunLevel[Opcode] then
     self:Emit("if (VM.PCAP == 1) and (VM.CurrentPage.RunLevel > "..self.OpcodeRunLevel[Opcode]..") then")
@@ -484,13 +484,13 @@ function ZVM:Precompile_Step()
     self:Precompile_Fetch()
     self:Precompile_Fetch()
   end
-
+  
   -- If failed to fetch segment prefix then report an error
   if self.INTR == 1 then
     self:Interrupt(5,12)
     return
   end
-
+  
   -- Check if opcode is invalid
   if not self.OperandCount[Opcode] then
     self:Dyn_EmitInterrupt("4",Opcode)
@@ -499,14 +499,14 @@ function ZVM:Precompile_Step()
     -- Emit segment prefix if required
     self.EmitOperandSegment[1] = self.SegmentLookup[Segment1]
     self.EmitOperandSegment[2] = self.SegmentLookup[Segment2]
-
+    
     -- Fetch immediate values if required
     if isFixedSize then
       self.EmitOperandByte[1] = self:Precompile_Fetch() or 0
       if self.INTR == 1 then self:Interrupt(5,22) return end
       self.EmitOperandByte[2] = self:Precompile_Fetch() or 0
       if self.INTR == 1 then self:Interrupt(5,32) return end
-
+      
       if self.OperandCount[Opcode] > 0 then
         self:Dyn_LoadOperand(1,dRM1)
         if self.OperandCount[Opcode] > 1 then
@@ -521,7 +521,7 @@ function ZVM:Precompile_Step()
           if self.INTR == 1 then self:Interrupt(5,22) return end
         end
         self:Dyn_LoadOperand(1,dRM1)
-
+        
         if self.OperandCount[Opcode] > 1 then
           if self.NeedFetchByteLookup[dRM2] then
             self.EmitOperandByte[2] = self:Precompile_Fetch() or 0
@@ -532,16 +532,16 @@ function ZVM:Precompile_Step()
         end
       end
     end
-
+    
     -- Emit interrupt check prefix
     if self.EmitNeedInterruptCheck then
       self:Emit("VM.IP = "..(self.PrecompileIP or 0))
       self:Emit("VM.XEIP = "..(self.PrecompileTrueXEIP or 0))
     end
-
+    
     -- Emit opcode
     self:Dyn_EmitOpcode(Opcode)
-
+    
     -- Write back the values
     if self.OperandCount[Opcode] and (self.OperandCount[Opcode] > 0) then
       self:Dyn_WriteOperand(1,dRM1)
@@ -549,13 +549,13 @@ function ZVM:Precompile_Step()
         self:Dyn_WriteOperand(2,dRM2)
       end
     end
-
+    
     -- Emit interrupt check
     if self.EmitNeedInterruptCheck then
       self:Dyn_EmitInterruptCheck()
     end
   end
-
+  
   -- Do not repeat if opcode breaks the stream
   return not self.PrecompileBreak
 end
@@ -567,7 +567,7 @@ end
 -- VM step forward
 function ZVM:Step(overrideSteps,extraEmitFunction)
   if self.BusLock == 1 then return end
-
+  
   -- Calculate absolute execution address and set current page
   self.XEIP = self.IP + self.CS
   self:SetCurrentPage(math.floor(self.XEIP/128))
@@ -578,14 +578,14 @@ function ZVM:Step(overrideSteps,extraEmitFunction)
     self:Interrupt(14,self.CPAGE)
     return -- Step failed
   end
-
+  
   -- Reset interrupts flags
   self.INTR = 0
   if self.NIF then
     self.IF = self.NIF
     self.NIF = nil
   end
-
+  
   -- Check if current instruction is precompiled
   local instructionXEIP = self.XEIP
   if self.PrecompiledData[instructionXEIP] or overrideSteps then
@@ -630,9 +630,9 @@ function ZVM:Step(overrideSteps,extraEmitFunction)
     while (instruction <= 24) and self:Precompile_Step() do
       instruction = instruction + 1
     end
-
+    
     local func = self:Precompile_Finalize()
-
+    
     -- Step clock forward (account for precompiling)
     self.TMR = self.TMR + 24*8000--instruction*9000
   end

@@ -53,7 +53,7 @@ function TOOL:LeftClick( trace )
     local outColor = (self:GetClientNumber( "outColor" ) ~= 0)
     local range = self:GetClientNumber( "Range" )
     local model = self:GetClientInfo( "Model" )
-
+	
 	if not util.IsValidModel( model ) or not util.IsValidProp( model ) then return end
 	local wire_colorer = MakeWireColorer( ply, trace.HitPos, Ang, model, outColor, range )
 

@@ -65,7 +65,7 @@ function ENT:RadioLink(other, id)
 	self.Other = other
 	self.PairID = id
 	self.PeerID = id
-
+	
 	self:TriggerInput("A", self.Inputs.A.Value or 0)
 	self:TriggerInput("B", self.Inputs.B.Value or 0)
 	self:TriggerInput("C", self.Inputs.C.Value or 0)
@@ -105,7 +105,7 @@ function ENT:ShowOutput(iname, value)
 		else
 			self:SetOverlayText( "(Pair ID: " .. self.PairID .. ")\nTransmit A: " .. (self.Inputs.A.Value or 0) .. " B: " .. (self.Inputs.B.Value or 0) ..  " C: " .. (self.Inputs.C.Value or 0) ..  " D: " .. (self.Inputs.D.Value or 0) .. "\nReceive A: " .. (self.Outputs.A.Value or 0) .. " B: " .. (self.Outputs.B.Value or 0) ..  " C: " .. (self.Outputs.C.Value or 0) ..  " D: " .. (self.Outputs.D.Value or 0) )
 		end
-
+		
 	end
 end
 

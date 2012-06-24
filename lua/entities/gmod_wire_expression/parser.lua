@@ -11,16 +11,16 @@ WireGateExpressionParser.toktable = {
 	["div"] = "/",
 	["mod"] = "%",
 	["exp"] = "^",
-
+	
 	["aadd"] = "+=",
 	["asub"] = "-=",
 	["amul"] = "*=",
 	["adiv"] = "/=",
 	["amod"] = "%=",
 	["aexp"] = "^=",
-
+	
 	["imp"] = "->",
-
+	
 	["ass"] = "=",
 	["not"] = "!",
 	["gth"] = ">",
@@ -29,7 +29,7 @@ WireGateExpressionParser.toktable = {
 	["neq"] = "!=",
 	["geq"] = ">=",
 	["leq"] = "<=",
-
+	
 	["and"] = "&",
 	["or"] = "|",
 
@@ -37,10 +37,10 @@ WireGateExpressionParser.toktable = {
 	["col"] = ":",
 	["sem"] = ";",
 	["com"] = ",",
-
+	
 	["lpa"] = "(",
 	["rpa"] = ")",
-
+	
 	["trg"] = "~",
 	["dlt"] = "$",
 }
@@ -52,20 +52,20 @@ WireGateExpressionParser.optable = {
 	["/"] = {"div", {["="] = {"adiv"}}},
 	["%"] = {"mod", {["="] = {"amod"}}},
 	["^"] = {"exp", {["="] = {"aexp"}}},
-
+	
 	["="] = {"ass", {["="] = {"eq"}}},
 	["!"] = {"not", {["="] = {"neq"}}},
 	[">"] = {"gth", {["="] = {"geq"}}},
 	["<"] = {"lth", {["="] = {"leq"}}},
-
+	
 	["&"] = {"and"},
 	["|"] = {"or"},
-
+	
 	["?"] = {"qst"},
 	[":"] = {"col"},
 	[";"] = {"sem"},
 	[","] = {"com"},
-
+	
 	["("] = {"lpa"},
 	[")"] = {"rpa"},
 
@@ -82,36 +82,36 @@ function WireGateExpressionParser:New(code, inputs, outputs)
 		symbindex = 1,
 		line = 1,
 	}
-
+	
 	self.__index = self
 	self = setmetatable(object, self)
-
+	
 	self:ParseSymbols(code)
-
+	
 	self:NextSymbol()
 	self.instructions = self:expr1()
 
 	self.inputs = self:ParsePorts(inputs)
 	self.outputs = self:ParsePorts(outputs)
-
+	
 	if #self.outputs == 0 then
 		self.outputs = self.inputs
 	end
-
+	
 	if #self.outputs == 0 then
 		self:Error('No outputs defined')
 	end
-
-	local inputkeys = self.GetIndexTable(self.inputs)
+	
+	local inputkeys = self.GetIndexTable(self.inputs)	
 	local outputkeys = self.GetIndexTable(self.outputs)
-
+	
 	local _locals = self.locals self.locals = {}
 	for key,_ in pairs(_locals) do
 		if not inputkeys[key] and not outputkeys[key] then
 			table.insert(self.locals, key)
 		end
 	end
-
+	
 	return self
 end
 
@@ -171,28 +171,28 @@ function WireGateExpressionParser:ParseSymbols(str)
 	97 = a, 122 = z
 	65 = A, 90 = Z
 	--]]
-
+	
 	if str == "" then str = "0" end
-
+	
 	self.expression = str
 	self.position = 1
 	self.length = string.len(str)
 	self.buffer = ""
-
+	
 	self:NextCharacter()
-
+	
 	while true do
-		if self.character then
+		if self.character then	
 			while self.character == " " or self.character == "\t" or self.character == "\n" or self.character == "\r" do
 				if self.character == "\n" then self.line = self.line + 1 end
 				self:NextCharacter()
 			end
-
+			
 			if not self.character then break end
-
+			
 			self.symarg = ""
 			self.buffer = ""
-
+			
 			if self.character >= "0" and self.character <= "9" then
 				while self.character and self.character >= "0" and self.character <= "9" do self:ReadCharacter() end
 				if self.character and self.character == "." then
@@ -206,7 +206,7 @@ function WireGateExpressionParser:ParseSymbols(str)
 				self.symtok = "fun"
 			elseif self.charvalue >= 65 and self.charvalue <= 90 or self.character == "_" then
 				while self.character and (self.charvalue >= 65 and self.charvalue <= 90 or self.charvalue >= 97 and self.charvalue <= 122 or self.character >= "0" and self.character <= "9" or self.character == "_") do self:ReadCharacter() end
-				self.symtok = "var"
+				self.symtok = "var"		
 			elseif self.character == "'" then
 				self:NextCharacter()
 				while self.character and self.character ~= "'" do self:ReadCharacter() end
@@ -220,12 +220,12 @@ function WireGateExpressionParser:ParseSymbols(str)
 					self:NextCharacter()
 				end
 			end
-
+			
 			self.symarg = self.buffer
 		else
 			break
 		end
-
+		
 		table.insert(self.symbols, { self.symtok, self.symarg, self.line })
 	end
 end
@@ -236,13 +236,13 @@ function WireGateExpressionParser:ParseOperator()
 	local op = self.optable
 
 	if op[self.character] then
-		while true do
+		while true do			
 			op = op[self.character]
 			self:ReadCharacter()
-
+			
 			if self.character then
 				if op[2] then
-
+					
 					if op[2][self.character] then
 						op = op[2]
 					else
@@ -273,7 +273,7 @@ function WireGateExpressionParser:ParsePorts(ports)
 	local vals = {}
 	local keys = {}
 	ports = string.Explode(" ", string.Trim(ports))
-
+	
 	for _,key in ipairs(ports) do
 		key = string.Trim(key)
 		if key ~= "" then
@@ -291,7 +291,7 @@ function WireGateExpressionParser:ParsePorts(ports)
 			else
 				self:Error("Invalid port name: " .. key)
 			end
-
+			
 			if keys[key] then
 				self:Error("Duplicate port: " .. key)
 			else
@@ -300,7 +300,7 @@ function WireGateExpressionParser:ParsePorts(ports)
 			end
 		end
 	end
-
+	
 	return vals
 end
 
@@ -380,7 +380,7 @@ end
 --[[ 1 : exp2 , exp2 exp1 ]]
 function WireGateExpressionParser:expr1()
 	local expression = self:expr2()
-
+	
 	if self:Accept("com") or self.symtok then
 		return {"seq", expression, self:expr1()}
 	else
@@ -398,9 +398,9 @@ function WireGateExpressionParser:expr2()
 		self:Expect("rpa")
 		return {"con", arg}
 	end
-
+	
 	local expression = self:expr4()
-
+	
 	if self:Accept("imp") then
 		local expression = {"imp", expression, self:expr3()}
 		self:Expect("sem")
@@ -416,7 +416,7 @@ function WireGateExpressionParser:expr3()
 		self:NextSymbol()
 		return {"end"}
 	end
-
+	
 	local expression = self:expr2()
 	if self:Accept("com") or self.symtok and self.symtok != "sem" then
 		return {"seq", expression, self:expr3()}
@@ -553,7 +553,7 @@ function WireGateExpressionParser:expr15()
 	else
 		if self.symtok then
 			self:Error("Unexpected symbol (" .. self.symarg .. ") at line " .. self.line)
-
+			
 			self.symbindex = -1 -- make sure there are no more
 			self.symtok    = nil
 			self.symarg    = nil
@@ -566,10 +566,10 @@ end
 --[[ 16 : nil , exp4,exp16 ]]
 function WireGateExpressionParser:expr16()
 	local parameters = {"prm", {"nil"}, self:expr4()}
-
+	
 	while self:Accept("com") do
 		parameters = {"prm", parameters, self:expr4()}
 	end
-
+	
 	return parameters
 end

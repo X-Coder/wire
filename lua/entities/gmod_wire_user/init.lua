@@ -35,7 +35,7 @@ function ENT:TriggerInput(iname, value)
 				trace.endpos = vStart + (vForward * self:GetBeamLength())
 				trace.filter = { self }
 			local trace = util.TraceLine( trace )
-
+			
 			if (!trace.Entity) then return false end
 				if (!trace.Entity:IsValid() ) then return false end
 				if (trace.Entity:IsWorld()) then return false end

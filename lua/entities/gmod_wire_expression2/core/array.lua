@@ -67,21 +67,21 @@ end
 
 registerOperator( "kvarray", "", "r", function( self, args )
 	local ret = {}
-
+	
 	local values = args[2]
 	local types = args[3]
-
+	
 	for k,v in pairs( values ) do
 		if not blocked_types[types[k]] then
 			local key = k[1]( self, k )
 			local value = v[1]( self, v )
-
+			
 			ret[key] = value
-
+			
 			self.prf = self.prf + 1/3
 		end
 	end
-
+	
 	return ret
 end)
 
@@ -91,14 +91,14 @@ end)
 registerOperator("ass", "r", "r", function(self, args)
 	local lhs, op2, scope = args[2], args[3], args[4]
 	local      rhs = op2[1](self, op2)
-
+	
 	local Scope = self.Scopes[scope]
 	if !Scope.lookup then Scope.lookup = {} end
 	local lookup = Scope.lookup
-
+	
 	--remove old lookup entry
 	if (lookup[rhs]) then lookup[rhs][lhs] = nil end
-
+	
 	--add new
 	if (!lookup[rhs]) then
 		lookup[rhs] = {}
@@ -131,15 +131,15 @@ registerCallback( "postinit", function()
 		local id = v[1]
 		local default = v[2]
 		local typecheck = v[6]
-
+		
 		if (!blocked_types[id]) then -- blocked check start
-
+		
 			--------------------------------------------------------------------------------
 			-- Get functions
 			-- value = R[N,type], and value = R:<type>(N)
 			--------------------------------------------------------------------------------
 			__e2setcost(10)
-
+			
 			local function getter( self, array, index, doremove )
 				if (!array or !index) then return fixdef( default ) end -- Make sure array and index are value
 				local ret
@@ -152,19 +152,19 @@ registerCallback( "postinit", function()
 				if (typecheck and typecheck( ret )) then return fixdef( default ) end -- If typecheck returns true, the type is wrong.
 				return ret
 			end
-
+			
 			registerOperator("idx", id.."=rn", id, function(self,args)
 				local op1, op2 = args[2], args[3]
 				local array, index = op1[1](self,op1), op2[1](self,op2)
 				return getter( self, array, index )
 			end)
-
+			
 			registerFunction( name, "r:n", id, function(self,args)
 				local op1, op2 = args[2], args[3]
 				local array, index = op1[1](self,op1), op2[1](self,op2)
 				return getter( self, array, index )
 			end)
-
+			
 			--------------------------------------------------------------------------------
 			-- Set functions
 			-- R[N,type] = value, and R:set<type>(N,value)
@@ -183,32 +183,32 @@ registerCallback( "postinit", function()
 				self.vclk[array] = true
 				return value
 			end
-
+			
 			registerOperator("idx", id.."=rn"..id, id, function(self,args)
 				local op1, op2, op3 = args[2], args[3], args[4]
 				local array, index, value = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3)
 				return setter( self, array, index, value )
 			end)
-
+			
 			registerFunction("set" .. nameupperfirst, "r:n"..id, id, function(self,args)
 				local op1, op2, op3 = args[2], args[3], args[4]
 				local array, index, value = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3)
 				return setter( self, array, index, value )
 			end)
-
-
+			
+			
 			--------------------------------------------------------------------------------
 			-- Push functions
 			-- Inserts the value at the end of the array
 			--------------------------------------------------------------------------------
 			__e2setcost(15)
-
+			
 			registerFunction( "push" .. nameupperfirst, "r:" .. id, id, function(self,args)
 				local op1, op2 = args[2], args[3]
 				local array, value = op1[1](self,op1), op2[1](self,op2)
 				return setter( self, array, #array + 1, value )
 			end)
-
+			
 			--------------------------------------------------------------------------------
 			-- Insert functions
 			-- Inserts the value at the specified index. Subsequent values are moved up to compensate.
@@ -218,7 +218,7 @@ registerCallback( "postinit", function()
 				local array, index, value = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3)
 				return setter( self, array, index, value, true )
 			end)
-
+			
 			--------------------------------------------------------------------------------
 			-- Pop functions
 			-- Removes and returns the last value in the array.
@@ -229,7 +229,7 @@ registerCallback( "postinit", function()
 				if (!array) then return fixdef( default ) end
 				return getter( self, array, #array, true )
 			end)
-
+			
 			--------------------------------------------------------------------------------
 			-- Unshift functions
 			-- Inserts the value at the beginning of the array. Subsequent values are moved up to compensate.
@@ -239,7 +239,7 @@ registerCallback( "postinit", function()
 				local array, value = op1[1](self,op1), op2[1](self,op2)
 				return setter( self, array, 1, value, true )
 			end)
-
+			
 			--------------------------------------------------------------------------------
 			-- Shift functions
 			-- Removes and returns the first value of the array. Subsequent values are moved down to compensate.
@@ -250,7 +250,7 @@ registerCallback( "postinit", function()
 				if (!array) then return fixdef( default ) end
 				return getter( self, array, 1, true )
 			end)
-
+			
 			--------------------------------------------------------------------------------
 			-- Remove functions
 			-- Removes and returns the specified value of the array. Subsequent values are moved down to compensate.
@@ -261,8 +261,8 @@ registerCallback( "postinit", function()
 				if (!array or !index) then return fixdef( default ) end
 				return getter( self, array, index, true )
 			end)
-
-
+		
+		
 		end -- blocked check end
 	end
 end)
@@ -453,7 +453,7 @@ end
 
 --------------------------------------------------------------------------------
 -- Concat
--- Concatenates the values of the array
+-- Concatenatest the values of the array
 --------------------------------------------------------------------------------
 __e2setcost(1)
 local concat = table.concat
@@ -461,10 +461,12 @@ e2function string array:concat()
 	self.prf = self.prf + #this/3
 	return concat(this)
 end
+
 e2function string array:concat(string delimiter)
 	self.prf = self.prf + #this/3
 	return concat(this,delimiter)
 end
+
 e2function string array:concat(string delimiter, startindex)
 	self.prf = self.prf + #this/3
 	return concat(this,delimiter,startindex)
@@ -526,3 +528,5 @@ e2function array array:merge( array other )
 end
 
 __e2setcost(nil)
+
+-- CLOSE

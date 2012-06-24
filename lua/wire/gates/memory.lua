@@ -135,18 +135,18 @@ GateActions["ram8"] = {
 		if (Reset > 0) then
 			gate.LatchStore = {}
 		end
-
+		
 		AddrRead = math.floor(tonumber(AddrRead))
 		AddrWrite = math.floor(tonumber(AddrWrite))
-
+		
 		if (Clk > 0) then
 			if (AddrWrite >= 0) and (AddrWrite < 8) then
 				gate.LatchStore[AddrWrite] = Data
 			end
 		end
-
+		
 		if (AddrRead < 0) or (AddrRead >= 8) then return 0 end
-
+		
 		return gate.LatchStore[AddrRead] or 0
 	end,
 	reset = function(gate)
@@ -180,7 +180,7 @@ GateActions["ram64"] = {
 		if (Reset > 0) then
 				gate.LatchStore = {}
 		end
-
+		
 		AddrRead = math.floor(tonumber(AddrRead))
 		AddrWrite = math.floor(tonumber(AddrWrite))
 		if (Clk > 0) then
@@ -221,7 +221,7 @@ GateActions["ram1k"] = {
 		if (Reset > 0) then
 				gate.LatchStore = {}
 		end
-
+		
 		AddrRead = math.floor(tonumber(AddrRead))
 		AddrWrite = math.floor(tonumber(AddrWrite))
 		if (Clk > 0) then
@@ -262,7 +262,7 @@ GateActions["ram32k"] = {
 		if (Reset > 0) then
 				gate.LatchStore = {}
 		end
-
+		
 		AddrRead = math.floor(tonumber(AddrRead))
 		AddrWrite = math.floor(tonumber(AddrWrite))
 		if (Clk > 0) then
@@ -303,7 +303,7 @@ GateActions["ram128k"] = {
 		if (Reset > 0) then
 				gate.LatchStore = {}
 		end
-
+		
 		AddrRead = math.floor(tonumber(AddrRead))
 		AddrWrite = math.floor(tonumber(AddrWrite))
 		if (Clk > 0) then
@@ -344,7 +344,7 @@ GateActions["ram64x64"] = {
 		if (Reset > 0) then
 				gate.LatchStore = {}
 		end
-
+		
 		AddrReadX = math.floor(tonumber(AddrReadX))
 		AddrReadY = math.floor(tonumber(AddrReadY))
 		AddrWriteX = math.floor(tonumber(AddrWriteX))
@@ -354,7 +354,7 @@ GateActions["ram64x64"] = {
 				gate.LatchStore[AddrWriteX + AddrWriteY*64] = Data
 			end
 		end
-
+		
 		if (AddrReadX < 0) or (AddrReadX >= 64) or (AddrReadY < 0) or (AddrReadY >= 64) then
 			return 0
 		end
@@ -418,19 +418,19 @@ GateActions["togglewhile"] = {
 	inputs = { "Clk", "OnValue", "OffValue", "While" },
 	output = function(gate, Clk, OnValue, OffValue, While)
 		local clk = (Clk > 0)
-
+		
 		if (While <= 0) then
 			clk = false
 			gate.LatchStore = false
 		end
-
+		
 		if (gate.PrevValue ~= clk) then
 			gate.PrevValue = clk
 			if (clk) then
 				gate.LatchStore = (not gate.LatchStore)
 			end
 		end
-
+		
 		if (gate.LatchStore) then return OnValue end
 		return OffValue
 	end,

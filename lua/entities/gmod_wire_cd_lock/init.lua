@@ -89,7 +89,7 @@ function ENT:AttachDisk(disk)
 	local lockAng = self:GetAngles()
 	disk:SetPos(newpos)
 	disk:SetAngles(lockAng)
-
+	
 	self.NoCollideConst = constraint.NoCollide(self, disk, 0, 0)
 	if (not self.NoCollideConst) then
 		Wire_TriggerOutput(self, "Locked", 0)

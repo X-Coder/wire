@@ -16,16 +16,16 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	local phys = self:GetPhysicsObject()
 	if (phys:IsValid()) then
 		phys:Wake()
 	end
-
+	
 	self.NormInfo = ""
-
+	
 	self.Inputs = Wire_CreateInputs(self, { "Detonate" })
-
+	
 end
 
 --[[---------------------------------------------------------
@@ -40,22 +40,22 @@ function ENT:Setup( damage, delaytime, removeafter, doblastdamage, radius, nocol
 	self.DoBlastDamage	= doblastdamage
 	self.Exploded		= false
 	self.Removeafter		= removeafter
-
+	
 	if (self.NoCollide) then
 		self:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
 	else
 		self:SetCollisionGroup(COLLISION_GROUP_NONE)
 	end
-
+	
 	self.NormInfo = ""
 	if (self.DoBlastDamage) then
 		self.NormInfo = "Damage: " .. math.floor(self.Damage) .. "\nRadius: " .. math.floor(self.Radius)
 	else
 		self.NormInfo = "Radius: " .. math.floor(self.Radius)
 	end
-
+	
 	self:ShowOutput()
-
+	
 end
 
 
@@ -88,28 +88,28 @@ end
    Desc: is one needed?
 ---------------------------------------------------------]]
 function ENT:Explode( )
-
+	
 	if ( !self:IsValid() ) then return end
 	if (self.Exploded) then return end
-
+	
 	ply = self:GetPlayer() or self
-
+	
 	if ( self.DoBlastDamage ) then
 		util.BlastDamage( self, ply, self:GetPos(), self.Radius, self.Damage )
 	end
-
+	
 	local effectdata = EffectData()
 	 effectdata:SetOrigin( self:GetPos() )
 	util.Effect( "Explosion", effectdata, true, true )
-
+	
 	self.Exploded = true
 	self:ShowOutput()
-
+	
 	if ( self.Removeafter ) then
 		self:Remove()
 		return
 	end
-
+	
 end
 
 --[[---------------------------------------------------------
@@ -129,21 +129,21 @@ end
 
 function MakeWireSimpleExplosive(pl, Pos, Ang, model, key, damage, removeafter, doblastdamage, radius, nocollide )
 	if ( !pl:CheckLimit( "wire_simple_explosive" ) ) then return nil end
-
+	
 	damage = math.Min(damage, 1500)
 	radius = math.Min(radius, 10000)
-
+	
 	local explosive = ents.Create( "gmod_wire_simple_explosive" )
-
+	
 	explosive:SetModel( model )
-	explosive:SetPos( Pos )
+	explosive:SetPos( Pos )	
 	explosive:SetAngles( Ang )
 	explosive:Spawn()
 	explosive:Activate()
-
+	
 	explosive:Setup( damage, delaytime, removeafter, doblastdamage, radius, nocollide )
 	explosive:SetPlayer( pl )
-
+	
 	local ttable = {
 		pl	= pl,
 		nocollide = nocollide,
@@ -154,10 +154,10 @@ function MakeWireSimpleExplosive(pl, Pos, Ang, model, key, damage, removeafter, 
 		radius = radius
 	}
 	table.Merge( explosive:GetTable(), ttable )
-
+	
 	pl:AddCount( "wire_simple_explosive", explosive )
 	pl:AddCleanup( "gmod_wire_simple_explosive", explosive )
-
+	
 	return explosive
 end
 duplicator.RegisterEntityClass( "gmod_wire_simple_explosive", MakeWireSimpleExplosive, "Pos", "Ang", "Model", "key", "damage", "removeafter", "doblastdamage", "radius", "nocollide" )

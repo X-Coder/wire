@@ -7,7 +7,7 @@ ENT.RenderGroup 		= RENDERGROUP_BOTH
 
 function ENT:Initialize()
 
-
+	
 	self.GPU = WireGPU(self, true)
 end
 
@@ -53,7 +53,7 @@ function ENT:Draw()
 			draw.DrawText(DisplayA,valuefont,x + w/2*halign,y + rectheight,Color(255,255,255,255),halign)
 		else
 			// Normal two-value Wire Screen
-
+			
 			-- draw top bars
 			surface.SetDrawColor(100,100,150,255)
 			surface.DrawRect(x,y,w,20)
@@ -80,9 +80,9 @@ function ENT:Draw()
 			draw.DrawText(DisplayA, "screen_font", x + w/2*halign, y +  20, Color(255,255,255,255), halign)
 			draw.DrawText(DisplayB, "screen_font", x + w/2*halign, y + 114, Color(255,255,255,255), halign)
 		end
-
+		
 	end)
-
+	
 	Wire_Render(self)
 end
 

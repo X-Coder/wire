@@ -21,9 +21,9 @@ function ENT:InitializeShared()
 	self.chrPerLine = 5
 	self.textJust = 0
 	self.valign = 0
-
+	
 	self.fgcolor = Color(255,255,255)
 	self.bgcolor = Color(0,0,0)
-
+	
 	WireLib.umsgRegister(self)
 end

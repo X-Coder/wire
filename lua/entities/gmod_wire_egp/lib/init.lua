@@ -4,14 +4,14 @@ EGP = {}
 -- Include all other files
 --------------------------------------------------------
 
-function EGP:Initialize()
+function EGP:Initialize()	
 	local Folder = "entities/gmod_wire_egp/lib/egplib/"
-	local entries = file.FindInLua( Folder .. "*.lua" )
+	local entries = file.Find( Folder .."*.lua", LUA_PATH )
 	for _, entry in ipairs( entries ) do
 		if (SERVER) then
 			AddCSLuaFile( Folder .. entry )
 		end
-		include( Folder .. entry )
+		include( Folder .. entry )			
 	end
 end
 

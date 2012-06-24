@@ -27,7 +27,7 @@ end
 function ENT:TriggerInput(iname, value)
 	-- ake sure we have a valid vehicle
 	if not ValidEntity(self.Vehicle) then return end
-
+	
 	if (iname == "Throttle") then
 		self.Vehicle:Fire("throttle", tostring(value), 0)
 	elseif (iname == "Steering") then
@@ -52,7 +52,7 @@ function ENT:ShowOutput(value)
 	end
 end
 
-function ENT:OnRestore()
+function ENT:OnRestore()	
     self.BaseClass.OnRestore(self)
 end
 

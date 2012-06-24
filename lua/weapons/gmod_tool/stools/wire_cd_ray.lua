@@ -89,7 +89,7 @@ function TOOL:RightClick(trace)
 	local range = self:GetClientNumber("Range")
 	local defZero = (self:GetClientNumber("DefaultZero") ~= 0)
 	local model = self:GetClientInfo("lockmodel")
-
+	
 	if not util.IsValidModel( model ) or not util.IsValidProp( model ) then return end
 
 	local wire_cd_lock = MakeWireCDLock( ply, trace.HitPos, Ang, model )

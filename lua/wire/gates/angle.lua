@@ -249,9 +249,9 @@ GateActions["angle_compeq"] = {
 	end
 }
 
--- Not Equal
+-- Inequal
 GateActions["angle_compineq"] = {
-	name = "Not Equal",
+	name = "Inequal",
 	inputs = { "A", "B" },
 	inputtypes = { "ANGLE", "ANGLE" },
 	outputtypes = { "NORMAL" },
@@ -285,7 +285,7 @@ GateActions["angle_select"] = {
 	inputtypes = { "NORMAL", "ANGLE", "ANGLE", "ANGLE", "ANGLE", "ANGLE", "ANGLE", "ANGLE", "ANGLE" },
 	outputtypes = { "ANGLE" },
 	output = function(gate, Choice, ...)
-		Choice = math.Clamp(Choice,1,8)
+		math.Clamp(Choice,1,8)
 		return ({...})[Choice]
 	end,
 	label = function(Out, Choice)
@@ -322,7 +322,7 @@ GateActions["angle_clampn"] = {
 		return "Clamp(" .. A .. "," .. Min .. "," .. Max .. ") = " .. tostring(Out)
 	end
 }
-
+ 
 GateActions["angle_clampa"] = {
 	name = "Clamp (angles)",
 	inputs = { "A", "Min", "Max" },

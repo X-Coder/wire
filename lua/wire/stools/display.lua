@@ -16,7 +16,7 @@ end
 
 do -- wire_indicator
 	WireToolSetup.open( "indicator", "Indicator", "gmod_wire_indicator", nil, "Indicators" )
-
+	
 	if CLIENT then
 		language.Add( "Tool_wire_indicator_name", "Indicator Tool (Wire)" )
 		language.Add( "Tool_wire_indicator_desc", "Spawns a indicator for use with the wire system." )
@@ -30,12 +30,12 @@ do -- wire_indicator
 		language.Add( "ToolWireIndicator_90", "Rotate segment 90" )
 	end
 	WireToolSetup.BaseLang()
-
+	
 	WireToolSetup.SetupMax( 20, "wire_indicators", "You've hit indicators limit!" )
-
+	
 	if SERVER then
 		ModelPlug_Register("indicator")
-
+		
 		function TOOL:GetConVars()
 			return self:GetClientNumber("a"),
 			math.Clamp(self:GetClientNumber("ar"),0,255),
@@ -50,12 +50,12 @@ do -- wire_indicator
 			self:GetClientInfo( "material" ),
 			self:GetClientNumber( "noclip" ) == 1
 		end
-
+		
 		function TOOL:MakeEnt( ply, model, Ang, trace )
 			return MakeWireIndicator( ply, trace.HitPos, Ang, model, self:GetConVars() )
 		end
 	end
-
+	
 	TOOL.ClientConVar = {
 		model    = "models/jaanus/wiretool/wiretool_siren.mdl",
 		a        = 0,
@@ -73,7 +73,7 @@ do -- wire_indicator
 		rotate90 = 0,
 		weld     = 1,
 	}
-
+	
 	--function TOOL:GetGhostAngle( Ang )
 	function TOOL:GetAngle( trace )
 		local Ang = trace.HitNormal:Angle()
@@ -87,7 +87,7 @@ do -- wire_indicator
 		Ang.pitch = Ang.pitch + 90
 		return Ang
 	end
-
+	
 	function TOOL:GetGhostMin( min )
 		local Model = self:GetModel()
 		--these models are different
@@ -96,11 +96,11 @@ do -- wire_indicator
 		end
 		return min.z
 	end
-
+	
 	function TOOL.BuildCPanel(panel)
 		WireToolHelpers.MakePresetControl(panel, "wire_indicator")
 		panel:NumSlider("#ToolWireIndicator_a_value", "wire_indicator_a", -10, 10, 1)
-
+		
 		panel:AddControl("Color", {
 			Label = "#ToolWireIndicator_a_colour",
 			Red = "wire_indicator_ar",
@@ -112,9 +112,9 @@ do -- wire_indicator
 			ShowRGB = "1",
 			Multiplier = "255"
 		})
-
+		
 		panel:NumSlider("#ToolWireIndicator_b_value", "wire_indicator_b", -10, 10, 1)
-
+		
 		panel:AddControl("Color", {
 			Label = "#ToolWireIndicator_b_colour",
 			Red = "wire_indicator_br",
@@ -126,9 +126,9 @@ do -- wire_indicator
 			ShowRGB = "1",
 			Multiplier = "255"
 		})
-
+		
 		ModelPlug_AddToCPanel(panel, "indicator", "wire_indicator", "#ToolWireIndicator_Model", nil, "#ToolWireIndicator_Model")
-
+		
 		panel:AddControl("ComboBox", {
 			Label = "#ToolWireIndicator_Material",
 			Options = {
@@ -137,7 +137,7 @@ do -- wire_indicator
 				["Metal"]	= { wire_indicator_material = "models/props_c17/metalladder003" }
 			}
 		})
-
+		
 		panel:CheckBox("#ToolWireIndicator_90", "wire_indicator_rotate90")
 		panel:CheckBox("#WireGatesTool_noclip", "wire_indicator_noclip")
 		panel:CheckBox("Weld", "wire_indicator_weld")
@@ -148,10 +148,10 @@ end -- wire_indicator
 
 do -- wire_7seg
 	WireToolSetup.open( "7seg", "7 Segment Display", "gmod_wire_indicator" )
-
+	
 	TOOL.GhostAngle = Angle(90, 0, 0)
 	TOOL.GhostMin = "x"
-
+	
 	if CLIENT then
 		language.Add( "Tool_wire_7seg_name", "7-Segment Display Tool" )
 		language.Add( "Tool_wire_7seg_desc", "Spawns 7 indicators for numeric display with the wire system." )
@@ -161,10 +161,10 @@ do -- wire_7seg
 		language.Add( "ToolWire7SegTool_worldweld", "Allow weld to world" )
 		language.Add( "undone_wire7seg", "Undone 7-Segment Display" )
 	end
-
+	
 	-- define MaxLimitName cause this tool just uses gmod_wire_indicators
 	TOOL.MaxLimitName = "wire_indicators"
-
+	
 	if SERVER then
 		function TOOL:GetConVars()
 			return 0,
@@ -178,12 +178,12 @@ do -- wire_7seg
 			math.Clamp(self:GetClientNumber("bb"),0,255),
 			math.Clamp(self:GetClientNumber("ba"),0,255)
 		end
-
+	
 		function TOOL:MakeEnt( ply, model, Ang, trace )
 			return MakeWire7Seg( ply, trace.HitPos, Ang, model, self:GetConVars() )
 		end
 	end
-
+	
 	TOOL.ClientConVar = {
 		model     = "models/segment.mdl",
 		ar        = 70, --default: dark grey off, full red on
@@ -196,9 +196,9 @@ do -- wire_7seg
 		ba        = 255,
 		worldweld = 1,
 	}
-
+	
 	function TOOL:PostMake_SetPos() end
-
+	
 	function TOOL:LeftClick_PostMake( wire_indicators, ply, trace )
 		if not wire_indicators then return end
 		local worldweld = self:GetClientNumber("worldweld") == 1
@@ -215,10 +215,10 @@ do -- wire_7seg
 		undo.Finish()
 		return true
 	end
-
+	
 	function TOOL.BuildCPanel(panel)
 		WireToolHelpers.MakePresetControl(panel, "wire_7seg")
-
+		
 		panel:AddControl("Color", {
 			Label = "#ToolWire7Seg_a_colour",
 			Red = "wire_7seg_ar",
@@ -230,7 +230,7 @@ do -- wire_7seg
 			ShowRGB = "1",
 			Multiplier = "255"
 		})
-
+		
 		panel:AddControl("Color", {
 			Label = "#ToolWire7Seg_b_colour",
 			Red = "wire_7seg_br",
@@ -242,7 +242,7 @@ do -- wire_7seg
 			ShowRGB = "1",
 			Multiplier = "255"
 		})
-
+		
 		panel:AddControl("ComboBox", {
 			Label = "#ToolWireIndicator_Model",
 			Options = {
@@ -251,7 +251,7 @@ do -- wire_7seg
 				["Small 7-seg bar"]		= { wire_7seg_model = "models/segment3.mdl" },
 			}
 		})
-
+		
 		panel:CheckBox("#ToolWire7SegTool_worldweld", "wire_7seg_worldweld")
 	end
 end -- wire_7seg
@@ -260,24 +260,24 @@ end -- wire_7seg
 
 do -- wire_consolescreen
 	WireToolSetup.open( "consolescreen", "Console Screen", "gmod_wire_consolescreen", nil,  "Screens" )
-
+	
 	if CLIENT then
 		language.Add( "Tool_wire_consolescreen_name", "Console Screen Tool (Wire)" )
 		language.Add( "Tool_wire_consolescreen_desc", "Spawns a console screen" )
 		language.Add( "Tool_wire_consolescreen_0", "Primary: Create/Update screen" )
 	end
 	WireToolSetup.BaseLang()
-
+	
 	WireToolSetup.SetupMax( 20, "wire_consolescreens", "You've hit console screens limit!" )
-
+	
 	if SERVER then
 		function TOOL:GetConVars() end
-
+		
 		function TOOL:MakeEnt( ply, model, Ang, trace )
 			return MakeWireconsoleScreen( ply, trace.HitPos, Ang, model )
 		end
 	end
-
+	
 	TOOL.GetAngle = CreateFlatGetAngle
 	TOOL.NoLeftOnClass = true -- no update ent function needed
 	TOOL.ClientConVar = {
@@ -285,7 +285,7 @@ do -- wire_consolescreen
 		createflat = 0,
 		weld       = 1,
 	}
-
+	
 	function TOOL.BuildCPanel(panel)
 		WireDermaExts.ModelSelect(panel, "wire_consolescreen_model", list.Get( "WireScreenModels" ), 2)
 		panel:CheckBox("#Create Flat to Surface", "wire_consolescreen_createflat")
@@ -297,26 +297,26 @@ end -- wire_consolescreen
 
 do -- wire_digitalscreen
 	WireToolSetup.open( "digitalscreen", "Digital Screen", "gmod_wire_digitalscreen", nil, "Digital Screens" )
-
+	
 	if CLIENT then
 		language.Add( "Tool_wire_digitalscreen_name", "Digital Screen Tool (Wire)" )
 		language.Add( "Tool_wire_digitalscreen_desc", "Spawns a digital screen, which can be used to draw pixel by pixel." )
 		language.Add( "Tool_wire_digitalscreen_0", "Primary: Create/Update screen" )
 	end
 	WireToolSetup.BaseLang()
-
+	
 	WireToolSetup.SetupMax( 20, "wire_digitalscreens", "You've hit digital screens limit!" )
-
+	
 	if SERVER then
 		function TOOL:GetConVars()
 			return self:GetClientInfo("width"), self:GetClientInfo("height")
 		end
-
+		
 		function TOOL:MakeEnt( ply, model, Ang, trace )
 			return MakeWireDigitalScreen( ply, trace.HitPos, Ang, model, self:GetConVars() )
 		end
 	end
-
+	
 	TOOL.NoLeftOnClass = true -- no update ent function needed
 	TOOL.GetAngle = CreateFlatGetAngle
 	TOOL.ClientConVar = {
@@ -326,7 +326,7 @@ do -- wire_digitalscreen
 		createflat = 0,
 		weld       = 1,
 	}
-
+	
 	function TOOL.BuildCPanel(panel)
 		WireDermaExts.ModelSelect(panel, "wire_digitalscreen_model", list.Get( "WireScreenModels" ), 2)
 		panel:NumSlider("Width", "wire_digitalscreen_width", 1, 512, 0)
@@ -340,7 +340,7 @@ end -- wire_digitalscreen
 
 do -- wire_lamp
 	WireToolSetup.open( "lamp", "Lamp", "gmod_wire_lamp", nil, "Lamps" )
-
+	
 	if CLIENT then
 		language.Add( "Tool_wire_lamp_name", "Wire Lamps" )
 		language.Add( "Tool_wire_lamp_desc", "Spawns a lamp for use with the wire system." )
@@ -350,9 +350,9 @@ do -- wire_lamp
 		language.Add( "WireLampTool_Const", "Constraint:" )
 	end
 	WireToolSetup.BaseLang()
-
+	
 	WireToolSetup.SetupMax( 10, "wire_lamps", "You've hit lamps limit!" )
-
+	
 	if SERVER then
 		function TOOL:GetConVars()
 			return math.Clamp( self:GetClientNumber( "r" ), 0, 255 ),
@@ -360,18 +360,18 @@ do -- wire_lamp
 			math.Clamp( self:GetClientNumber( "b" ), 0, 255 ),
 			self:GetClientInfo( "texture" )
 		end
-
+		
 		function TOOL:MakeEnt( ply, model, Ang, trace )
 			local r, g, b, Texture = self:GetConVars()
 			return MakeWireLamp( ply, r, g, b, Texture, { Pos = trace.HitPos, Angle = Ang } )
 		end
-
+		
 		function TOOL:LeftClick_PostMake( ent, ply, trace )
 			if ent == true then return true end
 			if ent == nil or ent == false or not ent:IsValid() then return false end
-
+			
 			local const = self:GetClientInfo( "const" )
-
+			
 			if const == "weld" then
 				local const = WireLib.Weld( ent, trace.Entity, trace.PhysicsBone, true )
 				undo.Create( self.WireClass )
@@ -380,52 +380,52 @@ do -- wire_lamp
 					undo.SetPlayer( ply )
 				undo.Finish()
 			elseif const == "rope" then
-
+				
 				local length   = self:GetClientNumber( "ropelength" )
 				local material = self:GetClientInfo( "ropematerial" )
-
+				
 				local LPos1 = Vector( 0, 0, 5 )
 				local LPos2 = trace.Entity:WorldToLocal( trace.HitPos )
-
+				
 				if trace.Entity:IsValid() then
 					local phys = trace.Entity:GetPhysicsObjectNum( trace.PhysicsBone )
 					if phys:IsValid() then
 						LPos2 = phys:WorldToLocal( trace.HitPos )
 					end
 				end
-
+				
 				local constraint, rope = constraint.Rope( ent, trace.Entity, 0, trace.PhysicsBone, LPos1, LPos2, 0, length, 0, 1.5, material, nil )
-
+				
 				undo.Create( self.WireClass )
 					undo.AddEntity( ent )
 					undo.AddEntity( rope )
 					undo.AddEntity( constraint )
 					undo.SetPlayer( ply )
 				undo.Finish()
-
+				
 			else --none
 				ent:GetPhysicsObject():EnableMotion(false) -- freeze
-
+				
 				undo.Create( self.WireClass )
 					undo.AddEntity( ent )
 					undo.SetPlayer( ply )
 				undo.Finish()
 			end
-
+			
 			ply:AddCleanup( self.WireClass, ent )
-
+			
 			return true
 		end
 	end
-
+	
 	function TOOL:GetAngle( trace )
 		return trace.HitNormal:Angle() - Angle( 90, 0, 0 )
 	end
-
+	
 	function TOOL:SetPos( ent, trace )
 		ent:SetPos(trace.HitPos + trace.HitNormal * 10)
 	end
-
+	
 	--TOOL.GhostAngle = Angle(180, 0, 0)
 	TOOL.Model = "models/props_wasteland/prison_lamp001c.mdl"
 	TOOL.ClientConVar = {
@@ -437,37 +437,37 @@ do -- wire_lamp
 		const        = "rope",
 		texture      = "effects/flashlight001",
 	}
-
+	
 	-- Spawn a lamp without constraints (just frozen)
 	function TOOL:RightClick( trace )
 		-- TODO: redo this function
 		if not trace.HitPos then return false end
 		if trace.Entity:IsPlayer() then return false end
 		if CLIENT then return true end
-
+		
 		local ply = self:GetOwner()
 		local noconstraint = true
-
+		
 		local ent = self:LeftClick_Make( trace, ply, noconstraint )
 		if ent == true then return true end
 		if ent == nil or ent == false or not ent:IsValid() then return false end
-
+		
 		undo.Create( self.WireClass )
 			undo.AddEntity( ent )
 			undo.AddEntity( const )
 			undo.SetPlayer( ply )
 		undo.Finish()
-
+		
 		ply:AddCleanup( self.WireClass, ent )
-
+		
 		return true
 	end
-
+	
 	function TOOL.BuildCPanel(panel)
 		WireToolHelpers.MakePresetControl(panel, "wire_lamp")
-
+		
 		panel:NumSlider("#WireLampTool_RopeLength", "wire_lamp_ropelength", 4, 400, 0)
-
+		
 		panel:AddControl("Color", {
 			Label = "#WireLampTool_Color",
 			Red	= "wire_lamp_r",
@@ -478,7 +478,7 @@ do -- wire_lamp
 			ShowRGB = "1",
 			Multiplier = "255"
 		})
-
+		
 		panel:AddControl("ComboBox", {
 			Label = "#WireLampTool_Const",
 			Options = {
@@ -487,7 +487,7 @@ do -- wire_lamp
 				["None"] = { wire_lamp_const = "none" },
 			}
 		})
-
+		
 		local MatSelect = panel:MatSelect( "wire_lamp_texture", nil, true, 0.33, 0.33 )
 		for k, v in pairs( list.Get( "LampTextures" ) ) do
 			MatSelect:AddMaterial( v.Name or k, k )
@@ -499,7 +499,7 @@ end -- wire_lamp
 
 do -- wire_light
 	WireToolSetup.open( "light", "Light", "gmod_wire_light", nil, "Lights" )
-
+	
 	if CLIENT then
 		language.Add( "Tool_wire_light_name", "Light Tool (Wire)" )
 		language.Add( "Tool_wire_light_desc", "Spawns a Light for use with the wire system." )
@@ -509,9 +509,9 @@ do -- wire_light
 		language.Add( "WireLightTool_glow", "Glow Component" )
 	end
 	WireToolSetup.BaseLang()
-
+	
 	WireToolSetup.SetupMax( 8, "wire_lights", "You've hit lights limit!" )
-
+	
 	if SERVER then
 		function TOOL:GetConVars()
 			return
@@ -519,12 +519,12 @@ do -- wire_light
 				self:GetClientNumber("radiant") ~= 0,
 				self:GetClientNumber("glow") ~= 0
 		end
-
+		
 		function TOOL:MakeEnt( ply, model, Ang, trace )
 			return MakeWireLight( ply, trace.HitPos, Ang, model, self:GetConVars() )
 		end
 	end
-
+	
 	TOOL.ClientConVar = {
 		model       = "models/jaanus/wiretool/wiretool_siren.mdl",
 		directional = 0,
@@ -532,7 +532,7 @@ do -- wire_light
 		glow        = 0,
 		weld        = 1,
 	}
-
+	
 	function TOOL.BuildCPanel(panel)
 		WireDermaExts.ModelSelect(panel, "wire_light_model", list.Get( "Wire_Misc_Tools_Models" ), 1)
 		panel:CheckBox("#WireLightTool_directional", "wire_light_directional")
@@ -546,24 +546,24 @@ end -- wire_light
 
 do -- wire_oscilloscope
 	WireToolSetup.open( "oscilloscope", "Oscilloscope", "gmod_wire_oscilloscope", nil, "Oscilloscopes" )
-
+	
 	if CLIENT then
 		language.Add( "Tool_wire_oscilloscope_name", "Oscilloscope Tool (Wire)" )
 		language.Add( "Tool_wire_oscilloscope_desc", "Spawns a oscilloscope what display line graphs." )
 		language.Add( "Tool_wire_oscilloscope_0", "Primary: Create/Update oscilloscope" )
 	end
 	WireToolSetup.BaseLang()
-
+	
 	WireToolSetup.SetupMax( 20, "wire_oscilloscopes", "You've hit oscilloscopes limit!" )
-
+	
 	if SERVER then
 		function TOOL:GetConVars() end
-
+		
 		function TOOL:MakeEnt( ply, model, Ang, trace )
 			return MakeWireOscilloscope( ply, trace.HitPos, Ang, model )
 		end
 	end
-
+	
 	TOOL.NoLeftOnClass = true -- no update ent function needed
 	TOOL.GetAngle = CreateFlatGetAngle
 	TOOL.ClientConVar = {
@@ -571,8 +571,8 @@ do -- wire_oscilloscope
 		createflat = 0,
 		weld       = 1,
 	}
-
-
+	
+	
 	function TOOL.BuildCPanel(panel)
 		WireDermaExts.ModelSelect(panel, "wire_oscilloscope_model", list.Get( "WireScreenModels" ), 2)
 		panel:CheckBox("#Create Flat to Surface", "wire_oscilloscope_createflat")
@@ -584,7 +584,7 @@ end -- wire_oscilloscope
 
 do -- wire_panel
 	WireToolSetup.open( "panel", "Control Panel", "gmod_wire_panel", nil, "Control Panels" )
-
+	
 	if CLIENT then
 		language.Add( "Tool_wire_panel_name", "Control Panel Tool (Wire)" )
 		language.Add( "Tool_wire_panel_desc", "Spawns a panel what display values." )
@@ -592,17 +592,17 @@ do -- wire_panel
 		language.Add( "Tool_wire_panel_createflat", "Create flat to surface" )
 	end
 	WireToolSetup.BaseLang()
-
+	
 	WireToolSetup.SetupMax( 20, "wire_panels", "You've hit panels limit!" )
-
+	
 	if SERVER then
 		function TOOL:GetConVars() end
-
+		
 		function TOOL:MakeEnt( ply, model, Ang, trace )
 			return MakeWirePanel( ply, trace.HitPos, Ang, model )
 		end
 	end
-
+	
 	TOOL.GetAngle = CreateFlatGetAngle
 	TOOL.NoLeftOnClass = true -- no update ent function needed
 	TOOL.ClientConVar = {
@@ -610,7 +610,7 @@ do -- wire_panel
 		createflat = 1,
 		weld       = 1,
 	}
-
+	
 	function TOOL.BuildCPanel(panel)
 		WireDermaExts.ModelSelect(panel, "wire_panel_model", list.Get( "WireScreenModels" ), 2) -- screen witha GPULib setup
 		panel:CheckBox("#Tool_wire_panel_createflat", "wire_panel_createflat")
@@ -622,35 +622,35 @@ end -- wire_panel
 
 do -- wire_pixel
 	WireToolSetup.open( "pixel", "Pixel", "gmod_wire_pixel", nil, "Pixels" )
-
+	
 	if CLIENT then
 		language.Add( "Tool_wire_pixel_name", "Pixel Tool (Wire)" )
 		language.Add( "Tool_wire_pixel_desc", "Spawns a Pixel for use with the wire system." )
 		language.Add( "Tool_wire_pixel_0", "Primary: Create Pixel" )
 	end
 	WireToolSetup.BaseLang()
-
+	
 	WireToolSetup.SetupMax( 20, "wire_pixels", "You've hit pixels limit!" )
-
+	
 	if SERVER then
 		ModelPlug_Register("pixel")
-
+		
 		function TOOL:GetConVars()
 			return self:GetClientNumber( "noclip" ) == 1
 		end
-
+		
 		function TOOL:MakeEnt( ply, model, Ang, trace )
 			return MakeWirePixel( ply, trace.HitPos, Ang, model, self:GetConVars() )
 		end
 	end
-
+	
 	TOOL.NoLeftOnClass = true -- no update ent function needed
 	TOOL.ClientConVar = {
 		model  = "models/jaanus/wiretool/wiretool_siren.mdl",
 		noclip = 0,
 		weld   = 1,
 	}
-
+	
 	function TOOL.BuildCPanel(panel)
 		WireDermaExts.ModelSelect(panel, "wire_pixel_model", list.Get("Wire_pixel_Models"), 3, true)
 		panel:CheckBox("#WireGatesTool_noclip", "wire_pixel_noclip")
@@ -662,7 +662,7 @@ end -- wire_pixel
 
 do -- wire_screen
 	WireToolSetup.open( "screen", "Screen", "gmod_wire_screen", nil, "Screens" )
-
+	
 	if CLIENT then
 		language.Add( "Tool_wire_screen_name", "Screen Tool (Wire)" )
 		language.Add( "Tool_wire_screen_desc", "Spawns a screen that display values." )
@@ -676,12 +676,12 @@ do -- wire_screen
 		language.Add("Tool_wire_screen_createflat", "Create flat to surface")
 	end
 	WireToolSetup.BaseLang()
-
+	
 	WireToolSetup.SetupMax( 20, "wire_screens", "You've hit screens limit!" )
-
+	
 	if SERVER then
 		ModelPlug_Register("pixel")
-
+		
 		function TOOL:GetConVars()
 			return self:GetClientNumber("singlevalue") == 1,
 			self:GetClientNumber("singlebigfont") == 1,
@@ -690,12 +690,12 @@ do -- wire_screen
 			self:GetClientNumber("leftalign") == 1,
 			self:GetClientNumber("floor") == 1
 		end
-
+		
 		function TOOL:MakeEnt( ply, model, Ang, trace )
 			return MakeWireScreen( ply, trace.HitPos, Ang, model, self:GetConVars() )
 		end
 	end
-
+	
 	TOOL.GetAngle = CreateFlatGetAngle
 	TOOL.ClientConVar = {
 		model         = "models/props_lab/monitor01b.mdl",
@@ -708,7 +708,7 @@ do -- wire_screen
 		floor         = 0,
 		weld          = 1,
 	}
-
+	
 	function TOOL.BuildCPanel(panel)
 		WireToolHelpers.MakePresetControl(panel, "wire_screen")
 		WireDermaExts.ModelSelect(panel, "wire_screen_model", list.Get( "WireScreenModels" ), 2) -- screen with GPULib setup
@@ -727,7 +727,7 @@ end -- wire_screen
 
 do -- wire_soundemitter
 	WireToolSetup.open( "soundemitter", "Sound Emitter", "gmod_wire_soundemitter", nil, "Sound Emitters" )
-
+	
 	if CLIENT then
 		language.Add( "Tool_wire_soundemitter_name", "Sound Emitter Tool (Wire)" )
 		language.Add( "Tool_wire_soundemitter_desc", "Spawns a sound emitter for use with the wire system." )
@@ -736,21 +736,21 @@ do -- wire_soundemitter
 		language.Add( "WireEmitterTool_collision", "Collision" )
 	end
 	WireToolSetup.BaseLang()
-
+	
 	WireToolSetup.SetupMax( 10, "wire_emitters", "You've hit sound emitters limit!" )
-
+	
 	if SERVER then
 		ModelPlug_Register("speaker")
-
+		
 		function TOOL:GetConVars()
 			return Sound( self:GetClientInfo( "sound" ) )
 		end
-
+		
 		function TOOL:MakeEnt( ply, model, Ang, trace )
 			return MakeWireEmitter( ply, trace.HitPos, Ang, model, self:GetConVars() )
 		end
 	end
-
+	
 	TOOL.ClientConVar = {
 		model     = "models/cheeze/wires/speaker.mdl",
 		sound     = "synth/square.wav",
@@ -759,7 +759,7 @@ do -- wire_soundemitter
 	}
 	function TOOL.BuildCPanel(panel)
 		local wide = panel:GetWide()
-
+		
 		local SoundNameText = vgui.Create("DTextEntry", ValuePanel)
 		SoundNameText:SetText("")
 		SoundNameText:SetWide(wide)
@@ -768,7 +768,7 @@ do -- wire_soundemitter
 		SoundNameText:SetConVar("wire_soundemitter_sound")
 		SoundNameText:SetVisible(true)
 		panel:AddItem(SoundNameText)
-
+		
 		local SoundBrowserButton = vgui.Create("DButton")
 		SoundBrowserButton:SetText("Open Sound Browser")
 		SoundBrowserButton:SetWide(wide)
@@ -827,12 +827,12 @@ do -- wire_textscreen
 	--http://gmodreviews.googlepages.com/
 	--http://forums.facepunchstudios.com/greenarrow
 	WireToolSetup.open( "textscreen", "Text Screen", "gmod_wire_textscreen", nil, "Text Screens" )
-
+	
 	if CLIENT then
 		language.Add("Tool_wire_textscreen_name", "Text Screen Tool (Wire)" )
 		language.Add("Tool_wire_textscreen_desc", "Spawns a screen that displays text." )
 		language.Add("Tool_wire_textscreen_0", "Primary: Create/Update text screen, Secondary: Copy settings" )
-
+		
 		language.Add("Tool_wire_textscreen_tsize", "Text size:")
 		language.Add("Tool_wire_textscreen_tjust", "Horizontal alignment:")
 		language.Add("Tool_wire_textscreen_valign", "Vertical alignment:")
@@ -841,12 +841,12 @@ do -- wire_textscreen
 		language.Add("Tool_wire_textscreen_text", "Default text:")
 	end
 	WireToolSetup.BaseLang()
-
+	
 	WireToolSetup.SetupMax( 20, "wire_textscreens", "You've hit sound text screens limit!" )
-
+	
 	if SERVER then
 		ModelPlug_Register("speaker")
-
+		
 		function TOOL:GetConVars()
 			return
 				self:GetClientInfo("text"),
@@ -860,12 +860,12 @@ do -- wire_textscreen
 				),
 				Color(0,0,0)
 		end
-
+		
 		function TOOL:MakeEnt( ply, model, Ang, trace )
 			return MakeWireTextScreen( ply, trace.HitPos, Ang, model, self:GetConVars() )
 		end
 	end
-
+	
 	TOOL.GetAngle = CreateFlatGetAngle
 	TOOL.ClientConVar = {
 		model       = "models/kobilica/wiremonitorbig.mdl",
@@ -880,22 +880,22 @@ do -- wire_textscreen
 		weld        = 1,
 		text        = "",
 	}
-
+	
 	function TOOL:RightClick( trace )
 		if not trace.HitPos then return false end
 		local ent = trace.Entity
 		if ent:IsPlayer() then return false end
 		if CLIENT then return true end
-
+		
 		local ply = self:GetOwner()
-
+		
 		if ent:IsValid() && ent:GetClass() == "gmod_wire_textscreen" then
 			ply:ConCommand('wire_textscreen_text "'..ent.text..'"')
 			return true
 		end
-
+		
 	end
-
+	
 	function TOOL.BuildCPanel(panel)
 		WireToolHelpers.MakePresetControl(panel, "wire_textscreen")
 		panel:NumSlider("#Tool_wire_textscreen_tsize", "wire_textscreen_tsize", 1, 15, 0)
@@ -914,7 +914,7 @@ do -- wire_textscreen
 		WireDermaExts.ModelSelect(panel, "wire_textscreen_model", list.Get( "WireScreenModels" ), 2)
 		panel:CheckBox("#Tool_wire_textscreen_createflat", "wire_textscreen_createflat")
 		panel:TextEntry("#Tool_wire_textscreen_text", "wire_textscreen_text")
-
+		
 		panel:CheckBox("Weld", "wire_textscreen_weld")
 	end
 end -- wire_textscreen
@@ -923,15 +923,15 @@ end -- wire_textscreen
 
 do -- Holography--
 	WireToolSetup.setCategory( "Render" )
-
+	
 	do -- wire_holoemitter
 		WireToolSetup.open( "holoemitter", "HoloEmitter", "gmod_wire_holoemitter", nil, "HoloEmitters" )
-
+		
 		local function HoloRightClick( self, trace )
 			if CLIENT then return true end
-
+			
 			local ent = trace.Entity
-
+			
 			if (self:GetStage() == 0) then
 				if (ent:GetClass() == "gmod_wire_holoemitter") then
 					self.Target = ent
@@ -951,10 +951,10 @@ do -- Holography--
 				self:SetStage(0)
 				self:GetOwner():ChatPrint( "Holoemitter linked to entity (".. tostring(ent)..")" )
 			end
-
+			
 			return true
 		end
-
+		
 		if CLIENT then
 			language.Add( "Tool_wire_holoemitter_name", "Holographic Emitter Tool (Wire)" )
 			language.Add( "Tool_wire_holoemitter_desc", "The emitter required for holographic projections" )
@@ -964,42 +964,42 @@ do -- Holography--
 			language.Add( "Tool_wire_holoemitter_keeplatestdot", "Keep latest dot indefinitely (prevent fading)." )
 		end
 		WireToolSetup.BaseLang()
-
+		
 		WireToolSetup.SetupMax( 10, "wire_holoemitters", "You've hit the holoemitters limit!" )
-
-		if SERVER then
+		
+		if SERVER then			
 			function TOOL:MakeEnt( ply, model, Ang, trace )
 				return MakeWireHoloemitter( ply, trace.HitPos, Ang, model )
 			end
 		end
-
+		
 		TOOL.RightClick   = HoloRightClick
 		TOOL.Reload       = HoloReload
 		TOOL.ClientConVar = {
 			model = "models/jaanus/wiretool/wiretool_range.mdl",
 			weld = 1
 		}
-
+		
 		function TOOL.BuildCPanel( panel )
 			WireToolHelpers.MakePresetControl(panel, "wire_holoemitter")
 			WireDermaExts.ModelSelect(panel, "wire_holoemitter_model", list.Get( "Wire_Misc_Tools_Models" ), 1)
-
+			
 			panel:NumSlider("#Tool_wire_holoemitter_fadetime", "cl_wire_holoemitter_maxfadetime", 0, 100, 1)
 			panel:CheckBox("#Tool_wire_holoemitter_keeplatestdot", "wire_holoemitter_keeplatestdot")
-
+			
 			panel:CheckBox("Weld", "wire_holoemitter_weld")
 		end
 	end -- wire_holoemitter
-
+		
 	do -- wire_hologrid
 		WireToolSetup.open( "hologrid", "HoloGrid", "gmod_wire_hologrid", nil, "HoloGrids" )
-
+		
 		if CLIENT then
-
+		
 			local stage0 = "Secondary: Link HoloGrid with HoloEmitter or reference entity, Reload: Unlink HoloEmitter or HoloGrid"
 			local stage1 = "Select the HoloGrid to link to."
 			local stage2 = "Select the Holo Emitter or reference entity to link to."
-
+	
 			language.Add( "Tool_wire_hologrid_name", "Holographic Grid Tool (Wire)" )
 			language.Add( "Tool_wire_hologrid_desc", "The grid to aid in holographic projections" )
 			language.Add( "Tool_wire_hologrid_0", "Primary: Create grid, "..stage0 )
@@ -1008,19 +1008,19 @@ do -- Holography--
 			language.Add( "Tool_wire_hologrid_usegps", "Use GPS coordinates" )
 		end
 		WireToolSetup.BaseLang()
-
+		
 		WireToolSetup.SetupMax( 20, "wire_hologrids", "You've hit sound hologrids limit!" )
-
+		
 		if SERVER then
 			function TOOL:GetConVars()
 				return util.tobool(self:GetClientNumber( "usegps" ))
 			end
-
+			
 			function TOOL:MakeEnt( ply, model, Ang, trace )
 				return MakeWireHologrid( ply, trace.HitPos, Ang, model, self:GetConVars() )
 			end
 		end
-
+		
 		TOOL.RightClick    = HoloRightClick
 		TOOL.Reload        = HoloReload
 		TOOL.NoGhostOn     = { "sbox_maxwire_holoemitters" }
@@ -1030,7 +1030,7 @@ do -- Holography--
 			usegps = 0,
 			weld   = 1,
 		}
-
+		
 		function TOOL.BuildCPanel( panel )
 			WireDermaExts.ModelSelect(panel, "wire_hologrid_model", list.Get( "Wire_Misc_Tools_Models" ), 1)
 			panel:CheckBox("#Tool_wire_hologrid_usegps", "wire_hologrid_usegps")

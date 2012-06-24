@@ -28,29 +28,29 @@ function ENT:TriggerInput(iname, value)
 		if value ~= 0 then
 			 local vStart = self:GetPos()
 			 local vForward = self:GetUp()
-
+			
 			 local trace = {}
 				 trace.start = vStart
 				 trace.endpos = vStart + (vForward * 2048)
 				 trace.filter = { self }
 			 local trace = util.TraceLine( trace )
-
+			
 			-- Bail if we hit world or a player
 			if not trace.Entity:IsValid() or trace.Entity:IsPlayer() then return end
 			-- If there's no physics object then we can't constraint it!
 			if not util.IsValidPhysicsObject(trace.Entity, trace.PhysicsBone) then return end
-
+			
 			local tr = {}
 				tr.start = trace.HitPos
 				tr.endpos = trace.HitPos + (self:GetUp() * 50.0)
 				tr.filter = { trace.Entity, self }
 			local trTwo = util.TraceLine( tr )
-
+		
 			if trTwo.Hit and not trTwo.Entity:IsPlayer() then
 				if (trace.Entity.Owner ~= self.Owner or not self:CheckOwner(trace.Entity)) or (trTwo.Entity.Owner ~= self.Owner or not self:CheckOwner(trTwo.Entity)) then return end
 				-- Weld them!
 				local constraint = constraint.Weld( trace.Entity, trTwo.Entity, trace.PhysicsBone, trTwo.PhysicsBone, self.Flim )
-
+				
 				-- effect on weld (tomb332)
 				local effectdata = EffectData()
 					effectdata:SetOrigin( trTwo.HitPos )
@@ -76,20 +76,20 @@ end
 -- Free Fall's Owner Check Code
 function ENT:CheckOwner(ent)
 	ply = self.pl
-
+	
 	hasCPPI = (type( CPPI ) == "table")
 	hasEPS = type( eps ) == "table"
 	hasPropSecure = type( PropSecure ) == "table"
 	hasProtector = type( Protector ) == "table"
-
+	
 	if not hasCPPI and not hasPropProtection and not hasSPropProtection and not hasEPS and not hasPropSecure and not hasProtector then return true end
-
+	
 	local t = hook.GetTable()
-
+	
 	local fn = t.CanTool.PropProtection
 	hasPropProtection = type( fn ) == "function"
 	if hasPropProtection then
-		-- We're going to get the function we need now. It's local so this is a bit dirty
+		-- We're going to get the function we need now. It's local so this is a bit dirty			
 		local gi = debug.getinfo( fn )
 		for i=1, gi.nups do
 			local k, v = debug.getupvalue( fn, i )
@@ -98,8 +98,8 @@ function ENT:CheckOwner(ent)
 			end
 		end
 	end
-
-	local fn = t.CanTool[ "SPropProtection.EntityRemoved" ]
+	
+	local fn = t.CanTool[ "SPropProtection.EntityRemoved" ]	
 	hasSPropProtection = type( fn ) == "function"
 	if hasSPropProtection then
 		local gi = debug.getinfo( fn )
@@ -110,7 +110,7 @@ function ENT:CheckOwner(ent)
 			end
 		end
 	end
-
+	
 	local owns
 	if hasCPPI then
 		owns = ent:CPPICanPhysgun( ply )
@@ -129,6 +129,6 @@ function ENT:CheckOwner(ent)
 	elseif hasProtector then -- Protector
 		owns = Protector.Owner( ent ) == ply:UniqueID()
 	end
-
+	
 	return owns
 end

@@ -122,7 +122,7 @@ for tokenName,tokenData in pairs(HCOMP.TOKEN_TEXT) do
   HCOMP.TOKEN[tokenName] = IDX
   HCOMP.TOKEN_NAME[IDX] = tokenName
   HCOMP.TOKEN_NAME2[IDX] = {}
-
+  
   for k,v in pairs(tokenData[2]) do
     HCOMP.TOKEN_NAME2[IDX][k] = v
   end
@@ -218,7 +218,7 @@ function HCOMP:Tokenize() local TOKEN = self.TOKEN
 
   -- Store this line as previous (FIXME: need this?)
   self.PreviousCodeLine = self.Code[1].Text
-
+  
   -- Read token position
   local tokenPosition = { Line = self.Code[1].Line,
                           Col  = self.Code[1].Col,
@@ -233,7 +233,7 @@ function HCOMP:Tokenize() local TOKEN = self.TOKEN
     })
     return false
   end
-
+  
   -- Is it a preprocessor macro
   if (self.Code[1].Col == 1) and (self:getChar() == "#") then
     local macroLine = ""
@@ -241,12 +241,12 @@ function HCOMP:Tokenize() local TOKEN = self.TOKEN
       macroLine = macroLine .. self:getChar()
       self:nextChar()
     end
-
+    
     -- Parse it
     self:ParsePreprocessMacro(macroLine,tokenPosition)
     return true
   end
-
+  
   -- If still inside IFDEF, do not parse what follows
   if self.IFDEFLevel[#self.IFDEFLevel] == true then
     self:nextChar()
@@ -260,7 +260,7 @@ function HCOMP:Tokenize() local TOKEN = self.TOKEN
 
     local fetchString = ""
     while (self.Code[1].Text ~= "") and (self:getChar() ~= "'") and (self:getChar() ~= "\"") do
-
+    
       if self:getChar() == "\\" then
         self:nextChar()
             if self:getChar() == "'"  then fetchString = fetchString .. "'"
@@ -285,7 +285,7 @@ function HCOMP:Tokenize() local TOKEN = self.TOKEN
       end
     end
     self:nextChar() -- Skip trailing character
-
+    
     if (stringType == "'") and (#fetchString == 1) then
       table.insert(self.Tokens,{
         Type = TOKEN.CHAR,
@@ -311,7 +311,7 @@ function HCOMP:Tokenize() local TOKEN = self.TOKEN
     token = token .. self:getChar()
     self:nextChar()
   end
-
+  
   -- Check if token was redefined
   if (token ~= "") and (self.Defines[token]) then
     if token == "__FILE__" then
@@ -337,7 +337,7 @@ function HCOMP:Tokenize() local TOKEN = self.TOKEN
   if token == "" then
     token = self:getChar()
     self:nextChar()
-
+    
     if HCOMP.PARSER_DBCHAR[token] then
       local curChar = self:getChar()
       if HCOMP.PARSER_DBCHAR[token][curChar] then
@@ -355,7 +355,7 @@ function HCOMP:Tokenize() local TOKEN = self.TOKEN
               return true
             end
           end
-
+          
           -- Error in tokenizing
           self:Error("Comment block not closed (reached end of file)",
             tokenPosition.Line,tokenPosition.Col,tokenPosition.File)

@@ -20,15 +20,15 @@ function ENT:Initialize()
 	self.ExtraPropWeld = nil
 	self.Gravity = true
 	self:GetPhysicsObject():SetMass(10)
-
+	
 	self:SetBeamLength(100)
-
+	
 	if GetConVarNumber('sbox_wire_grabbers_onlyOwnersProps') > 0 then
 		self.OnlyGrabOwners = true
 	else
 		self.OnlyGrabOwners = false
 	end
-
+	
 	self:ShowOutput()
 end
 
@@ -62,13 +62,13 @@ function ENT:ResetGrab()
 		self.ExtraPropWeld:Remove()
 		--Msg("-Weld2\n")
 	end
-
+	
 	self.Weld = nil
 	self.WeldEntity = nil
 	self.ExtraPropWeld = nil
-
-	local r,g,b,a = self:GetColor()
-	self:SetColor(255, 255, 255, a)
+	
+	local c = self:GetColor()
+	self:SetColor(Color(255, 255, 255, c.a))
 	Wire_TriggerOutput(self,"Holding",0)
 	Wire_TriggerOutput(self, "Grabbed Entity", self.WeldEntity)
 end
@@ -84,20 +84,20 @@ function ENT:TriggerInput(iname, value)
 				trace.endpos = vStart + (vForward * self.Range)
 				trace.filter = { self }
 			local trace = util.TraceLine( trace )
-
+			
 			-- Bail if we hit world or a player
 			if (not trace.Entity:IsValid() and trace.Entity ~= GetWorldEntity())  or trace.Entity:IsPlayer() then return end
 			-- If there's no physics object then we can't constraint it!
 			if not util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) then return end
-
+			
 			if self.OnlyGrabOwners and (trace.Entity.Owner ~= self.Owner or not self:CheckOwner(trace.Entity)) then return end
-
+			
 			-- Weld them!
 			local const = constraint.Weld(self, trace.Entity, 0, 0, self.WeldStrength)
 			if const then
 				const.Type = "" --prevents the duplicator from making this weld
 			end
-
+			
 			local const2
 			--Msg("+Weld1\n")
 			if self.ExtraProp then
@@ -112,13 +112,13 @@ function ENT:TriggerInput(iname, value)
 			if self.Gravity then
 				trace.Entity:GetPhysicsObject():EnableGravity(false)
 			end
-
+			
 			self.WeldEntity = trace.Entity
 			self.Weld = const
 			self.ExtraPropWeld = const2
-
-			local r,g,b,a = self:GetColor()
-			self:SetColor(255, 0, 0, a)
+			
+			local c = self:GetColor()
+			self:SetColor(Color(255, 0, 0, c.a))
 			Wire_TriggerOutput(self, "Holding", 1)
 			Wire_TriggerOutput(self, "Grabbed Entity", self.WeldEntity)
 		elseif value == 0 then
@@ -142,53 +142,53 @@ end
 --duplicator support (TAD2020)
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
-
+	
 	if self.WeldEntity and self.WeldEntity:IsValid() then
 		info.WeldEntity = self.WeldEntity:EntIndex()
 	end
-
+	
 	if self.ExtraProp and self.ExtraProp:IsValid() then
 		info.ExtraProp = self.ExtraProp:EntIndex()
 	end
-
+	
 	return info
 end
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
-
+	
 	if info.WeldEntity then
 		self.WeldEntity = GetEntByID(info.WeldEntity)
 		if not self.WeldEntity then
 			self.WeldEntity = ents.GetByIndex(info.WeldEntity)
 		end
 	end
-
+	
 	if info.ExtraProp then
 		self.ExtraProp = GetEntByID(info.ExtraProp)
 		if not self.ExtraProp then
 			self.ExtraProp = ents.GetByIndex(info.ExtraProp)
 		end
 	end
-
+	
 	if self.WeldEntity and self.Inputs.Grab.Value ~= 0 then
-
+		
 		if not self.Weld then
 			self.Weld = constraint.Weld(self, trace.Entity, 0, 0, self.WeldStrength)
 			self.Weld.Type = "" --prevents the duplicator from making this weld
 		end
-
+		
 		if self.ExtraProp then
 			self.ExtraPropWeld = constraint.Weld(self.ExtraProp, self.WeldEntity, 0, 0, self.WeldStrength)
 			self.ExtraPropWeld.Type = "" --prevents the duplicator from making this weld
 		end
-
+		
 		if self.Gravity then
 			self.WeldEntity:GetPhysicsObject():EnableGravity(false)
 		end
-
-		local r,g,b,a = self:GetColor()
-		self:SetColor(255, 0, 0, a)
+		
+		local c = self:GetColor()
+		self:SetColor(Color(255, 0, 0, c.a))
 		Wire_TriggerOutput(self, "Holding", 1)
 		Wire_TriggerOutput(self, "Grabbed Entity", self.WeldEntity)
 	end
@@ -197,20 +197,20 @@ end
 -- Free Fall's Owner Check Code
 function ENT:CheckOwner(ent)
 	ply = self.pl
-
+	
 	hasCPPI = (type( CPPI ) == "table")
 	hasEPS = type( eps ) == "table"
 	hasPropSecure = type( PropSecure ) == "table"
 	hasProtector = type( Protector ) == "table"
-
+	
 	if not hasCPPI and not hasPropProtection and not hasSPropProtection and not hasEPS and not hasPropSecure and not hasProtector then return true end
-
+	
 	local t = hook.GetTable()
-
+	
 	local fn = t.CanTool.PropProtection
 	hasPropProtection = type( fn ) == "function"
 	if hasPropProtection then
-		-- We're going to get the function we need now. It's local so this is a bit dirty
+		-- We're going to get the function we need now. It's local so this is a bit dirty			
 		local gi = debug.getinfo( fn )
 		for i=1, gi.nups do
 			local k, v = debug.getupvalue( fn, i )
@@ -219,8 +219,8 @@ function ENT:CheckOwner(ent)
 			end
 		end
 	end
-
-	local fn = t.CanTool[ "SPropProtection.EntityRemoved" ]
+	
+	local fn = t.CanTool[ "SPropProtection.EntityRemoved" ]	
 	hasSPropProtection = type( fn ) == "function"
 	if hasSPropProtection then
 		local gi = debug.getinfo( fn )
@@ -231,7 +231,7 @@ function ENT:CheckOwner(ent)
 			end
 		end
 	end
-
+	
 	local owns
 	if hasCPPI then
 		owns = ent:CPPICanPhysgun( ply )
@@ -250,7 +250,7 @@ function ENT:CheckOwner(ent)
 	elseif hasProtector then -- Protector
 		owns = Protector.Owner( ent ) == ply:UniqueID()
 	end
-
+	
 	return owns
 end
 
@@ -269,7 +269,7 @@ function MakeWireGrabber( pl, Pos, Ang, model, Range, Gravity )
 
 	wire_grabber:SetPlayer( pl )
 	wire_grabber.pl = pl
-
+	
 	pl:AddCount( "wire_grabbers", wire_grabber )
 
 	return wire_grabber

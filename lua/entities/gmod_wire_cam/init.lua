@@ -9,7 +9,7 @@ ENT.WireDebugName = "Camera"
 function ENT:Initialize()
 	self.phys = self:GetPhysicsObject()
 	if not self.phys:IsValid() then self.phys = self end
-
+	
 	self.IdealPos = self:GetPos()
 	self.IdealAng = self:GetAngles()
 	self.IdealVel = self.phys:GetVelocity()
@@ -48,7 +48,7 @@ function ENT:ReceiveInfo(iname, value)
 	elseif iname == "Position" then
 		self.IdealPos = value
 		self:SetPos(self.IdealPos)
-
+		
 	elseif iname == "Pitch" then
 		self.IdealAng.p = value
 		--self:SetAngles(self.IdealAng)
@@ -61,7 +61,7 @@ function ENT:ReceiveInfo(iname, value)
 	elseif iname == "Angle" then
 		self.IdealAng = value
 		--self:SetAngles(self.IdealAng)
-
+		
 	elseif iname == "Direction" then
 		self.IdealAng = value:Angle()
 		--self:SetAngles(self.IdealAng)
@@ -74,7 +74,7 @@ function ENT:ReceiveInfo(iname, value)
 		else
 			self:SetParent(nil)
 		end
-	end
+	end	
 	if self:GetAngles() ~= self.IdealAng then
 		local parent = self:GetParent()
 		self:SetParent(nil)

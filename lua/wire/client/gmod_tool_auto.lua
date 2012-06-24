@@ -5,7 +5,7 @@ local ent_tool_mappings = {
 
 local ent_tool_patterns = {
 	{"^.*$", ent_tool_mappings},
-
+	
 	{"^prop_", "!weapon_physgun"},
 	bogus = {"^gmod_(.*)$", true}, -- The bogus index ensures that this always is iterated last, so extensions can override it.
 }
@@ -13,7 +13,7 @@ local ent_tool_patterns = {
 local function pattern_mappings(ent, class, ntapped)
 	local function maprep(replacement, result, ...)
 		if not result then return end
-
+		
 		local tp = type(replacement)
 		if replacement == true then
 			return result
@@ -30,7 +30,7 @@ local function pattern_mappings(ent, class, ntapped)
 			return maprep(replacement(ent, ntapped, result, ...), result, ...)
 		end
 	end
-
+	
 	for _,pattern,replacement in pairs_map(ent_tool_patterns, unpack) do
 		local ret = maprep(replacement, class:match(pattern))
 		if ret then return ret end
@@ -44,21 +44,21 @@ concommand.Add("gmod_tool_auto", function(ply, command, args)
 	local trace = ply:GetEyeTrace()
 	local ent = trace.Entity
 	local class = ent:GetClass()
-
+	
 	if ent ~= lastent then
 		lastent = ent
 		ntapped = 0
 	end
 	ntapped = ntapped + 1
 	local toolmode = pattern_mappings(ent, class, ntapped)
-
+	
 	if not toolmode then return end
 	local weapon = toolmode:match("^!(.*)$")
 	if weapon then
 		RunConsoleCommand( "use", weapon )
 		return
 	end
-
+	
 	RunConsoleCommand( "gmod_tool", toolmode )
 	RunConsoleCommand( "tool_" .. toolmode )
 end)
@@ -69,14 +69,14 @@ gmod_tool_auto = {}
 local lastuniqueid = 0
 --- Adds a pattern to be matched against the entity class for gmod_tool_auto. Good for packs with some kind of naming scheme.
 --- Returns a uniqueid that can be used to remove the pattern later.
----
+--- 
 --- replacement can be:
 ---   true: Use the first pattern capture as the toolmode
 ---   string: Use this string as the toolmode.
 ---   table: Look up first pattern capture and use the result as the  If nothing was found, the match is ignored
 ---   array table: Cycles through the table's entries when using gmod_tool_auto multiple times on the same entity.
 ---   function(ent, ntapped, capture1, capture2, ...): pass the captures to a function, along with a number that specifies how often gmod_tool_auto was used on the same entity.
----
+--- 
 --- The table/array lookups and function calls are done recursively.
 function gmod_tool_auto.AddPattern(pattern, replacement, index)
 	lastuniqueid = lastuniqueid + 1
@@ -130,7 +130,7 @@ end
 
 hook.Add("Initialize", "gmod_tool_auto_wiremod", function()
 	if not gmod_tool_auto then return end
-
+	
 	gmod_tool_auto.AddPattern("^gmod_(wire_.*)$", { true, "wire_adv", "wire_debugger" })
 	gmod_tool_auto.AddSimpleMultiple(wiremod_mappings)
 end)
@@ -143,9 +143,9 @@ local rd_mappings = {
 
 hook.Add("Initialize", "gmod_tool_auto_resource_distribution", function()
 	if not gmod_tool_auto then return end
-
+	
 	gmod_tool_auto.AddPattern("^rd_.*_valve$", { "valves", "rd3_dev_link2" })-- TODO: add valve links?
-
+	
 	gmod_tool_auto.AddSimpleMultiple(rd_mappings)
 end)
 
@@ -163,13 +163,13 @@ end
 
 hook.Add("Initialize", "gmod_tool_auto_life_support", function()
 	if not gmod_tool_auto then return end
-
+	
 	gmod_tool_auto.AddPattern("^storage_.*$",   { "ls3_receptacles", "rd3_dev_link2" })
 	gmod_tool_auto.AddPattern("^generator_.*$", { "ls3_energysystems", "rd3_dev_link2" })
 	gmod_tool_auto.AddPattern("^other_.*$",     { "ls3_environmental_control", "rd3_dev_link2" })
 	gmod_tool_auto.AddPattern("^base_.*$",      { "ls3_environmental_control", "rd3_dev_link2" })
 	gmod_tool_auto.AddPattern("^nature_.*$",    { "ls3_environmental_control", "rd3_dev_link2" })
-
+	
 	gmod_tool_auto.AddSimpleMultiple(ls_mappings)
 end)
 
@@ -187,6 +187,6 @@ end
 
 hook.Add("Initialize", "gmod_tool_auto_life_support", function()
 	if not gmod_tool_auto then return end
-
+	
 	gmod_tool_auto.AddSimpleMultiple(spacebuild_mappings)
 end)

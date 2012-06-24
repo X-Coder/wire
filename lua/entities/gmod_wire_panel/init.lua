@@ -9,17 +9,17 @@ ENT.WireDebugName = "Panel"
 ---------------------------------------------------------*/
 function ENT:Initialize()
 	self.chan = 1
-
+	
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
 	self:SetUseType(SIMPLE_USE)
-
+	
 	self.Inputs = WireLib.CreateInputs(self, { "Ch1", "Ch2", "Ch3", "Ch4", "Ch5", "Ch6", "Ch7", "Ch8" })
 
 	self:SetNetworkedInt('chan',self.chan)
 	self.Outputs = Wire_CreateOutputs(self, { "Out" })
-
+	
 	self:InitializeShared()
 end
 
@@ -31,23 +31,23 @@ function ENT:TriggerInput(iname, value, iter)
 end
 
 function MakeWirePanel( pl, Pos, Ang, model )
-
+	
 	if ( !pl:CheckLimit( "wire_panels" ) ) then return false end
-
+	
 	local wire_panel = ents.Create( "gmod_wire_panel" )
 	if (!wire_panel:IsValid()) then return false end
 	wire_panel:SetModel(model)
-
+	
 	wire_panel:SetAngles( Ang )
 	wire_panel:SetPos( Pos )
 	wire_panel:Spawn()
-
+	
 	wire_panel:SetPlayer(pl)
-
+		
 	pl:AddCount( "wire_panels", wire_panel )
-
+	
 	return wire_panel
-
+	
 end
 
 duplicator.RegisterEntityClass("gmod_wire_panel", MakeWirePanel, "Pos", "Ang", "Model")

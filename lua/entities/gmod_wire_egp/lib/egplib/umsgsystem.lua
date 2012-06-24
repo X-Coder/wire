@@ -19,7 +19,7 @@ local LastErrorTime = 0
 ]]
 
 
-
+	
 EGP.umsg = {}
 
 -- Allow others to get the current cost
@@ -40,7 +40,7 @@ function EGP.umsg.Start( name, recipient )
 		end
 	end
 	CurrentCost = 0
-
+	
 	umsg.Start( name, recipient )
 	return true
 end

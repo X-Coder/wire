@@ -4,21 +4,21 @@ include('shared.lua')
 
 ENT.WireDebugName = "E2 Graphics Processor"
 
-function ENT:Initialize()
+function ENT:Initialize()	
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 	self:SetUseType( SIMPLE_USE )
-
+	
 	self.RenderTable = {}
-
+	
 	self.Outputs = WireLib.CreateOutputs( self, { "User [ENTITY]", "link [WIRELINK]" } )
 	WireLib.TriggerOutput( self, "link", self )
-
+	
 	self.xScale = { 0, 512 }
 	self.yScale = { 0, 512 }
 	self.Scaling = false
-
+	
 	self.TopLeft = false
 end
 

@@ -13,11 +13,11 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	self.Target = nil
-
+	
 	AddAdvEMarker( self )
-
+	
 	self.Marks = {}
 	local outputs = {}
 	local types = {}
@@ -66,15 +66,15 @@ function ENT:UpdateOutputs()
 	-- Trigger regular outputs
 	WireLib.TriggerOutput( self, "Entities", self.Marks )
 	WireLib.TriggerOutput( self, "Nr", #self.Marks )
-
+	
 	-- Trigger special outputs
 	for i=3,12 do
 		WireLib.TriggerOutput( self, "Entity" .. (i-2), self.Marks[i-2] )
 	end
-
+	
 	-- Overlay text
 	self:SetOverlayText( "Number of entities linked: " .. #self.Marks )
-
+	
 	-- Yellow lines information
 	if (SERVER) then
 		umsg.Start("Wire_Adv_EMarker_Links")
@@ -120,37 +120,37 @@ end
 
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
-
+	
 	if (#self.Marks) then
 		local tbl = {}
 		for index, e in pairs( self.Marks ) do
 			tbl[index] = e:EntIndex()
 		end
-
+		
 		info.marks = tbl
 	end
-
+	
 	return info
 end
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
-	if (!ply:CheckLimit("wire_adv_emarkers")) then
+	if (!ply:CheckLimit("wire_adv_emarkers")) then 
 		ent:Remove()
 		return
 	end
 	ply:AddCount( "wire_adv_emarkers", ent )
-
+	
 	if (info.marks) then
 		local tbl = info.marks
-
+		
 		if (!self.Marks) then self.Marks = {} end
-
+		
 		for index, entindex in pairs( tbl ) do
 			self.Marks[index] = GetEntByID(entindex) or ents.GetByIndex(entindex)
 		end
 		self:UpdateOutputs()
 	end
-
+	
 	ent:SetPlayer( ply )
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 end

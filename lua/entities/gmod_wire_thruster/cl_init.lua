@@ -19,7 +19,7 @@ function ENT:Initialize()
 	self.NextSmokeEffect = 0
 
 	-- fixed by WeltEnSTurm: one emitter is enough!
-	if !emitter then emitter = ParticleEmitter(Vector(0,0,0)) end
+	if !emitter then emitter = ParticleEmitter(Vector(0,0,0)) end 
 	mx, mn = self:GetRenderBounds()
 	self:SetRenderBounds( mn + Vector(0,0,128), mx, 0 )
 end
@@ -46,12 +46,12 @@ function ENT:Think()
 	self.BaseClass.Think(self)
 
 	self.ShouldDraw = GetConVarNumber( "cl_drawthrusterseffects" )
-
+	
 	if ( self.ShouldDraw == 0 ) then return end
-
+	
 	if ( !self:IsOn() ) then return end
 	if ( self:GetEffect() == "none" ) then return end
-
+	
 	local EffectThink = self[ "EffectThink_"..self:GetEffect() ]
 	if ( EffectThink ) then EffectThink( self ) end
 end
@@ -210,7 +210,8 @@ function ENT:EffectDraw_color_diy()
 
 	local vOffset = self:LocalToWorld( self:GetOffset() )
 	local vNormal = (vOffset - self:GetPos()):GetNormalized()
-	local r,g,b,a = self:GetColor();
+	local c = self:GetColor();
+	local r, g, b, a = c.r, c.g, c.b, c.a
 
 	local scroll = CurTime() * -10
 
@@ -328,7 +329,7 @@ function ENT:EffectDraw_fire_smoke()
 			particle:SetStartSize( math.Rand( 8, 16 ) )
 			particle:SetEndSize( math.Rand( 32, 64  ) )
 			particle:SetRoll( math.Rand( -0.2, 0.2 ) )
-			particle:SetColor( 200, 200, 210 )
+			particle:SetColor( Color(200, 200, 210) )
 
 	emitter:Finish()
 
@@ -360,7 +361,7 @@ function ENT:EffectDraw_fire_smoke_big()
 			particle:SetStartSize( math.Rand( 64, 128 ) )
 			particle:SetEndSize( math.Rand( 256, 128 ) )
 			particle:SetRoll( math.Rand( -0.2, 0.2 ) )
-			particle:SetColor( 200, 200, 210 )
+			particle:SetColor( Color(200, 200, 210) )
 
 	emitter:Finish()
 
@@ -388,7 +389,7 @@ function ENT:EffectThink_smoke()
 			particle:SetStartSize( math.Rand( 16, 32 ) )
 			particle:SetEndSize( math.Rand( 64, 128 ) )
 			particle:SetRoll( math.Rand( -0.2, 0.2 ) )
-			particle:SetColor( 200, 200, 210 )
+			particle:SetColor( Color(200, 200, 210) )
 
 	emitter:Finish()
 
@@ -411,7 +412,7 @@ function ENT:EffectThink_smoke_firecolors()
 			particle:SetStartSize( math.Rand( 16, 32 ) )
 			particle:SetEndSize( math.Rand( 64, 128 ) )
 			particle:SetRoll( math.Rand( -0.2, 0.2 ) )
-			particle:SetColor(math.random(220,255),math.random(110,220),0 )
+			particle:SetColor(Color(math.random(220,255),math.random(110,220),0) )
 
 	emitter:Finish()
 
@@ -434,14 +435,15 @@ function ENT:EffectThink_smoke_random()
 			particle:SetStartSize( math.Rand( 16, 32 ) )
 			particle:SetEndSize( math.Rand( 64, 128 ) )
 			particle:SetRoll( math.Rand( -0.2, 0.2 ) )
-			particle:SetColor( math.random(100,255),math.random(100,255),math.random(100,255) )
+			particle:SetColor( Color(math.random(100,255),math.random(100,255),math.random(100,255)) )
 
 	emitter:Finish()
 
 end
 
 function ENT:EffectThink_smoke_diy()
-local r,g,b,a = self:GetColor();
+	local c = self:GetColor()
+	local r,g,b,a = c.r, c.g, c.b, c.a
 	self.SmokeTimer = self.SmokeTimer or 0
 	if ( self.SmokeTimer > CurTime() ) then return end
 
@@ -457,7 +459,7 @@ local r,g,b,a = self:GetColor();
 			particle:SetStartSize( math.Rand( 16, 32 ) )
 			particle:SetEndSize( math.Rand( 64, 128 ) )
 			particle:SetRoll( math.Rand( -0.2, 0.2 ) )
-			particle:SetColor( r,g,b)
+			particle:SetColor( Color(r,g,b) )
 
 	emitter:Finish()
 
@@ -560,7 +562,7 @@ function ENT:EffectThink_debug_10()
 			particle:SetDieTime( 10 )
 			particle:SetStartAlpha( 255 )
 			particle:SetEndAlpha( 255 )
-			particle:SetColor(0,255,0 )
+			particle:SetColor( Color(0,255,0) )
 			particle:SetStartSize( 5 )
 			particle:SetEndSize( math.Rand(7,10) )
 			particle:SetRoll(0)
@@ -584,7 +586,7 @@ function ENT:EffectThink_debug_30()
 			particle:SetDieTime( 30 )
 			particle:SetStartAlpha( 255 )
 			particle:SetEndAlpha( 255 )
-			particle:SetColor(0,255,0 )
+			particle:SetColor( Color(0,255,0) )
 			particle:SetStartSize( 5 )
 			particle:SetEndSize( math.Rand(7,10) )
 			particle:SetRoll(0)
@@ -608,7 +610,7 @@ function ENT:EffectThink_debug_60()
 			particle:SetDieTime( 60 )
 			particle:SetStartAlpha( 255 )
 			particle:SetEndAlpha( 255 )
-			particle:SetColor(0,255,0 )
+			particle:SetColor( Color(0,255,0) )
 			particle:SetStartSize( 5 )
 			particle:SetEndSize( math.Rand(7,10) )
 			particle:SetRoll(0)
@@ -634,7 +636,7 @@ function ENT:EffectThink_souls()
 			particle:SetDieTime( math.Rand(3,5 ) )
 			particle:SetStartAlpha( 255 )
 			particle:SetEndAlpha( 0 )
-			particle:SetColor(255,255,255 )
+			particle:SetColor( Color(255,255,255) )
 			particle:SetStartSize( 0 )
 			particle:SetEndSize( math.Rand(7,10) )
 			particle:SetRoll( math.Rand( -90, 90 ) )
@@ -669,7 +671,7 @@ function ENT:EffectThink_sperm()
 			particle2:SetDieTime( math.Rand(3,5 ) )
 			particle2:SetStartAlpha( 100 )
 			particle2:SetEndAlpha( 5 )
-			particle2:SetColor(255,255,255 )
+			particle2:SetColor( Color(255,255,255) )
 			particle2:SetStartSize( 5 )
 			particle2:SetEndSize( 1 )
 			particle2:SetRoll( math.random(-180, 180) )
@@ -679,7 +681,7 @@ function ENT:EffectThink_sperm()
 			particle3:SetDieTime( math.Rand(3,5 ) )
 			particle3:SetStartAlpha(100 )
 			particle3:SetEndAlpha( 5 )
-			particle3:SetColor(255,255,255 )
+			particle3:SetColor( Color(255,255,255) )
 			particle3:SetStartSize( 5 )
 			particle3:SetEndSize( 1 )
 			particle3:SetRoll( math.random(-180, 180) )
@@ -765,7 +767,7 @@ end
 
 function ENT:EffectThink_jetflame_advanced()
 	local vel = self:GetVelocity():Length()
-
+	
 	self.FlameTimer = self.FlameTimer or 0
 	if ( self.FlameTimer > CurTime() ) then return end
 	self.FlameTimer = CurTime() + 0.001
@@ -784,7 +786,7 @@ function ENT:EffectThink_jetflame_advanced()
 		g = math.Clamp(255-(vel-1000)/7.8,0,255)
 		b = 0
 	end
-
+	
 	local speed = math.Rand(90,252)
 	local roll = math.Rand(-90,90)
 		local particle = emitter:Add( "particle/fire", vOffset )
@@ -794,7 +796,7 @@ function ENT:EffectThink_jetflame_advanced()
 			particle:SetEndAlpha( 150 )
 			particle:SetStartSize( 15.8 )
 			particle:SetEndSize( 9 )
-			particle:SetColor(r, g, b)
+			particle:SetColor( Color(r, g, b) )
 			particle:SetRoll( roll )
 
 		local particle3 = emitter:Add( "sprites/heatwave", vOffset )
@@ -804,7 +806,7 @@ function ENT:EffectThink_jetflame_advanced()
 			particle3:SetEndAlpha( 255 )
 			particle3:SetStartSize( 16 )
 			particle3:SetEndSize( 18 )
-			particle3:SetColor( 255,255,255 )
+			particle3:SetColor( Color(255,255,255) )
 			particle3:SetRoll( roll )
 
 			vOffset = self:LocalToWorld( self:GetOffset() )
@@ -816,14 +818,14 @@ function ENT:EffectThink_jetflame_advanced()
 			particle2:SetEndAlpha( 50 )
 			particle2:SetStartSize( 8.8 )
 			particle2:SetEndSize( 5 )
-			particle2:SetColor( 200,200,200 )
+			particle2:SetColor( Color(200,200,200) )
 			particle2:SetRoll( roll )
 
 	if vel < 1000 then
 		self.SmokeTimer = self.SmokeTimer or 0
 		if ( self.SmokeTimer > CurTime() ) then return end
 		self.SmokeTimer = CurTime() + 0.1
-
+		
 		local particle4 = emitter:Add( "particles/smokey", vOffset )
 			particle4:SetVelocity( vNormal * math.Rand( 10, 30 ) )
 			particle4:SetDieTime( 5.0 )
@@ -832,7 +834,7 @@ function ENT:EffectThink_jetflame_advanced()
 			particle4:SetStartSize( math.Rand( 128-((vel/3.9)/2), 256-(vel/3.9) ) )
 			particle4:SetEndSize( math.Rand( 16,32  ) )
 			particle4:SetRoll( math.Rand( -0.2, 0.2 ) )
-			particle4:SetColor( 200, 200, 210 )
+			particle4:SetColor( Color(200, 200, 210) )
 	end
 
 	emitter:Finish()
@@ -861,7 +863,7 @@ function ENT:EffectThink_jetflame()
 			particle:SetEndAlpha( 150 )
 			particle:SetStartSize( 15.8 )
 			particle:SetEndSize( 9 )
-			particle:SetColor( math.Rand(220,255),math.Rand(180,220),55 )
+			particle:SetColor( Color(math.Rand(220,255),math.Rand(180,220),55) )
 			particle:SetRoll( roll )
 
 		local particle3 = emitter:Add( "sprites/heatwave", vOffset )
@@ -871,7 +873,7 @@ function ENT:EffectThink_jetflame()
 			particle3:SetEndAlpha( 255 )
 			particle3:SetStartSize( 16 )
 			particle3:SetEndSize( 18 )
-			particle3:SetColor( 255,255,255 )
+			particle3:SetColor( Color(255,255,255) )
 			particle3:SetRoll( roll )
 
 			vOffset = self:LocalToWorld( self:GetOffset() )
@@ -883,7 +885,7 @@ function ENT:EffectThink_jetflame()
 			particle2:SetEndAlpha( 50 )
 			particle2:SetStartSize( 8.8 )
 			particle2:SetEndSize( 5 )
-			particle2:SetColor( 200,200,200 )
+			particle2:SetColor( Color(200,200,200) )
 			particle2:SetRoll( roll )
 
 
@@ -915,7 +917,7 @@ function ENT:EffectThink_jetflame_purple()
 			particle:SetEndAlpha( 150 )
 			particle:SetStartSize( 15.8 )
 			particle:SetEndSize( 9 )
-			particle:SetColor(  math.Rand(220,255),55, math.Rand(220,255) )
+			particle:SetColor(  Color(math.Rand(220,255),55, math.Rand(220,255)) )
 			particle:SetRoll( roll )
 
 		local particle3 = emitter:Add( "sprites/heatwave", vOffset )
@@ -925,7 +927,7 @@ function ENT:EffectThink_jetflame_purple()
 			particle3:SetEndAlpha( 255 )
 			particle3:SetStartSize( 16 )
 			particle3:SetEndSize( 18 )
-			particle3:SetColor( 255,255,255 )
+			particle3:SetColor( Color(255,255,255) )
 			particle3:SetRoll( roll )
 
 			vOffset = self:LocalToWorld( self:GetOffset() )
@@ -937,7 +939,7 @@ function ENT:EffectThink_jetflame_purple()
 			particle2:SetEndAlpha( 50 )
 			particle2:SetStartSize( 8.8 )
 			particle2:SetEndSize( 5 )
-			particle2:SetColor( 200,200,200 )
+			particle2:SetColor( Color(200,200,200) )
 			particle2:SetRoll( roll )
 
 
@@ -969,7 +971,7 @@ function ENT:EffectThink_jetflame_red()
 			particle:SetEndAlpha( 150 )
 			particle:SetStartSize( 15.8 )
 			particle:SetEndSize( 9 )
-			particle:SetColor( math.Rand(220,255),55,55 )
+			particle:SetColor( Color(math.Rand(220,255),55,55) )
 			particle:SetRoll( roll )
 
 		local particle3 = emitter:Add( "sprites/heatwave", vOffset )
@@ -979,7 +981,7 @@ function ENT:EffectThink_jetflame_red()
 			particle3:SetEndAlpha( 255 )
 			particle3:SetStartSize( 16 )
 			particle3:SetEndSize( 18 )
-			particle3:SetColor( 255,255,255 )
+			particle3:SetColor( Color(255,255,255) )
 			particle3:SetRoll( roll )
 
 			vOffset = self:LocalToWorld( self:GetOffset() )
@@ -991,7 +993,7 @@ function ENT:EffectThink_jetflame_red()
 			particle2:SetEndAlpha( 50 )
 			particle2:SetStartSize( 8.8 )
 			particle2:SetEndSize( 5 )
-			particle2:SetColor( 200,200,200 )
+			particle2:SetColor( Color(200,200,200) )
 			particle2:SetRoll( roll )
 
 
@@ -1021,7 +1023,7 @@ function ENT:EffectThink_jetflame_blue()
 			particle:SetEndAlpha( 150 )
 			particle:SetStartSize( 15.8 )
 			particle:SetEndSize( 9 )
-			particle:SetColor( 55,55, math.Rand(220,255) )
+			particle:SetColor( Color(55,55, math.Rand(220,255)) )
 			particle:SetRoll( roll )
 
 		local particle3 = emitter:Add( "sprites/heatwave", vOffset )
@@ -1031,7 +1033,7 @@ function ENT:EffectThink_jetflame_blue()
 			particle3:SetEndAlpha( 255 )
 			particle3:SetStartSize( 16 )
 			particle3:SetEndSize( 18 )
-			particle3:SetColor( 255,255,255 )
+			particle3:SetColor( Color(255,255,255) )
 			particle3:SetRoll( roll )
 
 			vOffset = self:LocalToWorld( self:GetOffset() )
@@ -1043,7 +1045,7 @@ function ENT:EffectThink_jetflame_blue()
 			particle2:SetEndAlpha( 50 )
 			particle2:SetStartSize( 8.8 )
 			particle2:SetEndSize( 5 )
-			particle2:SetColor( 200,200,200 )
+			particle2:SetColor( Color(200,200,200) )
 			particle2:SetRoll( roll )
 
 
@@ -1067,7 +1069,7 @@ function ENT:EffectThink_balls_firecolors()
 			particle:SetDieTime( 1 )
 			particle:SetStartAlpha( 255 )
 			particle:SetEndAlpha( 255 )
-			particle:SetColor(math.random(220,255),math.random(100,200),0)
+			particle:SetColor(Color(math.random(220,255),math.random(100,200),0))
 			particle:SetStartSize( 4 )
 			particle:SetEndSize( 0 )
 			particle:SetRoll( 0 )
@@ -1091,7 +1093,7 @@ function ENT:EffectThink_balls_random()
 			particle:SetDieTime( 1 )
 			particle:SetStartAlpha( 255 )
 			particle:SetEndAlpha( 255 )
-			particle:SetColor(math.random(0,255),math.random(0,255),math.random(0,255))
+			particle:SetColor(Color(math.random(0,255),math.random(0,255),math.random(0,255)))
 			particle:SetStartSize( 4 )
 			particle:SetEndSize( 0 )
 			particle:SetRoll( 0 )
@@ -1101,7 +1103,8 @@ function ENT:EffectThink_balls_random()
 end
 
 function ENT:EffectThink_balls()
-local r,g,b,a = self:GetColor();
+local c = self:GetColor()
+local r,g,b,a = c.r, c.g, c.b, c.a
 	self.SmokeTimer = self.SmokeTimer or 0
 	if ( self.SmokeTimer > CurTime() ) then return end
 
@@ -1116,7 +1119,7 @@ local r,g,b,a = self:GetColor();
 			particle:SetDieTime( 1 )
 			particle:SetStartAlpha( 255 )
 			particle:SetEndAlpha( 255 )
-			particle:SetColor(r,g,b)
+			particle:SetColor(Color(r,g,b))
 			particle:SetStartSize( 4 )
 			particle:SetEndSize( 0 )
 			particle:SetRoll( 0 )
@@ -1167,7 +1170,7 @@ function ENT:EffectThink_magic_firecolors()
 			particle:SetDieTime( 1 )
 			particle:SetStartAlpha( 255 )
 			particle:SetEndAlpha( 255 )
-			particle:SetColor(math.random(220,255),math.random(100,200),0)
+			particle:SetColor(Color(math.random(220,255),math.random(100,200),0))
 			particle:SetStartSize( math.Rand( 1, 3 ) )
 			particle:SetEndSize( 0 )
 			particle:SetRoll( math.Rand( -0.2, 0.2 ) )
@@ -1202,7 +1205,8 @@ function ENT:EffectThink_magic()
 end
 
 function ENT:EffectThink_magic_diy()
-local r,g,b,a = self:GetColor();
+local c = self:GetColor()
+local r,g,b,a = c.r, c.g, c.b, c.a
 	self.SmokeTimer = self.SmokeTimer or 0
 	if ( self.SmokeTimer > CurTime() ) then return end
 
@@ -1218,7 +1222,7 @@ local r,g,b,a = self:GetColor();
 			particle:SetDieTime( 1 )
 			particle:SetStartAlpha( 255 )
 			particle:SetEndAlpha( 255 )
-			particle:SetColor(r,g,b)
+			particle:SetColor(Color(r,g,b))
 			particle:SetStartSize( math.Rand( 1, 3 ) )
 			particle:SetEndSize( 0 )
 			particle:SetRoll( math.Rand( -0.2, 0.2 ) )
@@ -1244,7 +1248,7 @@ function ENT:EffectThink_magic_color()
 			particle:SetDieTime( 1 )
 			particle:SetStartAlpha( 255 )
 			particle:SetEndAlpha( 255 )
-			particle:SetColor( math.random(0,255),math.random(0,255),math.random(0,255))
+			particle:SetColor( Color(math.random(0,255),math.random(0,255),math.random(0,255)) )
 			particle:SetStartSize( math.Rand( 1, 3 ) )
 			particle:SetEndSize( 0 )
 			particle:SetRoll( math.Rand( -0.2, 0.2 ) )
@@ -1575,7 +1579,7 @@ function ENT:EffectThink_bubble()
 	particle:SetDieTime( 2 )
 	particle:SetStartAlpha( 125 )
 	particle:SetEndAlpha( 125 )
-	particle:SetColor(255,255,255)
+	particle:SetColor(Color(255,255,255))
 	particle:SetStartSize( 7 )
 	particle:SetEndSize( 0 )
 	particle:SetRoll( 0 )

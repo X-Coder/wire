@@ -21,7 +21,7 @@ end
 local function ranger(self, rangertype, range, p1, p2, hulltype, mins, maxs )
 	local data = self.data
 	local chip = self.entity
-
+	
 	local defaultzero = data.rangerdefaultzero
 	local ignoreworld = data.rangerignoreworld
 	local water = data.rangerwater
@@ -29,7 +29,7 @@ local function ranger(self, rangertype, range, p1, p2, hulltype, mins, maxs )
 	local filter = data.rangerfilter
 
 	if not data.rangerpersist then ResetRanger(self) end
-
+	
 	-- begin building tracedata structure
 	local tracedata = { filter = filter }
 	if water then
@@ -56,7 +56,7 @@ local function ranger(self, rangertype, range, p1, p2, hulltype, mins, maxs )
 	--else
 		--(i)e
 	end
-
+	
 	-- calculate startpos and endpos
 	if rangertype == 2 then
 		tracedata.start = Vector( p1[1], p1[2], p1[3] )
@@ -66,7 +66,7 @@ local function ranger(self, rangertype, range, p1, p2, hulltype, mins, maxs )
 		tracedata.endpos = tracedata.start + Vector( p2[1], p2[2], p2[3] ):Normalize()*range
 	else
 		tracedata.start = chip:GetPos()
-
+		
 		if rangertype == 1 && (p1!=0 || p2!=0) then
 			p1 = math.rad(p1)
 			p2 = math.rad(p2+270)
@@ -82,7 +82,7 @@ local function ranger(self, rangertype, range, p1, p2, hulltype, mins, maxs )
 			tracedata.endpos = tracedata.start + chip:GetUp()*range
 		end
 	end
-
+	
 	---------------------------------------------------------------------------------------
 	local trace
 	if (hulltype) then
@@ -96,13 +96,13 @@ local function ranger(self, rangertype, range, p1, p2, hulltype, mins, maxs )
 			tracedata.mins = s1
 			tracedata.maxs = s2
 		end
-
+		
 		trace = util.TraceHull( tracedata )
 	else
 		trace = util.TraceLine( tracedata )
 	end
 	---------------------------------------------------------------------------------------
-
+	
 	-- handle some ranger settings
 	if ignoreworld and trace.HitWorld then
 		trace.HitPos = defaultzero and tracedata.start or tracedata.endpos
@@ -111,9 +111,9 @@ local function ranger(self, rangertype, range, p1, p2, hulltype, mins, maxs )
 	elseif defaultzero and not trace.Hit then
 		trace.HitPos = tracedata.start
 	end
-
+	
 	trace.RealStartPos = tracedata.start
-
+	
 	return trace
 end
 
@@ -139,7 +139,7 @@ __e2setcost(1) -- temporary
 registerOperator("ass", "xrd", "xrd", function(self, args)
 	local lhs, op2, scope = args[2], args[3], args[4]
 	local      rhs = op2[1](self, op2)
-
+	
 	self.Scopes[scope][lhs] = rhs
 	self.Scopes[scope].vclk[lhs] = true
 	return rhs
@@ -291,7 +291,7 @@ e2function number ranger:distance()
 	else
 		startpos = this.StartPos
 	end
-
+	
 	--if this.StartSolid then return this.StartPos:Distance(this.HitPos)*(1/(1-this.FractionLeftSolid)-1) end
 	return startpos:Distance(this.HitPos)
 end
@@ -303,7 +303,7 @@ e2function vector ranger:position()
 	return this.HitPos
 end
 
--- Returns the position of the input ranger data trace IF it it anything, else returns vec(0,0,0).
+-- Returns the position of the input ranger data trace IF it it anything, else returns vec(0,0,0). 
 -- NOTE: This function works like Lua's trace, while the above "position" function returns the same as positionLeftSolid IF it was created inside the world.
 e2function vector ranger:pos()
 	if not this then return {0,0,0} end
@@ -319,7 +319,7 @@ end
 --- Returns the bone of the input ranger data trace IF it hit an entity, else returns nil
 e2function bone ranger:bone()
 	if not this then return nil end
-
+	
 	local ent = this.Entity
 	if not validEntity(ent) then return nil end
 	return getBone(ent, this.PhysicsBone)
@@ -370,7 +370,7 @@ end
 e2function number ranger:fractionLeftSolid()
 	if not this then return 0 end
 	return this.FractionLeftSolid
-end
+end	
 
 -- Returns 1 if the trace started inside the world, else 0
 e2function number ranger:startSolid()

@@ -17,12 +17,12 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	self.On = {}
-
+	
 	self.Inputs = Wire_CreateInputs(self, keynames)
 	self.Outputs = Wire_CreateOutputs(self, keynames)
-
+	
 	self.Buffer = {}
 	for i = 0,#keynames-1 do
 		self.Buffer[i] = 0
@@ -59,7 +59,7 @@ function ENT:Setup( toggle, value_off, value_on)
 	self.Toggle = (toggle == 1)
 	self.ValueOff = value_off
 	self.ValueOn = value_on
-
+	
 	self:ShowOutput()
 end
 
@@ -73,15 +73,15 @@ end
 
 function ENT:NumpadDeactivate( key )
 	if ( self.Toggle ) then return true end
-
+	
 	return self:Switch( false, key )
 end
 
 function ENT:Switch( on, key )
 	if (!self:IsValid()) then return false end
-
+	
 	self.On[ key ] = on
-
+	
 	if (on) then
 		self:ShowOutput()
 		self.Value = self.ValueOn
@@ -89,15 +89,15 @@ function ENT:Switch( on, key )
 		self:ShowOutput()
 		self.Value = self.ValueOff
 	end
-
+	
 	Wire_TriggerOutput(self, lookupkeynames[key], self.Value)
-
+	
 	if ( on ) then
 		self.Buffer[key] = 1
 	else
 		self.Buffer[key] = 0
 	end
-
+	
 	return true
 end
 
@@ -108,7 +108,7 @@ function ENT:ShowOutput()
 			txt = txt..", "..lookupkeynames[k]
 		end
 	end
-
+	
 	self:SetOverlayText( txt )
 end
 

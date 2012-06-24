@@ -11,7 +11,7 @@ ENT.AdminSpawnable  = false
 function ENT:SetPlayer( ply )
 	self:SetVar( "Founder", ply )
 	self:SetVar( "FounderIndex", ply:UniqueID() )
-
+	
 	self:SetNetworkedString( "FounderName", ply:Nick() )
 end
 

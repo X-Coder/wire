@@ -4,15 +4,15 @@
 --   Usage:
 --     Initialize:
 --       self.GPU = WireGPU(self.Entity)
---
+--     
 --     OnRemove:
 --       self.GPU:Finalize()
---
+--     
 --     Draw (if something changes):
 --       self.GPU:RenderToGPU(function()
 --           ...code...
 --       end)
---
+--     
 --     Draw (every frame):
 --       self.GPU:Render()
 --------------------------------------------------------------------------------
@@ -38,13 +38,13 @@ function GPU:GetInfo()
 	local ent = self.Entity
 	if not ent:IsValid() then ent = self.actualEntity end
 	if not ent then return end
-
+	
 	local model = ent:GetModel()
 	local monitor = WireGPU_Monitors[model]
-
+	
 	local pos = ent:LocalToWorld(monitor.offset)
 	local ang = ent:LocalToWorldAngles(monitor.rot)
-
+	
 	return monitor, pos, ang
 end
 
@@ -76,28 +76,28 @@ if CLIENT then
 		}
 		table.insert( RenderTargetCache, Target )
 	end
-
+	
 	-- Returns a render target from the cache pool and marks it as used
 	local function GetRT()
 
 		for i, RT in pairs( RenderTargetCache ) do
 			if not RT[1] then -- not used
-
+			
 				local rendertarget = RT[2]
 				if rendertarget then
 					RT[1] = true -- Mark as used
 					return rendertarget
 				end
-
+				
 			end
 		end
-
+		
 		-- No free rendertargets. Find first non used and create it.
 		for i, RT in pairs( RenderTargetCache ) do
 			if not RT[1] and  RT[2] == false then -- not used and doesn't exist, let's create the render target.
 
 					local rendertarget = GetRenderTarget("WireGPU_RT_"..i, 512, 512)
-
+					
 					if rendertarget then
 						RT[1] = true -- Mark as used
 						RT[2] = rendertarget -- Assign the RT
@@ -109,27 +109,27 @@ if CLIENT then
 
 			end
 		end
-
+		
 		ErrorNoHalt("All render targets are in use, some wire screens may not draw!\n")
 		return nil
-
+		
 	end
-
+	
 	-- Frees an used RT
 	local function FreeRT(rt)
-
+	
 		for i, RT in pairs( RenderTargetCache ) do
 			if RT[2] == rt then
-
+			
 				RT[1] = false
 				return
 			end
 		end
-
+		
 		ErrorNoHalt("RT Screen ",rt," could not be freed (not found)\n")
-
+		
 	end
-
+	
 	//
 	// Create basic fonts
 	//
@@ -155,24 +155,24 @@ if CLIENT then
 	function GPU:Initialize(no_rendertarget)
 		if no_rendertarget then return nil end
 		-- Rendertarget cache management
-
+		
 		-- This should not even happen.
 		if self.RT then
 			ErrorNoHalt("Warning: GPU:Initialize called, but an RT still existed. Maybe you are not killing it properly?")
 			FreeRT(self.RT)
 		end
-
+		
 		-- find a free one
 		self.RT = GetRT()
 		if not self.RT then
 			return nil
 		end
-
+		
 		-- clear the new RT
 		self.ForceClear = true
 		return self.RT
 	end
-
+	
 	function GPULib.WireGPU(ent, ...)
 		local self = {
 			entindex = ent and ent:EntIndex() or 0,
@@ -182,28 +182,28 @@ if CLIENT then
 		self:Initialize(...)
 		return self
 	end
-
+	
 	function GPU:Finalize()
 		if not self.RT then return end
 		timer.Simple(0,function() -- This is to test if the entity has truly been removed. If you really know you need to remove the RT, call FreeRT()
-			if ValidEntity(self.Entity) then
+			if ValidEntity(self.Entity) then 
 				--MsgN(self,"Entity still exists, exiting.")
 				return
 			end
 			self:FreeRT()
 		end)
 	end
-
+	
 	function GPU:FreeRT()
 		FreeRT( self.RT )
 		self.RT = nil
 	end
-
+	
 	function GPU:Clear(color)
 		if not self.RT then return end
 		render.ClearRenderTarget(self.RT, color or Color(0, 0, 0))
 	end
-
+	
 	local texcoords = {
 		[0] = {
 			{ u = 0, v = 0 },
@@ -245,7 +245,7 @@ if CLIENT then
 			{ x = x+w, y = y+h },
 			{ x = x  , y = y+h },
 		}
-
+		
 		-- rotation and scaling
 		local rotated_texcoords = texcoords[rotation] or texcoords[0]
 		for index,vertex in ipairs(vertices) do
@@ -261,25 +261,25 @@ if CLIENT then
 				vertex.v = tex.v+scale
 			end
 		end
-
+		
 		surface.DrawPoly(vertices)
 		--render.DrawQuad(unpack(vertices))
 	end
-
+	
 	function GPU:RenderToGPU(renderfunction)
 		if not self.RT then return end
-
+		
 		if self.ForceClear then
 			self:Clear()
 			self.ForceClear = nil
 		end
-
+		
 		local oldw = ScrW()
 		local oldh = ScrH()
-
+		
 		local NewRT = self.RT
 		local OldRT = render.GetRenderTarget()
-
+		
 		render.SetRenderTarget(NewRT)
 		render.SetViewPort(0, 0, 512, 512)
 		cam.Start2D()
@@ -288,39 +288,39 @@ if CLIENT then
 		render.SetViewPort(0, 0, oldw, oldh)
 		render.SetRenderTarget(OldRT)
 	end
-
+	
 	-- If width is specified, height is ignored. if neither is specified, a height of 512 is used.
 	function GPU:RenderToWorld(width, height, renderfunction, zoffset, emulateRT)
 		local monitor, pos, ang = self:GetInfo()
-
+		
 		if zoffset then
 			pos = pos + ang:Up()*zoffset
 		end
-
+		
 		if emulateRT then
 			pos = pos - ang:Right()*(monitor.y2-monitor.y1)/2
 			pos = pos - ang:Forward()*(monitor.x2-monitor.x1)/2
 		end
-
+		
 		local h = width and width*monitor.RatioX or height or 512
 		local w = width or h/monitor.RatioX
 		local x = -w/2
 		local y = -h/2
-
+		
 		local res = monitor.RS*512/h
 		cam.Start3D2D(pos, ang, res)
 			PCallError(renderfunction, x, y, w, h, monitor, pos, ang, res)
 		cam.End3D2D()
 	end
-
+	
 	function GPU:Render(rotation, scale, width, height, postrenderfunction)
 		if not self.RT then return end
-
+		
 		local monitor, pos, ang = self:GetInfo()
-
+		
 		local OldTex = WireGPU_matScreen:GetMaterialTexture("$basetexture")
 		WireGPU_matScreen:SetMaterialTexture("$basetexture", self.RT)
-
+		
 		local res = monitor.RS
 		cam.Start3D2D(pos, ang, res)
 			PCallError(function()
@@ -329,82 +329,82 @@ if CLIENT then
 				local h = (height or 512)
 				local x = -w/2
 				local y = -h/2
-
+				
 				surface.SetDrawColor(0,0,0,255)
 				surface.DrawRect(-256*aspect,-256,512*aspect,512)
-
+				
 				surface.SetDrawColor(255,255,255,255)
 				surface.SetMaterial(WireGPU_matScreen)
 				self.DrawScreen(x, y, w, h, rotation or 0, scale or 0)
-
+				
 				if postrenderfunction then postrenderfunction(pos, ang, res, aspect, monitor) end
 			end)
 		cam.End3D2D()
-
+		
 		WireGPU_matScreen:SetMaterialTexture("$basetexture", OldTex)
 	end
-
+	
 	-- compatibility
-
+	
 	local GPUs = {}
-
+	
 	function WireGPU_NeedRenderTarget(entindex)
 		if not GPUs[entindex] then GPUs[entindex] = GPULib.WireGPU(Entity(entindex)) end
 		return GPUs[entindex].RT
 	end
-
+	
 	function WireGPU_GetMyRenderTarget(entindex)
 		local self = GPUs[entindex]
 		if self.RT then return self.RT end
-
+		
 		return self:Initialize()
 	end
-
+	
 	function WireGPU_ReturnRenderTarget(entindex)
 		return GPUs[entindex]:Finalize()
 	end
-
+	
 	function WireGPU_DrawScreen(x, y, w, h, rotation, scale)
 		return GPU.DrawScreen(x, y, w, h, rotation, scale)
 	end
-
+	
 end
 
 -- GPULib switcher functionality
 if CLIENT then
-
+	
 	usermessage.Hook("wire_gpulib_setent", function(um)
 		local screen = Entity(um:ReadShort())
 		if not screen:IsValid() then return end
 		if not screen.GPU then return end
-
+		
 		local ent = Entity(um:ReadShort())
 		if not ent:IsValid() then return end
-
+		
 		screen.GPU.Entity = ent
 		screen.GPU.entindex = ent:EntIndex()
-
+		
 		if screen == ent then return end
-
+		
 		screen.GPU.actualEntity = screen
-
+		
 		local model = ent:GetModel()
 		local monitor = WireGPU_Monitors[model]
-
+		
 		local h = 512*monitor.RS
 		local w = h/monitor.RatioX
 		local x = -w/2
 		local y = -h/2
-
+		
 		local corners = {
 			{ x  , y   },
 			{ x  , y+h },
 			{ x+w, y   },
 			{ x+w, y+h },
 		}
-
+		
 		local mins, maxs = screen:OBBMins(), screen:OBBMaxs()
-
+		
 		local function setbounds(timerid)
 			if not screen:IsValid() then
 				timer.Remove(timerid)
@@ -412,62 +412,62 @@ if CLIENT then
 			end
 			if not ent:IsValid() then
 				timer.Remove(timerid)
-
+				
 				screen.ExtraRBoxPoints[1001] = nil
 				screen.ExtraRBoxPoints[1002] = nil
 				screen.ExtraRBoxPoints[1003] = nil
 				screen.ExtraRBoxPoints[1004] = nil
 				Wire_UpdateRenderBounds(screen)
-
+				
 				screen.GPU.Entity = screen.GPU.actualEntity
 				screen.GPU.entindex = screen.GPU.actualEntity:EntIndex()
 				screen.GPU.actualEntity = nil
-
+				
 				return
 			end
-
+			
 			local ang = ent:LocalToWorldAngles(monitor.rot)
 			local pos = ent:LocalToWorld(monitor.offset)
-
+			
 			screen.ExtraRBoxPoints = screen.ExtraRBoxPoints or {}
 			for i,x,y in ipairs_map(corners, unpack) do
 				local p = Vector(x, y, 0)
 				p:Rotate(ang)
 				p = screen:WorldToLocal(p+pos)
-
+				
 				screen.ExtraRBoxPoints[i+1000] = p
 			end
-
+			
 			Wire_UpdateRenderBounds(screen)
 		end
-
+		
 		local timerid = "wire_gpulib_updatebounds"..screen:EntIndex()
 		timer.Create(timerid, 5, 0, setbounds, timerid)
-
+		
 		setbounds()
 	end) -- usermessage.Hook
-
+	
 elseif SERVER then
-
+	
 	function GPULib.switchscreen(screen, ent)
 		screen.GPUEntity = ent
 		umsg.Start("wire_gpulib_setent")
 			umsg.Short(screen:EntIndex())
 			umsg.Short(ent:EntIndex())
 		umsg.End()
-
+		
 		duplicator.StoreEntityModifier(screen, "wire_gpulib_switcher", { screen:EntIndex(), ent:EntIndex() })
 	end
-
+	
 	duplicator.RegisterEntityModifier("wire_gpulib_switcher", function(ply, screen, data)
 		local screenid, entid = unpack(data)
 		if entid == screenid then return end -- no need to switch the screen
-
+		
 		WireLib.PostDupe(entid, function(ent)
 			GPULib.switchscreen(screen, ent)
 		end)
 	end)
-
+	
 end
 
 
@@ -508,16 +508,16 @@ if CLIENT then
       -- Read next block
       blockCount = blockCount + 1
       if blockCount > 256 then error("GPULib usermessage read error") return end
-
+      
       -- Read block flags
       local dataFlags = um:ReadChar()+128
       if dataFlags == 240 then return end
-
+      
       local offsetSize  = dataFlags % 4
       local repeatCount = math.floor(dataFlags/4) % 4
       local dataCount   = math.floor(dataFlags/16) % 4
       local valueSize   = math.floor(dataFlags/64) % 4
-
+      
       local Repeat = 0
       local Count = 0
 
@@ -534,12 +534,12 @@ if CLIENT then
       if dataCount == 1 then Count = um:ReadChar()+130 end
       if dataCount == 2 then Count = 2 end
       if dataCount == 3 then Count = 3 end
-
+      
       if repeatCount == 0 then Repeat = 1 end
       if repeatCount == 1 then Repeat = um:ReadChar()+130 end
       if repeatCount == 2 then Repeat = 2 end
       if repeatCount == 3 then Repeat = 4 end
-
+      
       --[[print("  Block ",
         blockText[1][offsetSize+1],
         blockText[2][repeatCount+1] or ("[rep "..Repeat.."* ]"),
@@ -552,7 +552,7 @@ if CLIENT then
         if valueSize == 1 then Value = um:ReadShort() end
         if valueSize == 2 then Value = um:ReadLong() end
         if valueSize == 3 then Value = um:ReadFloat() end
-
+        
         for j=1,Repeat do
           --print("    ["..currentOffset.."] = "..Value)
           writeHandler[GPUIdx](currentOffset,Value)
@@ -583,8 +583,8 @@ elseif SERVER then
     return self
   end
   GPUCacheManager = GPULib.GPUCacheManager
-
-
+  
+  
   ------------------------------------------------------------------------------
   -- Get size of the value to write
   ------------------------------------------------------------------------------
@@ -603,8 +603,8 @@ elseif SERVER then
     self.Cache = {}
     self.CacheBytes = 0
   end
-
-
+  
+  
   ------------------------------------------------------------------------------
   -- Write a single value to cache
   ------------------------------------------------------------------------------
@@ -618,8 +618,8 @@ elseif SERVER then
     table.insert(self.Cache,{ Address, Value, valueSize, valueFloat })
     --if #self.Cache > 2048 then self:Flush() end
   end
-
-
+  
+  
   ------------------------------------------------------------------------------
   -- Send value right away
   ------------------------------------------------------------------------------
@@ -632,8 +632,8 @@ elseif SERVER then
       umsg.Char(240-128)
     umsg.End()
   end
-
-
+  
+  
   ------------------------------------------------------------------------------
   -- RLE-compress cache and send it
   ------------------------------------------------------------------------------
@@ -661,7 +661,7 @@ elseif SERVER then
         previousBlockEnd = compressBlock.Offset+#compressBlock.Data*compressBlock.Repeat
         sequentialBlock = previousBlockEnd == address
       end
-
+    
       if not compressBlock then
         -- New block of data
         compressBlock = {
@@ -720,14 +720,14 @@ elseif SERVER then
         table.insert(compressInfo,compressBlock)
       end
     end
-
+    
     --PrintTable(compressInfo)
 
     -- Start the message
     local messageSize = 4
     umsg.Start("wire_memsync", forcePlayer)
     umsg.Long(self.EntIndex)
-
+    
     -- Start sending all compressed blocks
     for k,v in ipairs(compressInfo) do
       --======================================================================--
@@ -767,14 +767,14 @@ elseif SERVER then
         if offsetSize == 2 then dataFlags = dataFlags + 2 end
         if offsetSize == 4 then dataFlags = dataFlags + 3 end
       end
-
+    
       if v.Repeat > 1 then
             if v.Repeat == 2 then dataFlags = dataFlags + 8
         elseif v.Repeat == 4 then dataFlags = dataFlags + 12
         else                      dataFlags = dataFlags + 4
         end
       end
-
+    
       if #v.Data > 1 then
         if #v.Data == 2 then
           dataFlags = dataFlags + 32
@@ -784,12 +784,12 @@ elseif SERVER then
           dataFlags = dataFlags + 16
         end
       end
-
+    
       if v.Size == 1 then dataFlags = dataFlags + 0   end
       if v.Size == 2 then dataFlags = dataFlags + 64  end
       if (v.Size == 4) and (not v.IsFloat) then dataFlags = dataFlags + 128 end
       if (v.Size == 4) and (    v.IsFloat) then dataFlags = dataFlags + 192 end
-
+      
       umsg.Char(dataFlags-128)
       messageSize = messageSize + 4
 
@@ -803,17 +803,17 @@ elseif SERVER then
         if offsetSize == 2 then umsg.Short(v.SetOffset) messageSize = messageSize + 2 end
         if offsetSize == 4 then umsg.Float(v.SetOffset) messageSize = messageSize + 4 end
       end
-
+    
       if (#v.Data > 2) then
         if (#v.Data ~= 3) or (v.IsFloat) then
           umsg.Char(#v.Data-130) messageSize = messageSize + 1
         end
       end
-
+      
       if (v.Repeat > 1) and
          (v.Repeat ~= 2) and
          (v.Repeat ~= 4) then umsg.Char(v.Repeat-130) messageSize = messageSize + 1 end
-
+    
       for _,value in ipairs(v.Data) do
         if v.Size == 1 then umsg.Char (value) messageSize = messageSize + 1 end
         if v.Size == 2 then umsg.Short(value) messageSize = messageSize + 2 end

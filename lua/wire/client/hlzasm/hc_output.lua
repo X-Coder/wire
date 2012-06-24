@@ -13,14 +13,14 @@ function HCOMP:Resolve(block)
   -- Set offset for the block
   block.Offset = self.WritePointer
   self:SetLabel("__PTR__",self.WritePointer)
-
+  
   -- Set pointer offset
   block.PointerOffset = self.PointerOffset
 
   -- Label precedes the opcode and the data in the leaf
   if block.Label then
     if (self.Settings.SeparateDataSegment == true) and (block.Data) then
-
+    
     else
       block.Label.Value = self.WritePointer
     end
@@ -78,12 +78,12 @@ function HCOMP:Resolve(block)
       self.WritePointer = self.WritePointer + block.ZeroPadding
     end
   end
-
+  
   -- Special marker to change write pointer
   if block.SetWritePointer then
     self.WritePointer = block.SetWritePointer
   end
-
+  
   -- Special marker to change pointer offset
   if block.SetPointerOffset then
     self.PointerOffset = block.SetPointerOffset
@@ -204,7 +204,7 @@ function HCOMP:Output(block)
         else block.Operands[i].Constant = self.Settings.MagicValue
         end
       end
-
+      
       if block.Operands[i].MemoryPointer and (not tonumber(block.Operands[i].MemoryPointer)) then
         -- Prepare expression to parse
         self:RestoreParserState(block.Operands[i].MemoryPointer)
@@ -255,7 +255,7 @@ function HCOMP:Output(block)
     end
   end
 
-
+  
   -- Output the block
   if self.Settings.OutputFinalListing then
     self:PrintBlock(block,"flist")
@@ -320,12 +320,12 @@ function HCOMP:PrintBlock(block,file,isLibrary)
       self:PrintLine(file,block.Label.Name..":")-- /".."/ offset "..block.Label.Value)
     end
   end
-
+  
   -- Print a comment
   if block.Comment and (not isLibrary) then
     self:PrintLine(file,"/".."/ "..block.Comment)
   end
-
+  
   -- Print the opcode
   if block.Opcode then -- instruction
     local printText = ""
@@ -335,7 +335,7 @@ function HCOMP:PrintBlock(block,file,isLibrary)
       printText = printText .. "   "
     end
     printText = printText .. block.Opcode .. " "
-
+    
     for i=1,#block.Operands do
       if block.Operands[i].Segment then
         printText = printText .. (SegmentRegisterName[block.Operands[i].Segment] or "???") .. ":"
@@ -367,13 +367,13 @@ function HCOMP:PrintBlock(block,file,isLibrary)
       else
         printText = printText .. (RegisterName[block.Operands[i].Register] or "???")
       end
-
+      
       if i < #block.Operands then printText = printText.."," end
     end
-
+    
     self:PrintLine(file,printText)
   end
-
+  
   -- Print the data
   if block.Data then
     local printText = ""
@@ -382,7 +382,7 @@ function HCOMP:PrintBlock(block,file,isLibrary)
     else
       printText = printText .. "   db "
     end
-
+    
     for index,value in ipairs(block.Data) do
       if type(value) == "number" then -- Data is a number
         printText = printText .. value
@@ -397,7 +397,7 @@ function HCOMP:PrintBlock(block,file,isLibrary)
     end
     self:PrintLine(file,printText)
   end
-
+  
   -- Add zero padding
   if block.ZeroPadding and (block.ZeroPadding > 0) then
     if (self.Settings.OutputOffsetsInListing == true) and (not isLibrary) then
@@ -406,7 +406,7 @@ function HCOMP:PrintBlock(block,file,isLibrary)
       self:PrintLine(file,string.format("alloc %d",block.ZeroPadding))
     end
   end
-
+  
   -- Parse marker commands
   if block.SetWritePointer then
     if (self.Settings.OutputOffsetsInListing == true) and (not isLibrary) then
@@ -415,7 +415,7 @@ function HCOMP:PrintBlock(block,file,isLibrary)
       self:PrintLine(file,string.format("org %d",block.SetWritePointer))
     end
   end
-
+  
   -- Parse marker commands
   if block.SetPointerOffset then
     if (self.Settings.OutputOffsetsInListing == true) and (not isLibrary) then
@@ -441,7 +441,7 @@ function HCOMP:PrintLeaf(leaf,level)
 --      self:PrintLine("ctree",pad.."previous leaf:")
       self:PrintLeaf(leaf.PreviousLeaf,level)
     end
-
+        
     if leaf.Opcode then
       if leaf.Opcode == "LABEL" then
         self:PrintLine("ctree",pad..leaf.Label.Name..": ("..string.lower(leaf.Label.Type)..")")
@@ -572,7 +572,7 @@ function HCOMP:WriteBlock(block)
       return
     end
     local Opcode,RM = self.OpcodeNumber[block.Opcode],nil
-
+    
     -- Generate RM if more than 1 operand
     if #block.Operands > 0 then
       RM = self:OperandRM(block.Operands[1],block)
@@ -588,18 +588,18 @@ function HCOMP:WriteBlock(block)
       self:WriteByte(Opcode,block)
       -- Write RM
       if RM then self:WriteByte(RM,block) end
-
+  
       -- Write segment offsets
       if (#block.Operands > 0) and (block.Operands[1].Segment) then self:WriteByte(block.Operands[1].Segment,block) end
       if (#block.Operands > 1) and (block.Operands[2].Segment) then self:WriteByte(block.Operands[2].Segment,block) end
-
+  
       -- Write immediate bytes
       if (#block.Operands > 0) and (block.Operands[1].Value) then self:WriteByte(block.Operands[1].Value,block) end
       if (#block.Operands > 1) and (block.Operands[2].Value) then self:WriteByte(block.Operands[2].Value,block) end
     else -- Fixed-size instructions
       -- Write opcode
       self:WriteByte(Opcode + 2000,block)
-
+      
       -- Write RM
       self:WriteByte(RM or 0,block)
 
@@ -630,7 +630,7 @@ function HCOMP:WriteBlock(block)
   if block.ZeroPadding then
     for i=1,block.ZeroPadding do self:WriteByte(0,block) end
   end
-
+  
   -- Set write pointer
   if block.SetWritePointer then
     self.WritePointer = block.SetWritePointer

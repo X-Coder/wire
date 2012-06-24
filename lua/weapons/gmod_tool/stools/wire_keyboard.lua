@@ -31,22 +31,22 @@ cleanup.Register( "wire_keyboards" )
 function TOOL:LeftClick( trace )
 	if CLIENT then return true end
 	if not util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) then return false end
-
+	
 	local ply = self:GetOwner()
-
+	
 	if trace.Entity and trace.Entity:IsValid() and trace.Entity:GetClass() == "gmod_wire_keyboard" then
 		trace.Entity.AutoBuffer = (self:GetClientInfo( "autobuffer" ) ~= "0")
 		return true
 	end
-
+	
 	local ang = trace.HitNormal:Angle()
 	ang.pitch = ang.pitch + 90
-
+	
 	local keyboard = MakeWireKeyboard( ply, trace.HitPos, ang, self:GetModel() )
 	if not keyboard then return false end
-
+	
 	keyboard.AutoBuffer = (self:GetClientInfo( "autobuffer" ) ~= "0")
-
+	
 	local min = keyboard:OBBMins()
 	keyboard:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
@@ -188,13 +188,13 @@ function TOOL.BuildCPanel(panel)
 	txt:SetToolTip("If you would like to contribute your keyboard layout, so that it may be added, go post on the wiremod forums.")
 	panel:AddItem(txt)
 
-	local list = vgui.Create("DMultiChoice")
+	local list = vgui.Create("DComboBox")
 	for k,v in pairs( Wire_Keyboard_Remap ) do
 		list:AddChoice( k )
 		list:SetConVar( "wire_keyboard_layout" )
 	end
 	panel:AddItem(list)
-
+	
 	local autobuffer = vgui.Create( "DCheckBoxLabel" )
 	autobuffer:SetConVar( "wire_keyboard_autobuffer" )
 	autobuffer:SetText( "Automatic buffer handling" )

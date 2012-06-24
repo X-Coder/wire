@@ -31,20 +31,20 @@ function ENT:TriggerInput(iname, value)
 		if (value ~= 0) then
 			local vStart = self:GetPos()
 			local vForward = self:GetUp()
-
+			
 			local trace = {}
 				trace.start = vStart
 				trace.endpos = vStart + (vForward * self:GetBeamLength())
 				trace.filter = { self }
 			local trace = util.TraceLine( trace )
-
+			
 			local svarTargetPlayers = false
 			if(GetConVarNumber('sbox_wire_igniters_allowtrgply') > 0)then
 				svarTargetPlayers = true
 			else
 				svarTargetPlayers = false
 			end
-
+			
 			if (!trace.Entity) then return false end
 			if (!trace.Entity:IsValid() ) then return false end
 			if (trace.Entity:IsPlayer() && (!self.TargetPlayers || !svarTargetPlayers)) then return false end
@@ -89,7 +89,7 @@ function MakeWireIgniter( pl, Pos, Ang, model, TargetPlayers, Range )
 		pl = pl
 	}
 	table.Merge(wire_igniter:GetTable(), ttable )
-
+	
 	pl:AddCount( "wire_igniters", wire_igniter )
 
 	return wire_igniter

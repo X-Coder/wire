@@ -36,12 +36,12 @@ function TOOL:LeftClick(trace)
 
 	if ent:GetClass() == "gmod_wire_spawner" && ent.pl == pl then
 		local spawner = ent
-
+		
 		// In multiplayer we clamp the delay to help prevent people being idiots
 		if !SinglePlayer() and delay < 0.1 then
 			delay = 0.1
 		end
-
+		
 		spawner:Setup(delay, undo_delay)
 		return true
 	end
@@ -56,10 +56,10 @@ function TOOL:LeftClick(trace)
 	local Pos			= ent:GetPos()
 	local Ang			= ent:GetAngles()
 	local mat			= ent:GetMaterial()
-	local r,g,b,a		= ent:GetColor()
+	local c				= ent:GetColor()
 	local skin			= ent:GetSkin() or 0
-
-	local wire_spawner = MakeWireSpawner( pl, Pos, Ang, model, delay, undo_delay, mat, r, g, b, a, skin, frozen )
+	
+	local wire_spawner = MakeWireSpawner( pl, Pos, Ang, model, delay, undo_delay, mat, c.r, c.g, c.b, c.a, skin, frozen )
 	if !wire_spawner:IsValid() then return end
 
 	ent:Remove()
@@ -73,11 +73,11 @@ function TOOL:LeftClick(trace)
 end
 
 if SERVER then
-
+	
 	function MakeWireSpawner( pl, Pos, Ang, model, delay, undo_delay, mat, r, g, b, a, skin, frozen )
-
+		
 		if !pl:CheckLimit("wire_spawners") then return nil end
-
+		
 		local spawner = ents.Create("gmod_wire_spawner")
 			if !spawner:IsValid() then return end
 			spawner:SetPos(Pos)
@@ -86,22 +86,22 @@ if SERVER then
 			spawner:SetRenderMode(3)
 			spawner:SetMaterial(mat or "")
 			spawner:SetSkin(skin or 0)
-			spawner:SetColor((r or 255),(g or 255),(b or 255),100)
+			spawner:SetColor(Color((r or 255),(g or 255),(b or 255),100))
 		spawner:Spawn()
-
+		
 		if spawner:GetPhysicsObject():IsValid() then
 			local Phys = spawner:GetPhysicsObject()
 			Phys:EnableMotion(!frozen)
 		end
-
+		
 		// In multiplayer we clamp the delay to help prevent people being idiots
 		if not SinglePlayer() and delay < 0.1 then
 			delay = 0.1
 		end
-
+		
 		spawner:SetPlayer(pl)
 		spawner:Setup(delay, undo_delay)
-
+		
 		local tbl = {
 			pl         = pl,
 			delay      = delay,
@@ -114,10 +114,10 @@ if SERVER then
 			a          = a,
 		}
 		table.Merge(spawner:GetTable(), tbl)
-
+		
 		pl:AddCount("wire_spawners", spawner)
 		pl:AddCleanup("gmod_wire_spawner", spawner)
-
+		
 		return spawner
 	end
 
@@ -143,7 +143,7 @@ function TOOL.BuildCPanel( CPanel )
 		}
 	}
 	CPanel:AddControl( "ComboBox", params )
-
+	
 	local params = {
 		Label	= "#Spawn Delay",
 		Type	= "Float",

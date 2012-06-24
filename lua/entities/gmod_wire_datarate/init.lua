@@ -82,6 +82,6 @@ function ENT:TriggerInput(iname, value)
 	elseif (iname == "Smooth") then
 		self.Smooth = 2*(1-math.Clamp(value,0,1))
 	elseif (iname == "Interval") then
-		self.Interval = math.Clamp(value,0.1,2)
+		self.Interval = math.Clamp(value,0.1,2)	
 	end
 end

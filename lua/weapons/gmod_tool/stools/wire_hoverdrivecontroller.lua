@@ -34,38 +34,38 @@ if (SERVER) then
 		if (!ply:CheckLimit("wire_hoverdrives")) then return end
 		local ent = ents.Create( "gmod_wire_hoverdrivecontroler" )
 		if (!ent:IsValid()) then return end
-
+		
 		-- Pos/Model/Angle
 		ent:SetModel( Model )
 		ent:SetPos( trace.HitPos - trace.HitNormal * ent:OBBMins().z )
 		ent:SetAngles( trace.HitNormal:Angle() + Angle(90,0,0) )
-
+		
 		ent:Spawn()
 		ent:Activate()
-
+		
 		ent.UseEffects = (self:GetClientNumber( "effects" ) == 1)
 		ent.UseSounds = (self:GetClientNumber( "sounds" ) == 1)
-
+		
 		ply:AddCount( "wire_hoverdrives", ent )
-
+		
 		ent:ShowOutput()
-
+		
 		return ent
 	end
-
+	
 	function TOOL:LeftClick( trace )
 		if not util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) then return false end
 		local ply = self:GetOwner()
-
+		
 		if trace.Entity and trace.Entity:GetClass() == "gmod_wire_hoverdrivecontroler" then
 			trace.Entity.UseEffects = (self:GetClientNumber( "effects" ) == 1)
 			trace.Entity.UseSounds = (self:GetClientNumber( "sounds" ) == 1)
 			trace.Entity:ShowOutput()
 			return true
 		end
-
+	
 		local ent = self:CreateTeleporter( ply, trace, self:GetModel() )
-
+		
 		local const = WireLib.Weld( ent, trace.Entity, trace.PhysicsBone, true )
 		undo.Create("wire_hoverdrive")
 			undo.AddEntity( ent )
@@ -77,11 +77,11 @@ if (SERVER) then
 
 		return true
 	end
-
-
+	
+	
 else
 	function TOOL:LeftClick( trace ) return !trace.Entity:IsPlayer() end
-
+	
 	local TeleModels = { ["models/props_c17/utilityconducter001.mdl"] = {},
 						 ["models/Combine_Helicopter/helicopter_bomb01.mdl"] = {},
 						 ["models/props_combine/combine_interface001.mdl"] = {},
@@ -134,7 +134,7 @@ function TOOL:Reload( trace )
 	end
 	return true
 end
-
+	
 function TOOL:UpdateGhostTeleporter( ent, ply )
 	if (!ent or !ent:IsValid()) then return end
 	local trace = ply:GetEyeTrace()
@@ -142,22 +142,22 @@ function TOOL:UpdateGhostTeleporter( ent, ply )
 		ent:SetNoDraw( true )
 		return
 	end
-
+	
 	local Ang = trace.HitNormal:Angle() + Angle(90,0,0)
 	ent:SetAngles(Ang)
-
+	
 	local Pos = trace.HitPos - trace.HitNormal * ent:OBBMins().z
 	ent:SetPos( Pos )
-
+	
 	ent:SetNoDraw( false )
 end
 
 function TOOL:Think()
 	local model = self:GetModel()
-
+	
 	if (!self.GhostEntity or !self.GhostEntity:IsValid() or self.GhostEntity:GetModel() != model ) then
 		self:MakeGhostEntity( Model(model), Vector(0,0,0), Angle(0,0,0) )
 	end
-
+	
 	self:UpdateGhostTeleporter( self.GhostEntity, self:GetOwner() )
 end

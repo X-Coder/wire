@@ -38,7 +38,7 @@ local function ParsePortName(namedesctype, fbtype, fbdesc)
 		namedesc = namedesctype
 		tp = fbtype
 	end
-
+	
 	local name, desc = namedesc:match("^(.+) %((.*)%)$")
 	if not name then
 		name = namedesc
@@ -121,7 +121,7 @@ function WireLib.CreateSpecialInputs(ent, names, types, descs)
 	ent.Inputs = ent_ports
 	for n,v in pairs(names) do
 		local name, desc, tp = ParsePortName(v, types[n] or "NORMAL", descs and descs[n])
-
+		
 		local port = {
 			Entity = ent,
 			Name = name,
@@ -133,20 +133,20 @@ function WireLib.CreateSpecialInputs(ent, names, types, descs)
 			Width = 1,
 			Num = n,
 		}
-
+		
 		local idx = 1
 		while (Inputs[idx]) do
 			idx = idx+1
 		end
 		port.Idx = idx
-
+		
 		ent_ports[name] = port
 		Inputs[idx] = port
 	end
-
+	
 	WireLib.SetPathNames(ent, names)
 	WireLib._SetInputs(ent)
-
+	
 	return ent_ports
 end
 
@@ -158,7 +158,7 @@ function WireLib.CreateSpecialOutputs(ent, names, types, descs)
 	ent.Outputs = ent_ports
 	for n,v in pairs(names) do
 		local name, desc, tp = ParsePortName(v, types[n] or "NORMAL", descs and descs[n])
-
+		
 		local port = {
 			Entity = ent,
 			Name = name,
@@ -169,19 +169,19 @@ function WireLib.CreateSpecialOutputs(ent, names, types, descs)
 			TriggerLimit = 8,
 			Num = n,
 		}
-
+		
 		local idx = 1
 		while (Outputs[idx]) do
 			idx = idx+1
 		end
 		port.Idx = idx
-
+		
 		ent_ports[name] = port
 		Outputs[idx] = port
 	end
-
+	
 	WireLib._SetOutputs(ent)
-
+	
 	return ent_ports
 end
 
@@ -193,7 +193,7 @@ function WireLib.AdjustSpecialInputs(ent, names, types, descs)
 	local ent_ports = ent.Inputs or {}
 	for n,v in ipairs(names) do
 		local name, desc, tp = ParsePortName(v, types[n] or "NORMAL", descs and descs[n])
-
+		
 		if (ent_ports[name]) then
 			if tp ~= ent_ports[name].Type then
 				timer.Simple(0, Wire_Link_Clear, ent, name)
@@ -216,31 +216,31 @@ function WireLib.AdjustSpecialInputs(ent, names, types, descs)
 				Keep = true,
 				Num = n,
 			}
-
+			
 			local idx = 1
 			while (Inputs[idx]) do
 				idx = idx+1
 			end
 			port.Idx = idx
-
+			
 			ent_ports[name] = port
 			Inputs[idx] = port
 		end
 	end
-
+	
 	for portname,port in pairs(ent_ports) do
 		if (port.Keep) then
 			port.Keep = nil
 		else
 			Wire_Link_Clear(ent, portname)
-
+			
 			ent_ports[portname] = nil
 		end
 	end
-
+	
 	WireLib.SetPathNames(ent, names)
 	WireLib._SetInputs(ent)
-
+	
 	return ent_ports
 end
 
@@ -251,7 +251,7 @@ function WireLib.AdjustSpecialOutputs(ent, names, types, descs)
 	local ent_ports = ent.Outputs or {}
 	for n,v in ipairs(names) do
 		local name, desc, tp = ParsePortName(v, types[n] or "NORMAL", descs and descs[n])
-
+		
 		if (ent_ports[name]) then
 			if tp ~= ent_ports[name].Type then
 				for i,inp in ipairs(ent_ports[name].Connected) do
@@ -275,18 +275,18 @@ function WireLib.AdjustSpecialOutputs(ent, names, types, descs)
 				TriggerLimit = 8,
 				Num = n,
 			}
-
+			
 			local idx = 1
 			while (Outputs[idx]) do
 				idx = idx+1
 			end
 			port.Idx = idx
-
+			
 			ent_ports[name] = port
 			Outputs[idx] = port
 		end
 	end
-
+	
 	for portname,port in pairs(ent_ports) do
 		if (port.Keep) then
 			port.Keep = nil
@@ -300,9 +300,9 @@ function WireLib.AdjustSpecialOutputs(ent, names, types, descs)
 			ent_ports[portname] = nil
 		end
 	end
-
+	
 	WireLib._SetOutputs(ent)
-
+	
 	return ent_ports
 end
 
@@ -315,7 +315,7 @@ function WireLib.RetypeInputs(ent, iname, itype, descs)
 	ent_ports[iname].Desc = descs
 	ent_ports[iname].Type = itype
 	ent_ports[iname].Value = WireLib.DT[itype].Zero
-
+	
 	WireLib._SetInputs(ent)
 end
 
@@ -328,7 +328,7 @@ function WireLib.RetypeOutputs(ent, oname, otype, descs)
 	ent_ports[oname].Desc = descs
 	ent_ports[oname].Type = otype
 	ent_ports[oname].Value = WireLib.DT[otype].Zero
-
+	
 	WireLib._SetOutputs(ent)
 end
 
@@ -342,7 +342,7 @@ function Wire_Restored(ent, force_outputs)
 		for name,port in pairs(ent_ports) do
 			if (not port.Material) then  -- Must be an old save
 				port.Name = name
-
+				
 				if (port.Ropes) then
 					for _,rope in pairs(port.Ropes) do
 						rope:Remove()
@@ -350,7 +350,7 @@ function Wire_Restored(ent, force_outputs)
 					port.Ropes = nil
 				end
 			end
-
+			
 			port.Entity = ent
 			port.Type = port.Type or "NORMAL"
 			port.Material = port.Material or "cable/blue_elec"
@@ -360,29 +360,29 @@ function Wire_Restored(ent, force_outputs)
 			if (port.Src) and (not port.Path) then
 				port.Path = { { Entity = port.Src, Pos = Vector(0, 0, 0) } }
 			end
-
+			
 			local idx = 1
 			while (Inputs[idx]) do
 				idx = idx+1
 			end
 			port.Idx = idx
-
+			
 			Inputs[idx] = port
 		end
 	end
-
+	
 	local ent_ports = ent.Outputs
 	if (ent_ports) then
 		for _,port in pairs(ent_ports) do
 			port.Entity = ent
 			port.Type = port.Type or "NORMAL"
-
+			
 			local idx = 1
 			while (Outputs[idx]) do
 				idx = idx+1
 			end
 			port.Idx = idx
-
+			
 			Outputs[idx] = port
 		end
 	elseif (force_outputs) then
@@ -395,7 +395,7 @@ local function ClearPorts(ports, ConnectEnt, DontSendToCL)
 
 	-- There is a strange bug, not all the links get removed at once.
 	-- It works when you run it multiple times.
-	while (Valid and (EmergencyBreak < 32)) do
+	while (Valid and (EmergencyBreak < 32)) do 
 		local newValid = nil
 
 		for k,v in ipairs(ports) do
@@ -417,7 +417,7 @@ local function ClearPorts(ports, ConnectEnt, DontSendToCL)
 	end
 end
 
--- Set DontUnList to true, if you want to call WireLib._RemoveWire(eid) manually.
+-- Set DontUnList to true, if you want to call WireLib._RemoveWire(eid) manually. 
 function Wire_Remove(ent, DontUnList)
 	--Clear the inputs
 	local ent_ports = ent.Inputs
@@ -464,10 +464,10 @@ local function Wire_Link(dst, dstid, src, srcid, path)
 		Msg("Wire_link: Invalid source!\n")
 		return
 	end
-
+	
 	local input = dst.Inputs[dstid]
 	local output = src.Outputs[srcid]
-
+	
 	if (IsValid(input.Src)) then
 		if (input.Src.Outputs) then
 			local oldOutput = input.Src.Outputs[input.SrcId]
@@ -480,25 +480,25 @@ local function Wire_Link(dst, dstid, src, srcid, path)
 			end
 		end
 	end
-
+	
 	input.Src = src
 	input.SrcId = srcid
 	input.Path = path
-
+	
 	WireLib._SetLink(input)
-
+	
 	table.insert(output.Connected, { Entity = dst, Name = dstid })
-
+	
 	if dst.OnInputWireLink then
 		-- ENT:OnInputWireLink(iName, iType, oEnt, oName, oType)
 		dst:OnInputWireLink(dstid, input.Type, src, srcid, output.Type)
 	end
-
+	
 	if src.OnOutputWireLink then
 		-- ENT:OnOutputWireLink(oName, oType, iEnt, iName, iType)
 		src:OnOutputWireLink(srcid, output.Type, dst, dstid, input.Type)
 	end
-
+	
 	WireLib.TriggerInput(dst, dstid, output.Value)
 end
 
@@ -506,14 +506,14 @@ function Wire_TriggerOutput(ent, oname, value, iter)
 	if !IsValid(ent) then return end
 	if !HasPorts(ent) then return end
 	if (!ent.Outputs) then return end
-
+	
 	local output = ent.Outputs[oname]
 	if (output) and (value ~= output.Value or output.Type == "ARRAY" or output.Type == "TABLE") then
 		if (output.TriggerLimit <= 0) then return end
 		output.TriggerLimit = output.TriggerLimit - 1
-
+		
 		output.Value = value
-
+		
 		if (iter) then
 			for _,dst in ipairs(output.Connected) do
 				if (IsValid(dst.Entity)) then
@@ -522,20 +522,20 @@ function Wire_TriggerOutput(ent, oname, value, iter)
 			end
 			return
 		end
-
+		
 		iter = Wire_CreateOutputIterator()
-
+		
 		for _,dst in ipairs(output.Connected) do
 			if (IsValid(dst.Entity)) then
 				WireLib.TriggerInput(dst.Entity, dst.Name, value)
 			end
 		end
-
+		
 		iter:Process()
 
 	end
 end
-
+	
 local function Wire_Unlink(ent, iname, DontSendToCL)
 	if !HasPorts(ent) then return end
 
@@ -562,13 +562,13 @@ local function Wire_Unlink(ent, iname, DontSendToCL)
 				ent:OnInputWireUnlink(iname, input.Type, input.Src, input.SrcId, outputs[input.SrcId].Type)
 			end
 		end
-
+		
 		input.Src = nil
 		input.SrcId = nil
 		input.Path = nil
-
+		
 		WireLib.TriggerInput(ent, iname, WireLib.DT[input.Type].Zero, nil)
-
+		
 		if (DontSendToCL) then return end
 		WireLib._SetLink(input)
 	end
@@ -580,35 +580,35 @@ function Wire_Link_Start(idx, ent, pos, iname, material, color, width)
 	if (!ent.Inputs or !ent.Inputs[iname]) then return end
 
 	local input = ent.Inputs[iname]
-
+	
 	CurLink[idx] = {
 		Dst = ent,
 		DstId = iname,
 		Path = {},
 		OldPath = input.Path,
 		}
-
+	
 	CurLink[idx].OldPath             = CurLink[idx].OldPath or {}
 	CurLink[idx].OldPath[0]          = {}
 	CurLink[idx].OldPath[0].pos      = input.StartPos
 	CurLink[idx].OldPath[0].material = input.Material
 	CurLink[idx].OldPath[0].color    = input.Color
 	CurLink[idx].OldPath[0].width    = input.Width
-
+	
 	local net_name = "wp_" .. iname
 	ent:SetNetworkedBeamInt(net_name, 0)
 	ent:SetNetworkedBeamVector(net_name .. "_start", pos)
 	ent:SetNetworkedBeamString(net_name .. "_mat", material)
 	ent:SetNetworkedBeamVector(net_name .. "_col", Vector(color.r, color.g, color.b))
 	ent:SetNetworkedBeamFloat(net_name .. "_width", width)
-
+	
 	--RDbeamlib.StartWireBeam( ent, iname, pos, material, color, width )
-
+	
 	input.StartPos = pos
 	input.Material = material
 	input.Color = color
 	input.Width = width
-
+	
 	return true
 end
 
@@ -617,15 +617,15 @@ function Wire_Link_Node(idx, ent, pos)
 	if !CurLink[idx] then return end
 	if !IsValid(CurLink[idx].Dst) then return end
 	if !IsValid(ent) then return end -- its the world, give up
-
+	
 	local net_name = "wp_" .. CurLink[idx].DstId
 	local node_idx = CurLink[idx].Dst:GetNetworkedBeamInt(net_name)+1
 	CurLink[idx].Dst:SetNetworkedBeamEntity(net_name .. "_" .. node_idx .. "_ent", ent)
 	CurLink[idx].Dst:SetNetworkedBeamVector(net_name .. "_" .. node_idx .. "_pos", pos)
 	CurLink[idx].Dst:SetNetworkedBeamInt(net_name, node_idx)
-
+	
 	--RDbeamlib.AddWireBeamNode( CurLink[idx].Dst, CurLink[idx].DstId, ent, pos )
-
+	
 	table.insert(CurLink[idx].Path, { Entity = ent, Pos = pos })
 end
 
@@ -639,7 +639,7 @@ function Wire_Link_End(idx, ent, pos, oname, pl)
 	if !IsValid(ent) then return end
 	if !HasPorts(ent) then return end
 	if !ent.Outputs then return end
-
+	
 	if (CurLink[idx].Dst:GetClass() == "gmod_wire_sensor") and (ent:GetClass() != "gmod_wire_target_finder") then
 		MsgN("Wire_link: Beacon Sensor can only be wired to a Target Finder!")
 		if pl then
@@ -648,7 +648,7 @@ function Wire_Link_End(idx, ent, pos, oname, pl)
 		Wire_Link_Cancel(idx)
 		return
 	end
-
+	
 	local input = CurLink[idx].Dst.Inputs[CurLink[idx].DstId]
 	local output = ent.Outputs[oname]
 	if not output then
@@ -667,23 +667,23 @@ function Wire_Link_End(idx, ent, pos, oname, pl)
 		Wire_Link_Cancel(idx)
 		return
 	end
-
+	
 	local net_name = "wp_" .. CurLink[idx].DstId
 	local node_idx = CurLink[idx].Dst:GetNetworkedBeamInt(net_name)+1
 	CurLink[idx].Dst:SetNetworkedBeamEntity(net_name .. "_" .. node_idx .. "_ent", ent)
 	CurLink[idx].Dst:SetNetworkedBeamVector(net_name .. "_" .. node_idx .. "_pos", pos)
 	CurLink[idx].Dst:SetNetworkedBeamInt(net_name, node_idx)
-
+	
 	--RDbeamlib.AddWireBeamNode( CurLink[idx].Dst, CurLink[idx].DstId, ent, pos )
-
+	
 	table.insert(CurLink[idx].Path, { Entity = ent, Pos = pos })
-
+	
 	Wire_Link(CurLink[idx].Dst, CurLink[idx].DstId, ent, oname, CurLink[idx].Path)
-
+	
 	if (WireLib.DT[input.Type].BiDir) then
 		Wire_Link(ent, oname, CurLink[idx].Dst, CurLink[idx].DstId, {})
 	end
-
+	
 	CurLink[idx] = nil
 end
 
@@ -691,13 +691,13 @@ end
 function Wire_Link_Cancel(idx)
 	if !CurLink[idx] then return end
 	if !IsValid(CurLink[idx].Dst) then return end
-
+	
 	--local orig = CurLink[idx].OldPath[0]
 	--RDbeamlib.StartWireBeam( CurLink[idx].Dst, CurLink[idx].DstId, orig.pos, orig.material, orig.color, orig.width )
-
+	
 	local path_len = 0
 	if (CurLink[idx].OldPath) then path_len = #CurLink[idx].OldPath end
-
+	
 	local net_name = "wp_" .. CurLink[idx].DstId
 	for i=1,path_len do
 		CurLink[idx].Dst:SetNetworkedBeamEntity(net_name .. "_" .. i, CurLink[idx].OldPath[i].Entity)
@@ -705,7 +705,7 @@ function Wire_Link_Cancel(idx)
 		--RDbeamlib.AddWireBeamNode( CurLink[idx].Dst, CurLink[idx].DstId, CurLink[idx].OldPath[i].Entity, CurLink[idx].OldPath[i].Pos )
 	end
 	CurLink[idx].Dst:SetNetworkedBeamInt(net_name, path_len)
-
+	
 	CurLink[idx] = nil
 end
 
@@ -714,7 +714,7 @@ function Wire_Link_Clear(ent, iname, DontSendToCL)
 	local net_name = "wp_" .. iname
 	ent:SetNetworkedBeamInt(net_name, 0)
 	--RDbeamlib.ClearWireBeam( ent, iname )
-
+	
 	Wire_Unlink(ent, iname, DontSendToCL)
 end
 
@@ -728,25 +728,25 @@ end
 do -- class OutputIterator
 	local OutputIterator = {}
 	OutputIterator.__index = OutputIterator
-
+	
 	function OutputIterator:Add(ent, iname, value)
 		table.insert(self, { Entity = ent, IName = iname, Value = value })
 	end
-
+	
 	function OutputIterator:Process()
 		if self.Processing then return end -- should not occur
 		self.Processing = true
-
+		
 		while #self > 0 do
 			local nextelement = self[1]
 			table.remove(self, 1)
-
+			
 			WireLib.TriggerInput(nextelement.Entity, nextelement.IName, nextelement.Value, self)
 		end
-
+		
 		self.Processing = nil
 	end
-
+	
 	function Wire_CreateOutputIterator()
 		return setmetatable({}, OutputIterator)
 	end
@@ -779,7 +779,7 @@ end
 
 function WireLib.BuildDupeInfo( Ent )
 	if (!Ent.Inputs) then return end
-
+	
 	local info = { Wires = {} }
 	for portname,input in pairs(Ent.Inputs) do
 		if (IsValid(input.Src)) then
@@ -792,16 +792,16 @@ function WireLib.BuildDupeInfo( Ent )
 				SrcId = input.SrcId,
 				SrcPos = Vector(0, 0, 0),
 			}
-
+			
 			if (input.Path) then
 				info.Wires[portname].Path = {}
-
+				
 				for _,v in ipairs(input.Path) do
 					if (IsValid(v.Entity)) then
 						table.insert(info.Wires[portname].Path, { Entity = v.Entity:EntIndex(), Pos = v.Pos })
 					end
 				end
-
+				
 				local n = #info.Wires[portname].Path
 				if (n > 0) and (info.Wires[portname].Path[n].Entity == info.Wires[portname].Src) then
 					info.Wires[portname].SrcPos = info.Wires[portname].Path[n].Pos
@@ -810,19 +810,19 @@ function WireLib.BuildDupeInfo( Ent )
 			end
 		end
 	end
-
+	
 	return info
 end
 
 function WireLib.ApplyDupeInfo( ply, ent, info, GetEntByID )
 	if (info.Wires) then
 		for k,input in pairs(info.Wires) do
-
+			
 			Wire_Link_Start(ply:UniqueID(), ent, input.StartPos, k, input.Material, input.Color, input.Width)
-
+			
 			if (input.Path) then
 				for _,v in ipairs(input.Path) do
-
+					
 					local ent2 = GetEntByID(v.Entity)
 					if (!IsValid(ent2)) then
 						local EntityList = GetEntByID("EntityList")
@@ -837,7 +837,7 @@ function WireLib.ApplyDupeInfo( ply, ent, info, GetEntByID )
 					end
 				end
 			end
-
+			
 			local ent2 = GetEntByID(input.Src)
 			if (!IsValid(ent2)) then
 				local EntityList = GetEntByID("EntityList")
@@ -987,24 +987,24 @@ hook.Add("InitPostEntity", "antiantinoclip", function()
 	local ENT = scripted_ents.GetList().rt_antinoclip_handler
 	if not ENT then return end
 	ENT = ENT.t
-
+	
 	local rt_antinoclip_handler_StartTouch = ENT.StartTouch
 	function ENT:StartTouch(...)
 		if self.speed >= 20 then return end
-
+		
 		local phys = self.Ent:GetPhysicsObject()
 		if phys:IsValid() and phys:GetAngleVelocity():Length() > 20 then return end
-
+		
 		rt_antinoclip_handler_StartTouch(self, ...)
 	end
-
+	
 	--local rt_antinoclip_handler_Think = ENT.Think
 	function ENT:Think()
-
+		
 		local t = CurTime()
 		local dt = t-self.lastt
 		self.lastt = t
-
+		
 		local phys = self.Ent:GetPhysicsObject()
 		local pos
 		if phys:IsValid() then
@@ -1016,7 +1016,7 @@ hook.Add("InitPostEntity", "antiantinoclip", function()
 		self.oldpos = pos
 		--rt_antinoclip_handler_Think(self, ...)
 	end
-
+	
 	ENT.speed = 20
 	ENT.lastt = 0
 	ENT.oldpos = Vector(0,0,0)
@@ -1027,13 +1027,13 @@ end)
 -- Usage: WireLib.PostDupe(entid, function(ent) ... end)
 function WireLib.PostDupe(entid, func)
 	local CreatedEntities
-
+	
 	local paste_functions = {
 		[duplicator.Paste] = true,
 		[AdvDupe.Paste] = true,
 		[AdvDupe.OverTimePasteProcess] = true,
 	}
-
+	
 	-- Go through the call stack to find someone who has a CreatedEntities table for us.
 	local i,info = 1,debug.getinfo(1)
 	while info do
@@ -1050,17 +1050,17 @@ function WireLib.PostDupe(entid, func)
 		i = i+1
 		info = debug.getinfo(i)
 	end
-
+	
 	-- Nothing found? Too bad...
 	if not CreatedEntities then return end
-
+	
 	-- Wait until the selected entity has been spawned...
-	local unique = {}
+	local unique = math.Round(math.Rand(1,10000))
 	timer.Create(unique, 1, 240, function(CreatedEntities, entid, unique, func)
 		local ent = CreatedEntities[entid]
 		if ent then
 			timer.Remove(unique)
-
+			
 			-- and call the callback
 			func(ent)
 		end

@@ -165,7 +165,7 @@ do --wire_button
 
 	function TOOL.BuildCPanel(panel)
 		WireToolHelpers.MakePresetControl(panel, "wire_button")
-
+		
 		ModelPlug_AddToCPanel_Multi(
 			panel,
 			{	button = "Normal",
@@ -220,7 +220,7 @@ do --wire_dynamic_button
 
 	function TOOL.BuildCPanel(panel)
 		WireToolHelpers.MakePresetControl(panel, "wire_dynamic_button")
-
+		
 		ModelPlug_AddToCPanel_Multi(
 			panel,
 			{	dynamic_button = "Normal",
@@ -229,14 +229,14 @@ do --wire_dynamic_button
 			"wire_dynamic_button",
 			"#Dynamic_Button_Model", nil, "#Dynamic_Button_Model", 1.1
 		)
-
+        
 		panel:NumSlider("#WireDynamicButtonTool_value_on", "wire_dynamic_button_value_on", -10, 10, 1)
         panel:AddControl("ComboBox", {
 			Label = "WireDynamicButtonMaterialsOn",
 			MenuButton = "0",
-			Options = list.Get( "WireDynamicButtonMaterialsOn" )
+			Options = list.Get( "WireDynamicButtonMaterialsOn" ) 
         } )
-
+        
 		panel:AddControl("Color", {
 			Label = "#ToolWireDynamicButton_colour_on",
 			Red = "wire_dynamic_button_on_r",
@@ -246,13 +246,13 @@ do --wire_dynamic_button
 			ShowHSV = "1",
 			ShowRGB = "1",
 			Multiplier = "255"
-		})
-
+		})     
+        
 		panel:NumSlider("#WireDynamicButtonTool_value_off", "wire_dynamic_button_value_off", -10, 10, 1)
         panel:AddControl("ComboBox", {
 			Label = "#WireDynamicButtonTool_entityout",
 			MenuButton = "0",
-			Options = list.Get( "WireDynamicButtonMaterialsOff" )
+			Options = list.Get( "WireDynamicButtonMaterialsOff" ) 
         } )
 
 		panel:AddControl("Color", {
@@ -264,8 +264,8 @@ do --wire_dynamic_button
 			ShowHSV = "1",
 			ShowRGB = "1",
 			Multiplier = "255"
-		})
-
+		})             
+        
 		panel:CheckBox("#WireDynamicButtonTool_toggle", "wire_dynamic_button_toggle")
 		panel:CheckBox("#WireDynamicButtonTool_entityout", "wire_dynamic_button_entityout")
 
@@ -331,7 +331,7 @@ do -- wire_dual_input
 
 	function TOOL.BuildCPanel(panel)
 		WireToolHelpers.MakePresetControl(panel, "wire_dual_input")
-
+		
 		panel:AddControl("Label", {Text = "Model Size (if available)"})
 		panel:AddControl("ComboBox", {
 			Label = "Model Size",
@@ -342,19 +342,19 @@ do -- wire_dual_input
 					["nano"] = { wire_dual_input_modelsize = "_nano" }
 				}
 		})
-
+		
 		ModelPlug_AddToCPanel(panel, "Numpad", "wire_dual_input", "#ToolWireIndicator_Model")
-
+		
 		panel:AddControl("Numpad", {
 			Label = "#WireDualInputTool_keygroup",
 			Command = "wire_dual_input_keygroup"
 		})
-
+		
 		panel:AddControl("Numpad", {
 			Label = "#WireDualInputTool_keygroup2",
 			Command = "wire_dual_input_keygroup2"
 		})
-
+		
 		panel:CheckBox("#WireDualInputTool_toggle", "wire_dual_input_toggle")
 		panel:NumSlider("#WireDualInputTool_value_on", "wire_dual_input_value_on", -10, 10, 1)
 		panel:NumSlider("#WireDualInputTool_value_off", "wire_dual_input_value_off", -10, 10, 1)

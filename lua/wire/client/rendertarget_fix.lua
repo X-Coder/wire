@@ -48,21 +48,21 @@ end)
 
 local function CreateCPanel( Panel )
 	Panel:ClearControls()
-	Panel:AddHeader()
-
+	-- Panel:AddHeader()
+	
 	local lbl =  vgui.Create("DLabel")
-	lbl:SetText([[Here you can fix screens that use
+	lbl:SetText([[Here you can fix screens that use 
 rendertargets if they break due to lag.
-If a screen is not on this list, it means
+If a screen is not on this list, it means 
 that either its author has not added it to
 this list, the screen has its own fix, or
 that no fix is necessary.
-You can also use the console command
+You can also use the console command 
 "wire_rt_fix", which does the same thing
 as pressing the "All" button.]])
 	lbl:SizeToContents()
 	Panel:AddItem( lbl )
-
+	
 	local btn = vgui.Create("DButton")
 	btn:SetText("All")
 	function btn:DoClick()
@@ -70,7 +70,7 @@ as pressing the "All" button.]])
 	end
 	btn:SetToolTip( "Fix all RTs on the map." )
 	Panel:AddItem( btn )
-
+	
 	for k,v in pairs( RTFix.List ) do
 		local btn = vgui.Create("DButton")
 		btn:SetText( v[1] )
@@ -82,7 +82,7 @@ as pressing the "All" button.]])
 	end
 end
 
-hook.Add("PopulateToolMenu","WireLib_RenderTarget_Fix",function()
+hook.Add("PopulateToolMenu","WireLib_RenderTarget_Fix",function() 
 	spawnmenu.AddToolMenuOption( "Wire", "Wire - Display", "RTFix", "Fix RenderTargets", "", "", CreateCPanel, nil )
 end)
 
@@ -91,14 +91,14 @@ end)
 -- credits to sk89q for making this: http://www.wiremod.com/forum/bug-reports/19921-cs-egp-gpu-etc-issue-when-rejoin-lag-out.html#post193242
 ---------------------------------------------------------------------
 
--- Helper function
+-- Helper function 
 local function def( ent, redrawkey )
 	if (ent.GPU or ent.GPU.RT) then
 		ent.GPU:FreeRT()
 	end
-
+	
 	ent.GPU:Initialize()
-
+	
 	if (redrawkey) then
 		ent[redrawkey] = true
 	end

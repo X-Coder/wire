@@ -70,11 +70,11 @@ end
 function ENT:Setup(values)
 	self.value = values -- for advdupe
 	values = table.Copy(values)
-
+	
 	local adjoutputs, adjtypes = {}, {}
 	for k,v in pairs(values) do
 		local tp,value = string.match(v, "^ *([^: ]+) *:(.*)$")
-
+		
 		if tp then
 			tp = tp:upper()
 			v = value
@@ -86,33 +86,33 @@ function ENT:Setup(values)
 			tp = "NORMAL"
 		end
 		--print(k,v,tp)
-
+		
 		values[k] = v
 		adjoutputs[k] = "Value"..tostring(k)
 		adjtypes[k] = tp
 	end
-
+	
 	// this is where storing the values as strings comes in: they are the descriptions for the inputs.
 	WireLib.AdjustSpecialOutputs(self, adjoutputs, adjtypes, values)
-
+	
 	local txt = ""
 	self.Memory = {}
-
+	
 	for k,v in pairs(values) do
 		//line break after 4 values
 		//if (k == 5) or (k == 9) then txt = txt.."\n" end
 		txt = txt .. k .. ": " .. v
 		if (k < #values) then txt = txt .. "\n" end
-
+		
 		local tp = adjtypes[k]
 		v = ParseType[tp](v)
-
+		
 		if tp == "NORMAL" then self.Memory[k] = v end
 		Wire_TriggerOutput(self, adjoutputs[k], v)
 	end
-
+	
 	self:SetOverlayText(txt)
-
+	
 end
 
 

@@ -263,7 +263,7 @@ end
 // Clamp each p,y,r separately
 e2function angle clamp(angle rv1, rv2, rv3)
 	local p,y,r
-
+	
 	if rv1[1] < rv2 then p = rv2
 	elseif rv1[1] > rv3 then p = rv3
 	else p = rv1[1] end
@@ -282,7 +282,7 @@ end
 // Clamp according to limits defined by two min/max angles
 e2function angle clamp(angle rv1, angle rv2, angle rv3)
 	local p,y,r
-
+	
 	if rv1[1] < rv2[1] then p = rv2[1]
 	elseif rv1[1] > rv3[1] then p = rv3[1]
 	else p = rv1[1] end
@@ -320,11 +320,11 @@ e2function normal inrange(angle rv1, angle rv2, angle rv3)
 	if rv1[1] < rv2[1] then return 0 end
 	if rv1[2] < rv2[2] then return 0 end
 	if rv1[3] < rv2[3] then return 0 end
-
+	
 	if rv1[1] > rv3[1] then return 0 end
 	if rv1[2] > rv3[2] then return 0 end
 	if rv1[3] > rv3[3] then return 0 end
-
+	
 	return 1
 end
 
@@ -332,7 +332,7 @@ end
 e2function angle angle:rotateAroundAxis(vector axis, degrees)
 	local ang = Angle(this[1], this[2], this[3])
 	local vec = Vector(axis[1], axis[2], axis[3]):GetNormal()
-
+	
 	ang:RotateAroundAxis(vec, degrees)
 	return {ang.p, ang.y, ang.r}
 end
@@ -341,7 +341,7 @@ end
 e2function angle toRad(angle rv1)
 	return {rv1[1] * pi / 180, rv1[2] * pi / 180, rv1[3] * pi / 180}
 end
-
+ 
 // Convert the magnitude of the angle to degrees
 e2function angle toDeg(angle rv1)
 	return {rv1[1] * 180 / pi, rv1[2] * 180 / pi, rv1[3] * 180 / pi}

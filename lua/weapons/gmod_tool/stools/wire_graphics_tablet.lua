@@ -149,7 +149,7 @@ function TOOL.BuildCPanel(panel)
 		Label = "#Tool_wire_graphics_tablet_createflat",
 		Command = "wire_graphics_tablet_createflat"
 	})
-
+	
 	panel:AddControl("Checkbox", {
 		Label = "#Tool_wire_graphics_tablet_drawoutline",
 		Command = "wire_graphics_tablet_drawoutline"

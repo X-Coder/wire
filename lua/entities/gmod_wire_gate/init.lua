@@ -20,7 +20,7 @@ local ENT = ENT
 function ENT:Setup( action, noclip )
 	if (action) then
 		self.WireDebugName = action.name
-
+		
 		WireLib.AdjustSpecialInputs(self, action.inputs, action.inputtypes )
 		if (action.outputs) then
 			WireLib.AdjustSpecialOutputs(self, action.outputs, action.outputtypes)
@@ -28,11 +28,11 @@ function ENT:Setup( action, noclip )
 			//Wire_AdjustOutputs(self, { "Out" })
 			WireLib.AdjustSpecialOutputs(self, { "Out" }, action.outputtypes)
 		end
-
+		
 		if (action.reset) then
 			action.reset(self)
 		end
-
+		
 		local ReadCell = action.ReadCell
 		if ReadCell then
 			function self:ReadCell(Address)
@@ -41,7 +41,7 @@ function ENT:Setup( action, noclip )
 		else
 			self.ReadCell = nil
 		end
-
+		
 		local WriteCell = action.WriteCell
 		if WriteCell then
 			function self:WriteCell(Address,value)
@@ -51,16 +51,16 @@ function ENT:Setup( action, noclip )
 			self.WriteCell = nil
 		end
 	end
-
+	
 	if (noclip) then
 		self:SetCollisionGroup( COLLISION_GROUP_WORLD )
 	end
-
+	
 	self.Action = action
 	self.PrevValue = nil
-
+	
 	//self.Action.inputtypes = self.Action.inputtypes or {}
-
+	
 	self:CalcOutput()
 	self:ShowOutput()
 end
@@ -93,7 +93,7 @@ function ENT:Think()
 	if (self.Action) and (self.Action.timed) then
 		self:CalcOutput()
 		self:ShowOutput()
-
+		
 		self:NextThink(CurTime()+0.02)
 		return true
 	end
@@ -104,13 +104,13 @@ function ENT:CalcOutput(iter)
 	if (self.Action) and (self.Action.output) then
 		if (self.Action.outputs) then
 			local result = { self.Action.output(self, unpack(self:GetActionInputs())) }
-
+			
 			for k,v in ipairs(self.Action.outputs) do
 				Wire_TriggerOutput(self, v, result[k], iter)
 			end
 		else
 			local value = self.Action.output(self, unpack(self:GetActionInputs())) or 0
-
+			
 			Wire_TriggerOutput(self, "Out", value, iter)
 		end
 	end
@@ -127,14 +127,14 @@ function ENT:ShowOutput()
 	else
 		txt = "Invalid gate!"
 	end
-
+	
 	self:SetOverlayText(txt)
 end
 
 
 function ENT:OnRestore()
 	self.Action = GateActions[self.action]
-
+	
 	self.BaseClass.OnRestore(self)
 end
 
@@ -174,7 +174,7 @@ function ENT:GetActionInputs(as_names)
 				Msg("Missing input! ("..v..")")
 				return {}
 			end
-
+			
 			if (as_names) then
 				if (input.Src) and (input.Src:IsValid()) then
 					Args[k] = input.Src.WireName or input.Src.WireDebugName or v
@@ -203,10 +203,10 @@ function ENT:GetActionOutputs()
 		for _,v in ipairs(self.Action.outputs) do
 		    result[v] = self.Outputs[v].Value or 0
 		end
-
+		
 		return result
 	end
-
+	
 	return self.Outputs.Out.Value or 0
 end
 
@@ -215,10 +215,10 @@ end
 
 function MakeWireGate(pl, Pos, Ang, model, action, noclip, frozen, nocollide)
 	if ( !pl:CheckLimit( "wire_gates" ) ) then return nil end
-
+	
 	local gate = GateActions[action]
 	if not gate then return end
-
+	
 	local group = gate.group
 	if not group then return end
 	group = string.lower(group)

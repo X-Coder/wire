@@ -7,7 +7,7 @@ function ENT:Think()
 	if not self.is_looked_at or Wire_DisableOverlayTextUpdate then return end
 	if not self.NextOverlayText then return end
 	if self.NextOverlayTextTime and CurTime() < self.NextOverlayTextTime then return end
-
+	
 	//self.BaseClass.BaseClass.SetOverlayText(self, self.NextOverlayText)
 	self:SetNetworkedBeamString("GModOverlayText",self.NextOverlayText)
 	self.NextOverlayText = nil

@@ -120,7 +120,7 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_extbus_name", Description = "#Tool_wire_extbus_desc" })
-
+	
         local modelPanel = WireDermaExts.ModelSelect(panel, "wire_extbus_model", list.Get("Wire_gate_Models"), 2)
 end
 

@@ -83,7 +83,7 @@ if SERVER then
     local player = self:GetOwner()
     local model = self:GetClientInfo("model")
 	if not util.IsValidModel( model ) or not util.IsValidProp( model ) then return end
-
+	
     local pos = trace.HitPos
     local ang = trace.HitNormal:Angle()
     ang.pitch = ang.pitch + 90
@@ -146,7 +146,7 @@ if SERVER then
     if not ent then return end
     if not ent:IsValid() then return end
 
-    local tr = utilx.GetPlayerTrace(player, player:GetCursorAimVector())
+    local tr = util.GetPlayerTrace(player, player:GetCursorAimVector())
     local trace = util.TraceLine(tr)
     if not trace.Hit then return end
 
@@ -304,7 +304,7 @@ if CLIENT then
         ["1024K chip"]                = {wire_gpu_memorymodel = "1024kc"},
         ["2048K"]                     = {wire_gpu_memorymodel = "2048k"},
         ["2048K chip"]                = {wire_gpu_memorymodel = "2048kc"},
-
+        
         ["64K (compatibility mode)"]  = {wire_gpu_memorymodel = "64k"},
         ["64K chip"]                  = {wire_gpu_memorymodel = "64kc"},
       }
@@ -320,7 +320,7 @@ if CLIENT then
 --      Text = "Loads online GPU documentation and tutorials"
 --    })
   end
-
+  
   ------------------------------------------------------------------------------
   -- Tool screen
   ------------------------------------------------------------------------------

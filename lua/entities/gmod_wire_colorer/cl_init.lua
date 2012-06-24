@@ -9,11 +9,11 @@ function ENT:Draw()
 		local bbmin = self:OBBMins()
 		local bbmax = self:OBBMaxs()
 		bbmax = bbmax + Vector(0, 0, length)
-
+		
 		self.render_beam_length = length
 		self:SetRenderBounds(bbmin, bbmax)
 	end
-
+	
 	self.BaseClass.Draw(self)
 	Wire_DrawTracerBeam( self, 1 )
 end

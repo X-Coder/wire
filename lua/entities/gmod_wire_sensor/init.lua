@@ -9,11 +9,11 @@ ENT.WireDebugName = "Distance"
 local MODEL = Model( "models/props_lab/huladoll.mdl" )
 
 function ENT:Initialize()
-	self:SetModel( MODEL )
+	self:SetModel( MODEL )	
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-
+	
 	self.Inputs = Wire_CreateInputs(self, { "Target" })
 	self.Outputs = Wire_CreateOutputs(self, { "Out" })
 end
@@ -30,14 +30,14 @@ function ENT:Setup( xyz_mode, outdist, outbrng, gpscord, swapyz,direction_vector
 	self.direction_normalized = direction_normalized;
 	self.target_velocity = target_velocity;
 	self.velocity_normalized = velocity_normalized;
-
+	
 	if !xyz_mode and !outdist and !outbrng and !gpscord and !direction_vector and !target_velocity then self.OutDist = true outdist = true end
-
+	
 	local onames = {}
 	if (outdist) then
 	    table.insert(onames, "Distance")
 	end
-
+	
 	if (xyz_mode) then
 	    table.insert(onames, "X")
 	    table.insert(onames, "Y")
@@ -62,7 +62,7 @@ function ENT:Setup( xyz_mode, outdist, outbrng, gpscord, swapyz,direction_vector
 	    table.insert(onames, "Velocity_Y")
 	    table.insert(onames, "Velocity_Z")
 	end
-
+	
 	Wire_AdjustOutputs(self, onames)
 	self:TriggerOutputs(0, Angle(0, 0, 0),Vector(0, 0, 0),Vector(0, 0, 0),Vector(0, 0, 0),Vector(0,0,0))
 	self:ShowOutput()
@@ -71,7 +71,7 @@ end
 
 function ENT:Think()
 	self.BaseClass.Think(self)
-
+	
 	//if (!self.Inputs.Target.Src or !self.Inputs.Target.Src:IsValid() ) then return end
 	if ( !self.ToSense or !self.ToSense:IsValid() or !self.ToSense.GetBeaconPos ) then return end
 	if (self.Active) then
@@ -110,7 +110,7 @@ function ENT:Think()
 		end
 		self:TriggerOutputs(dist, brng, distc, gpscords,dirvec,velo)
 		self:ShowOutput()
-
+		
 		self:NextThink(CurTime()+0.04)
 		return true
 	end
@@ -159,10 +159,10 @@ function ENT:TriggerOutputs(dist, brng, distc, gpscords,dirvec,velo)
 	if (self.OutBrng) then
 		local pitch = brng.p
 		local yaw = brng.y
-
+		
 		if (pitch > 180) then pitch = pitch - 360 end
 		if (yaw > 180) then yaw = yaw - 360 end
-
+		
 		Wire_TriggerOutput(self, "Bearing", -yaw)
 	    Wire_TriggerOutput(self, "Elevation", -pitch)
 	end
@@ -197,7 +197,7 @@ end
 function ENT:OnRestore()
 	//this is to prevent old save breakage
 	self:Setup(self.XYZMode, self.OutDist, self.OutBrng, self.GPSCord, self.SwapYZ,self.direction_vector,self.direction_normalized,self.target_velocity,self.velocity_normalized)
-
+	
 	self.BaseClass.OnRestore(self)
 end
 
